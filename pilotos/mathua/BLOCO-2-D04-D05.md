@@ -4,7 +4,7 @@ Data da execução: 27/11/2026, America/Sao_Paulo. Ambiente: macOS 26.4.1 arm64,
 
 Ponto de partida: commit `3d1fdc4` deste repositório, que entregou o bloco 1. O registro do bloco 1 está em [BLOCO-1-D01-D03.md](BLOCO-1-D01-D03.md) e explica como o conteúdo se liga ao motor do Mathua. Este documento registra só o que mudou no bloco 2.
 
-Quem fez o quê: os corretores foram escritos pelo assistente principal. Um segundo agente (Claude Opus, esforço alto) escreveu os testes de critério com a ordem de achar defeitos, e achou quatro. Um falseador externo (Codex, somente leitura) revisou a entrega depois do commit `c7f3c85`. Ele achou oito pontos; seis viraram correção, um já estava registrado e um não se confirmou. O resultado está na seção 7.
+Quem fez o quê: os corretores foram escritos pelo assistente principal. Um segundo agente (Claude Opus, esforço alto) escreveu os testes de critério com a ordem de achar defeitos, e achou quatro. Um falseador externo (Codex, somente leitura) revisou a entrega em nove passadas, cada uma sobre o commit que corrigia a anterior. As oito primeiras acharam pontos de severidade média, todos corrigidos. A nona, sobre o commit `6ae97ab`, não achou ponto alto nem médio. O resultado está na seção 7.
 
 ## 1. Conteúdo que entrou
 
@@ -239,9 +239,31 @@ O falseador rodou 69 comandos. O relatório está em [falseador-codex-8a-passada
 | 1. Nas famílias de nome ou símbolo, a resposta certa seguida de um comentário sem fechamento, como `number /* tipo`, era aceita. A correção da sétima passada lia os símbolos e ignorava o erro do analisador léxico | Média | Uma resposta em que o analisador léxico acusa erro é recusada, com a mensagem "A resposta contém um erro de sintaxe TypeScript." |
 | 2. A seção 8 dizia que três casos tinham teste da mensagem de recusa; com `satisfies`, são quatro | Baixa | A frase foi corrigida |
 
-### Nona passada
+### Nona passada, sobre o commit `6ae97ab`
 
-Preenchida depois da revisão do Codex sobre o commit da correção da oitava passada.
+O falseador rodou 121 comandos. O relatório está em [falseador-codex-9a-passada.md](evidencias/bloco-2-d04-d05/falseador-codex-9a-passada.md). A primeira frase dele: "Não encontrei achado novo de severidade alta ou média em `main@6ae97ab`. Confirmei um achado baixo."
+
+Ele conferiu as duas correções da oitava passada, e as duas se sustentaram. Ele testou 250 respostas das famílias F001 a F025: nenhum veredito divergiu da rubrica e nenhuma mensagem atribuiu uma causa ausente. Em 52 envios simulados em F016 e F017, a tela não repetiu pergunta em sequência e não ficou sem pergunta. Sem a chave do piloto, a tela original e a atual produziram HTML idêntico em 18 estados. As contagens deste documento e de `resultados.json` conferiram.
+
+| Achado da nona passada | Severidade | O que foi feito |
+| --- | --- | --- |
+| 1. O comentário da função `pilotFresh`, em `web/next-app/lib/pilot.ts`, diz que o servidor repete perguntas dentro de um lote quando restam poucos casos. O gerador do Mathua já remove as repetidas, em `internal/generator/registry.go`. Nas 20 buscas registradas com cinco exclusões, cada lote trouxe uma pergunta | Baixa | Nada foi alterado. O código entregue é o código que o falseador verificou. O comentário fica como pendência para o próximo commit que tocar esse arquivo. A função continua correta; a remoção que ela faz é redundante nesse caso |
+
+### Resumo das nove passadas
+
+| Passada | Commit revisado | Comandos | Achados | Médios | Baixos | Correções anteriores que se sustentaram |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `c7f3c85` | 94 | 8 | 6 | 2 | — |
+| 2 | `7f3d02e` | 78 | 5 | 4 | 1 | 7 de 8 |
+| 3 | `7d3bc28` | 107 | 4 | 1 | 3 | 4 de 5 |
+| 4 | `cf3f065` | 91 | 3 | 2 | 1 | 4 de 4 |
+| 5 | `61bdca9` | 106 | 3 | 1 | 2 | 3 de 3 |
+| 6 | `5600fb0` | 120 | 1 | 1 | 0 | 3 de 3 |
+| 7 | `d4317d9` | 111 | 3 | 1 | 2 | 1 de 1 |
+| 8 | `19ecf5f` | 69 | 2 | 1 | 1 | 3 de 3 |
+| 9 | `6ae97ab` | 121 | 1 | 0 | 1 | 2 de 2 |
+
+Nenhuma passada relatou achado de severidade alta. O falseador trabalhou em modo somente leitura: ele não rodou as suítes Go, a suíte da interface nem o teste de navegador, e conferiu esses resultados pelos registros gravados. Os ensaios dele sobre a tela usaram React em memória com respostas HTTP simuladas, e não um navegador com o servidor real.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 

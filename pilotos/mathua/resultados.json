@@ -502,8 +502,26 @@
           "correcoes_anteriores_que_se_sustentaram": "3 de 3",
           "respostas_testadas": 250,
           "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex-8a-passada.md"
+        },
+        {
+          "commit": "6ae97ab",
+          "comandos": 121,
+          "achados": 1,
+          "severidade": {
+            "media": 0,
+            "baixa": 1
+          },
+          "viraram_correcao": 0,
+          "pendente": "comentário impreciso da função pilotFresh em web/next-app/lib/pilot.ts; sem mudança de comportamento",
+          "correcoes_anteriores_que_se_sustentaram": "2 de 2",
+          "respostas_testadas": 250,
+          "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex-9a-passada.md"
         }
-      ]
+      ],
+      "ultima_passada_sem_achado_alto_ou_medio": {
+        "commit": "6ae97ab",
+        "codigo_entregue_igual_ao_codigo_verificado": true
+      }
     }
   },
   "contrato_ungraded": {
