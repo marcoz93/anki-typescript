@@ -1,6 +1,8 @@
 # Piloto do Mathua com TypeScript
 
-**Bloco 1 (27/11/2026, macOS):** o piloto serve os degraus D01 a D03 do pacote `conteudo/typescript-v1`: 13 conceitos, 14 famílias e 84 casos. Os três conceitos antigos mantêm os IDs. A entrega, com conteúdo, comandos, saídas e limites, está em [BLOCO-1-D01-D03.md](BLOCO-1-D01-D03.md). As seções abaixo descrevem as rodadas anteriores; onde elas citam três conceitos, enunciados sorteados ou a pasta `lessons/`, vale o registro do bloco 1.
+**Bloco 1 (27/11/2026, macOS):** o piloto serve os degraus D01 a D03 do pacote `conteudo/typescript-v1`: 13 conceitos, 14 famílias e 84 casos. Os três conceitos antigos mantêm os IDs. A entrega, com conteúdo, comandos, saídas e limites, está em [BLOCO-1-D01-D03.md](BLOCO-1-D01-D03.md). **Bloco 2 (27/11/2026, macOS):** entraram os degraus D04 e D05; o piloto serve agora 23 conceitos, 25 famílias e 150 casos. A entrega está em [BLOCO-2-D04-D05.md](BLOCO-2-D04-D05.md).
+
+As seções abaixo descrevem as rodadas anteriores; onde elas citam três conceitos, enunciados sorteados ou a pasta `lessons/`, vale o registro do bloco 1.
 
 Para rodar, o executável precisa do diretório `conteudo/typescript-v1` deste repositório. Ele o encontra sozinho quando o clone do Mathua está em `pilotos/mathua/mathua/`. Em outro local, use a opção `-content`.
 

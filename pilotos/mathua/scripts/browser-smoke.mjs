@@ -361,6 +361,74 @@ try {
   assert.equal(afterRestart.reports.length, 1);
   check('server_restart_preserves_progress_and_reports', { processes_started: 2, eligible: readiness.eligible, reports: afterRestart.reports.length });
 
+  // 9. A stage-4 concept with two sections: code with context (F016), then a value (F017).
+  //    Its prerequisites are mastered through the screen first. ts.binding.const_number already
+  //    has answers from step 5, so its rotation does not start clean.
+  const greaterThan = 'ts.expression.greater_than';
+  await openConcept('ts.value.boolean_literal');
+  await master('ts.value.boolean_literal', 'fill');
+  await openConcept('ts.type.boolean');
+  await master('ts.type.boolean', 'fill');
+  await openConcept('ts.binding.const_number');
+  await master('ts.binding.const_number', 'fill', answer => answer, false);
+  await openConcept('ts.expression.value');
+  await master('ts.expression.value', 'tap');
+  const greaterReady = await authenticatedJSON(`/api/lessons/${greaterThan}/readiness`);
+  assert.equal(greaterReady.eligible, true);
+  assert(greaterReady.prerequisites.every(p => p.met));
+  check('stage_4_prerequisites_mastered_through_browser', { concept: greaterThan, eligible: greaterReady.eligible,
+    prerequisites: greaterReady.prerequisites.map(p => ({ concept: p.conceptId, met: p.met })) });
+
+  // Section 1, F016: `>=` is refused with the cause the grader gives; the variant is another F016
+  // case; the form `LIMIT < name` is accepted, then one more answer closes the section.
+  await openConcept(greaterThan);
+  shown = await currentCase();
+  assert.equal(shown.family.id, 'F016');
+  const [missName, missLimit] = shown.item.answer.split(' > ');
+  const inclusive = `${missName} >= ${missLimit}`;
+  const inclusiveMiss = await submit(shown.card, inclusive, 'type');
+  assert.equal(inclusiveMiss.body.correct, false);
+  assert.match(inclusiveMiss.body.feedback, /também aceitam a igualdade/);
+  await page.getByText('✗ Ainda não.', { exact: false }).waitFor();
+  await page.getByText('Os operadores >= e <= também aceitam a igualdade.', { exact: false }).waitFor();
+  await shot('09-secao-1-comparacao-recusada');
+  const comparisonVariant = await currentCase();
+  assert.equal(comparisonVariant.family.id, 'F016');
+  assert.notEqual(comparisonVariant.item.id, shown.item.id);
+  const [variantName, variantLimit] = comparisonVariant.item.answer.split(' > ');
+  const limitFirst = `${variantLimit} < ${variantName}`;
+  const limitFirstHit = await submit(comparisonVariant.card, limitFirst, 'type');
+  assert.equal(limitFirstHit.body.correct, true, `${limitFirst}: ${limitFirstHit.body.feedback}`);
+  await page.getByText(`você respondeu “${limitFirst}”`, { exact: false }).waitFor();
+  check('greater_than_section_1_miss_names_cause_then_variant_accepts_limit_first', { missed_case: shown.item.id, wrong_answer: inclusive,
+    cause_shown: inclusiveMiss.body.feedback, variant_case: comparisonVariant.item.id, model_answer: comparisonVariant.item.answer, accepted_answer: limitFirst });
+  const closing = await currentCase();
+  assert.equal(closing.family.id, 'F016', `section 1 served ${closing.item.id}`);
+  assert(![shown.item.id, comparisonVariant.item.id].includes(closing.item.id), `${closing.item.id} repeated inside section 1`);
+  assert.equal((await submit(closing.card, closing.item.answer, 'type')).body.correct, true);
+
+  // Section 2, F017: a wrong value, then a variant of the same family answered correctly.
+  const valueCase = await currentCase();
+  assert.equal(valueCase.family.id, 'F017', `section 2 served ${valueCase.item.id}`);
+  const opposite = valueCase.item.answer === 'true' ? 'false' : 'true';
+  const valueMiss = await submit(valueCase.card, opposite, 'fill');
+  assert.equal(valueMiss.body.correct, false);
+  // The section keeps earlier cards on the page; the newest miss is the last one.
+  await page.getByText('✗ Ainda não.', { exact: false }).last().waitFor();
+  await page.getByText(valueMiss.body.feedback, { exact: false }).last().waitFor();
+  await shot('10-secao-2-valor-recusado');
+  const valueVariant = await currentCase();
+  assert.equal(valueVariant.family.id, 'F017');
+  assert.notEqual(valueVariant.item.id, valueCase.item.id);
+  const valueHit = await submit(valueVariant.card, valueVariant.item.answer, 'fill');
+  assert.equal(valueHit.body.correct, true);
+  // The miss and the hit can carry the same word, `true`; the hit is the last card answered.
+  await page.getByText(`você respondeu “${valueVariant.item.answer}”`, { exact: false }).last().waitFor();
+  assert.match(await page.getByText('você respondeu', { exact: false }).last().locator('xpath=..').innerText(), /^✓/);
+  check('greater_than_section_2_value_miss_then_same_family_variant', { section_1_cases: [shown.item.id, comparisonVariant.item.id, closing.item.id],
+    missed_case: valueCase.item.id, context: valueCase.item.context_code, wrong_answer: opposite, cause_shown: valueMiss.body.feedback,
+    variant_case: valueVariant.item.id, variant_context: valueVariant.item.context_code, accepted_answer: valueVariant.item.answer });
+
   assert.deepEqual(result.page_errors, []);
   assert.deepEqual(result.api_errors, []);
   result.passed = true;

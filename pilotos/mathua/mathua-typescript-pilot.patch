@@ -1,9 +1,9 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 00000000..e2a0c7ad
+index 00000000..bdec3846
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,198 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
@@ -20,8 +20,8 @@ index 00000000..e2a0c7ad
 +of the companion `anki-typescript` repository. It finds that directory above the working directory,
 +or takes it from `-content`. Nothing is copied into this patch, so the package stays the one source.
 +
-+`integratedThroughStage` in `content.go` is the last ladder stage served. It is 3 now:
-+13 concepts, 14 families and 84 cases of stages D01 to D03. Later stages have no grader yet.
++`integratedThroughStage` in `content.go` is the last ladder stage served. It is 5 now:
++23 concepts, 25 families and 150 cases of stages D01 to D05. Later stages have no grader yet.
 +
 +| What the package holds | How the existing engine receives it |
 +| --- | --- |
@@ -122,7 +122,8 @@ index 00000000..e2a0c7ad
 +## Grading contract
 +
 +Each family of the package has its own criterion. `grade.cjs` holds one grader per code family
-+and one per answer mode for `choice` and `token`. The mode `value` belongs to later stages.
++and one per answer mode for `choice`, `token` and `value`. The `value` grader reads a number or a
++boolean written in TypeScript notation; text labels, arrays and `undefined` belong to later stages.
 +
 +| Family | Accepted | Not accepted |
 +| --- | --- | --- |
@@ -131,6 +132,14 @@ index 00000000..e2a0c7ad
 +| F004 boolean literal | `false`, `true;` | `"false"`, the opposite value, `True` |
 +| F010 numeric `const` | with or without `: number` | `let`, other name or value, text initializer |
 +| F011 text `const` | with or without `: string`, either quote | `let`, other name or content, `: number` |
++| F016 `name > limit` | `amount > 10000`, `10000 < amount`, parentheses, `10_000` | `>=`, the opposite comparison, another name or limit |
++| F018 `name === "text"` | either operand order, either quote | `=`, `==`, another name or text |
++| F019 `a && b` | either operand order | `\|\|`, `&`, one name only |
++| F020 `!name` | `!isValid`, `!(isValid)` | the name alone, a double negation |
++| F021 const object | properties in any order, quoted keys, parentheses | an array, a missing, extra or wrong property |
++| F022 property access | `refund.amount`, `refund["amount"]` | another property, another object |
++| F023 const array | the elements in the requested order | another order, another or repeated element |
++| `value` families F017, F024 | `true`, `false`, `15000`, `15_000` | the value in quotes, the expression itself |
 +| `token` families | the exact name or symbol, surrounding spaces ignored | another case, such as `Number` |
 +| `choice` families | the letter of the correct alternative, or its text | any other alternative |
 +
@@ -155,6 +164,9 @@ index 00000000..e2a0c7ad
 +A reference answer that is not in the served content is reported as not graded, never as wrong.
 +It accepts numeric separators, whitespace and ordinary comments.
 +It checks TypeScript syntax and types without executing or emitting learner code.
++An answer is typechecked after the code the question shows, its `context_code`.
++The comments `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck` are neutralised before the check,
++so they cannot hide a type error.
 +Compiler file reads are restricted to the virtual answer and TypeScript's standard library declarations.
 +Compiler failure returns an unavailable result instead of a learner error.
 +The added `ungraded` field transmits that distinction on an unavailable result.
@@ -192,7 +204,7 @@ index 00000000..e2a0c7ad
 +These checks do not measure a deployed installation or long-term retention.
 diff --git a/cmd/typescript-pilot/content.go b/cmd/typescript-pilot/content.go
 new file mode 100644
-index 00000000..f24b5537
+index 00000000..23f6b61f
 --- /dev/null
 +++ b/cmd/typescript-pilot/content.go
 @@ -0,0 +1,415 @@
@@ -214,7 +226,7 @@ index 00000000..f24b5537
 +// integratedThroughStage is the last ladder stage whose families have graders in grade.cjs.
 +// Raising it serves more of the content package. Startup grades every model answer of the
 +// served stages and refuses to run when a grader is missing or rejects its own model answer.
-+const integratedThroughStage = 3
++const integratedThroughStage = 5
 +
 +// contentDirName is where the editorial package lives in the repository that carries this pilot.
 +const contentDirName = "conteudo/typescript-v1"
@@ -613,10 +625,10 @@ index 00000000..f24b5537
 +}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..e020646f
+index 00000000..053beaee
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,424 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
@@ -629,7 +641,12 @@ index 00000000..e020646f
 +const result = (correct, feedback) => ({correct, score: correct ? 1 : 0, feedback});
 +const parse = source => ts.createSourceFile('answer.ts', source, ts.ScriptTarget.ES2022, true);
 +
-+function typeErrors(source) {
++// A directive that silences the checker cannot stand in for a valid answer. It is disarmed before
++// checking, so the compiler judges the code as written. A correct answer that carries one still passes.
++const SUPPRESSION = /@ts-(?=ignore|expect-error|nocheck)/g;
++
++function typeErrors(answerSource) {
++  const source = answerSource.replace(SUPPRESSION, '@ts_');
 +  const filename = path.resolve(__dirname, '__answer__.ts');
 +  const options = {strict: true, noEmit: true, types: [], skipLibCheck: true, target: ts.ScriptTarget.ES2022};
 +  const host = ts.createCompilerHost(options);
@@ -726,7 +743,8 @@ index 00000000..e020646f
 +  if (!ts.isIdentifier(actual.item.name) || actual.item.name.text !== reference.item.name.text) {
 +    return result(false, `Use o nome solicitado: ${reference.item.name.text}.`);
 +  }
-+  const init = actual.item.initializer;
++  // Parentheses around the literal do not change the declaration.
++  const init = unwrap(actual.item.initializer);
 +  if (!init || !isValue(init)) return result(false, `Inicialize a constante com ${literalName}.`);
 +  if (!sameValue(init, reference.item.initializer)) return result(false, 'O valor inicial difere do solicitado.');
 +  if (actual.item.type && actual.item.type.kind !== keyword) {
@@ -737,13 +755,249 @@ index 00000000..e020646f
 +  return result(true, `Correto. A constante tem o nome e o valor solicitados. A anotação ${kind} é opcional neste exercício.`);
 +}
 +
++const K = ts.SyntaxKind;
++const unwrap = node => {
++  while (node && ts.isParenthesizedExpression(node)) node = node.expression;
++  return node;
++};
++const referenceExpression = expected => unwrap(onlyExpression(parse(expected)));
++
++// The answer as one expression, parentheses removed, or the verdict that says why it is not one.
++function expressionAnswer(answer) {
++  const sf = parsedAnswer(answer);
++  if (!sf) return {fail: result(false, SYNTAX)};
++  const expr = onlyExpression(sf);
++  if (!expr) return {fail: result(false, 'Escreva somente uma expressão.')};
++  return {sf, expr: unwrap(expr), text: expr.getText(sf)};
++}
++
++// The answer must also typecheck after the code the question shows. An expression is wrapped in
++// parentheses so that it is checked as an expression. Nothing is executed.
++function rejectedByCompiler(job, source) {
++  const errors = typeErrors((job.context_code ? job.context_code + '\n' : '') + source);
++  return errors.length ? result(false, `O compilador TypeScript rejeitou a resposta: ${errors[0]}`) : null;
++}
++
++// Parentheses around a literal, such as `(15000)`, do not change it.
++function sameLiteral(a, b) {
++  a = unwrap(a);
++  b = unwrap(b);
++  if (ts.isNumericLiteral(a) && ts.isNumericLiteral(b)) return Number(a.text) === Number(b.text);
++  if (isQuotedText(a) && isQuotedText(b)) return a.text === b.text;
++  return isBooleanLiteral(a) && isBooleanLiteral(b) && a.kind === b.kind;
++}
++const isLiteral = node => {
++  node = unwrap(node);
++  return !!node && (ts.isNumericLiteral(node) || isQuotedText(node) || isBooleanLiteral(node));
++};
++
++// F016: `name > limit`. `limit < name` is the same comparison. `>=` moves the boundary.
++function greaterThan(job) {
++  const ref = referenceExpression(job.expected);
++  if (!ref || !ts.isBinaryExpression(ref) || ref.operatorToken.kind !== K.GreaterThanToken || !ts.isIdentifier(ref.left) || !ts.isNumericLiteral(ref.right)) {
++    throw new Error('Invalid reference comparison');
++  }
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  const wanted = `${ref.left.text} é estritamente maior que ${ref.right.text}`;
++  if (!ts.isBinaryExpression(given.expr)) return result(false, `Escreva uma comparação que verifica se ${wanted}.`);
++  const operator = given.expr.operatorToken.kind;
++  const inclusive = operator === K.GreaterThanEqualsToken || operator === K.LessThanEqualsToken;
++  if (!inclusive && operator !== K.GreaterThanToken && operator !== K.LessThanToken) return result(false, `Use o operador > para verificar se ${wanted}.`);
++  // The name sits on the open side of the operator: `name > limit`, `limit < name`.
++  const nameOnLeft = operator === K.GreaterThanToken || operator === K.GreaterThanEqualsToken;
++  const left = unwrap(given.expr.left), right = unwrap(given.expr.right);
++  const name = nameOnLeft ? left : right;
++  const limit = nameOnLeft ? right : left;
++  const sameOperands = ts.isIdentifier(name) && name.text === ref.left.text && ts.isNumericLiteral(limit) && Number(limit.text) === Number(ref.right.text);
++  // Only the inclusive operator differs from the task when the operands already face the right way.
++  // `amount <= 10000` compares the other way, so naming the equality alone would mislead.
++  if (inclusive && sameOperands) {
++    return result(false, 'A tarefa pede estritamente maior. Os operadores >= e <= também aceitam a igualdade.');
++  }
++  if (inclusive || !sameOperands) return result(false, `A comparação não verifica se ${wanted}.`);
++  return rejectedByCompiler(job, `(${given.text});`) || result(true, `Correto. A comparação verifica se ${wanted}.`);
++}
++
++// F018: `name === "text"`, operands in either order. `=` assigns and `==` is not strict.
++function strictEquality(job) {
++  const ref = referenceExpression(job.expected);
++  if (!ref || !ts.isBinaryExpression(ref) || ref.operatorToken.kind !== K.EqualsEqualsEqualsToken || !ts.isIdentifier(ref.left) || !isQuotedText(ref.right)) {
++    throw new Error('Invalid reference equality');
++  }
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  if (!ts.isBinaryExpression(given.expr)) return result(false, 'Escreva uma comparação de igualdade estrita entre o nome e o texto pedidos.');
++  const operator = given.expr.operatorToken.kind;
++  if (operator === K.EqualsToken) return result(false, 'O sinal = atribui um valor. A igualdade estrita usa ===.');
++  if (operator === K.EqualsEqualsToken) return result(false, 'A tarefa pede igualdade estrita: use === em vez de ==.');
++  if (operator !== K.EqualsEqualsEqualsToken) return result(false, 'Use o operador === para verificar a igualdade estrita.');
++  const sides = [unwrap(given.expr.left), unwrap(given.expr.right)];
++  const name = sides.find(ts.isIdentifier), text = sides.find(isQuotedText);
++  if (!name || !text || name.text !== ref.left.text || text.text !== ref.right.text) {
++    return result(false, `Compare ${ref.left.text} com o texto ${ref.right.text}, entre aspas.`);
++  }
++  return rejectedByCompiler(job, `(${given.text});`) || result(true, 'Correto. A expressão verifica a igualdade estrita pedida.');
++}
++
++// F019: `a && b`, in either order for these two operands without effects.
++function booleanAnd(job) {
++  const ref = referenceExpression(job.expected);
++  if (!ref || !ts.isBinaryExpression(ref) || ref.operatorToken.kind !== K.AmpersandAmpersandToken || !ts.isIdentifier(ref.left) || !ts.isIdentifier(ref.right)) {
++    throw new Error('Invalid reference conjunction');
++  }
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  if (!ts.isBinaryExpression(given.expr)) return result(false, `Escreva uma expressão que combina ${ref.left.text} e ${ref.right.text}.`);
++  const operator = given.expr.operatorToken.kind;
++  if (operator === K.BarBarToken) return result(false, 'A tarefa exige as duas condições ao mesmo tempo. O operador || aceita apenas uma delas.');
++  if (operator !== K.AmpersandAmpersandToken) return result(false, 'Use o operador && para exigir as duas condições ao mesmo tempo.');
++  const names = [unwrap(given.expr.left), unwrap(given.expr.right)].map(node => ts.isIdentifier(node) ? node.text : '').sort();
++  if (names.join(' ') !== [ref.left.text, ref.right.text].sort().join(' ')) {
++    return result(false, `Combine exatamente ${ref.left.text} e ${ref.right.text}.`);
++  }
++  return rejectedByCompiler(job, `(${given.text});`) || result(true, 'Correto. A expressão exige as duas condições ao mesmo tempo.');
++}
++
++// F020: `!name`.
++function booleanNot(job) {
++  const ref = referenceExpression(job.expected);
++  if (!ref || !ts.isPrefixUnaryExpression(ref) || ref.operator !== K.ExclamationToken || !ts.isIdentifier(ref.operand)) {
++    throw new Error('Invalid reference negation');
++  }
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  if (ts.isIdentifier(given.expr) && given.expr.text === ref.operand.text) {
++    return result(false, `${ref.operand.text} sozinho mantém o valor. A negação usa o operador !.`);
++  }
++  if (!ts.isPrefixUnaryExpression(given.expr) || given.expr.operator !== K.ExclamationToken) {
++    return result(false, `Use o operador ! para negar ${ref.operand.text}.`);
++  }
++  const operand = unwrap(given.expr.operand);
++  if (!ts.isIdentifier(operand) || operand.text !== ref.operand.text) return result(false, `Negue exatamente ${ref.operand.text}, uma única vez.`);
++  return rejectedByCompiler(job, `(${given.text});`) || result(true, `Correto. A expressão nega o valor de ${ref.operand.text}.`);
++}
++
++// The declared name and initializer of `const name = ...`, or the verdict that says what is missing.
++function constAnswer(job, referenceName) {
++  const sf = parsedAnswer(job.answer);
++  if (!sf) return {fail: result(false, SYNTAX)};
++  const actual = declaration(sf);
++  if (!actual) return {fail: result(false, 'Escreva somente uma declaração de constante, com um único nome.')};
++  if (!(actual.list.flags & ts.NodeFlags.Const)) return {fail: result(false, 'Declare com const, como nas declarações deste material.')};
++  if (!ts.isIdentifier(actual.item.name) || actual.item.name.text !== referenceName) {
++    return {fail: result(false, `Use o nome solicitado: ${referenceName}.`)};
++  }
++  // `const refund = ({ ... });` initializes with the same object.
++  return {init: unwrap(actual.item.initializer)};
++}
++
++const propertyKey = property => ts.isPropertyAssignment(property) && (ts.isIdentifier(property.name) || isQuotedText(property.name)) ? property.name.text : null;
++
++// F021: a const object with the requested properties and values. Property order is free.
++function objectDeclaration(job) {
++  const reference = declaration(parse(job.expected));
++  const shape = reference && reference.item.initializer;
++  if (!reference || !ts.isIdentifier(reference.item.name) || !shape || !ts.isObjectLiteralExpression(shape)
++    || !shape.properties.every(p => propertyKey(p) !== null && isLiteral(p.initializer))) {
++    throw new Error('Invalid reference object');
++  }
++  const given = constAnswer(job, reference.item.name.text);
++  if (given.fail) return given.fail;
++  if (!given.init || !ts.isObjectLiteralExpression(given.init)) return result(false, 'Inicialize a constante com um objeto, entre chaves, com as propriedades pedidas.');
++  const wanted = new Map(shape.properties.map(p => [propertyKey(p), p.initializer]));
++  const names = [...wanted.keys()].join(' e ');
++  const seen = new Set();
++  for (const property of given.init.properties) {
++    const key = propertyKey(property);
++    if (key === null || !wanted.has(key) || seen.has(key)) return result(false, `O objeto deve ter exatamente as propriedades ${names}.`);
++    seen.add(key);
++    if (!isLiteral(property.initializer) || !sameLiteral(property.initializer, wanted.get(key))) {
++      return result(false, `A propriedade ${key} não tem o valor solicitado.`);
++    }
++  }
++  if (seen.size !== wanted.size) return result(false, `O objeto deve ter exatamente as propriedades ${names}.`);
++  return rejectedByCompiler(job, job.answer) || result(true, 'Correto. O objeto tem as propriedades e os valores solicitados.');
++}
++
++// F023: a const array with the requested elements, in the requested order.
++function arrayDeclaration(job) {
++  const reference = declaration(parse(job.expected));
++  const list = reference && reference.item.initializer;
++  if (!reference || !ts.isIdentifier(reference.item.name) || !list || !ts.isArrayLiteralExpression(list) || !list.elements.every(isLiteral)) {
++    throw new Error('Invalid reference array');
++  }
++  const given = constAnswer(job, reference.item.name.text);
++  if (given.fail) return given.fail;
++  if (!given.init || !ts.isArrayLiteralExpression(given.init)) return result(false, 'Inicialize a constante com um array, entre colchetes, com os elementos pedidos.');
++  const elements = given.init.elements;
++  if (elements.length !== list.elements.length || !elements.every(isLiteral)) return result(false, `O array deve ter exatamente ${list.elements.length} elementos, escritos como literais.`);
++  if (!elements.every((element, index) => sameLiteral(element, list.elements[index]))) {
++    // Another order only when every requested element appears as many times as requested.
++    // `[15000, 15000, 10000]` repeats one element and lacks another; that is not a reordering.
++    const left = [...list.elements];
++    const reordered = elements.every(element => {
++      const at = left.findIndex(other => sameLiteral(element, other));
++      return at >= 0 && left.splice(at, 1).length === 1;
++    });
++    return result(false, reordered ? 'Os elementos estão em outra ordem. A ordem pedida faz parte do resultado.' : 'O array tem um elemento diferente do solicitado.');
++  }
++  return rejectedByCompiler(job, job.answer) || result(true, 'Correto. O array tem os elementos solicitados, na ordem pedida.');
++}
++
++// F022: `object.property`, or `object["property"]` with the same key.
++function propertyAccess(job) {
++  const ref = referenceExpression(job.expected);
++  if (!ref || !ts.isPropertyAccessExpression(ref) || !ts.isIdentifier(ref.expression)) throw new Error('Invalid reference property access');
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  let owner = null, key = null;
++  if (ts.isPropertyAccessExpression(given.expr) && !given.expr.questionDotToken) {
++    owner = unwrap(given.expr.expression);
++    key = given.expr.name.text;
++  } else if (ts.isElementAccessExpression(given.expr) && !given.expr.questionDotToken && isQuotedText(given.expr.argumentExpression)) {
++    owner = unwrap(given.expr.expression);
++    key = given.expr.argumentExpression.text;
++  }
++  if (key === null) return result(false, `Escreva o acesso à propriedade ${ref.name.text}, com ponto ou com colchetes e o nome entre aspas.`);
++  if (!ts.isIdentifier(owner) || owner.text !== ref.expression.text) return result(false, `Acesse a propriedade no objeto ${ref.expression.text}.`);
++  if (key !== ref.name.text) return result(false, `A expressão acessa a propriedade ${key}. A tarefa pede ${ref.name.text}.`);
++  return rejectedByCompiler(job, `(${given.text});`) || result(true, `Correto. A expressão obtém a propriedade ${ref.name.text}.`);
++}
++
 +const CODE = {
 +  F002: numericLiteral,
 +  F003: stringLiteral,
 +  F004: booleanLiteral,
 +  F010: job => constDeclaration(job, 'number'),
 +  F011: job => constDeclaration(job, 'string'),
++  F016: greaterThan,
++  F018: strictEquality,
++  F019: booleanAnd,
++  F020: booleanNot,
++  F021: objectDeclaration,
++  F022: propertyAccess,
++  F023: arrayDeclaration,
 +};
++
++// A value is the result a question asks the learner to read off: a number, a boolean, the absence
++// `undefined`, a text label or an array of those. It is written in TypeScript notation and never
++// computed here. An arbitrary expression is not a value.
++function value({expected, answer}) {
++  const ref = referenceExpression(expected);
++  if (!ref) throw new Error('Invalid reference value');
++  const given = expressionAnswer(answer);
++  const node = given.fail ? null : given.expr;
++  if (isBooleanLiteral(ref)) {
++    if (!node || !isBooleanLiteral(node)) return result(false, 'Responda com o valor booleano produzido: true ou false, sem aspas.');
++    return node.kind === ref.kind ? result(true, 'Correto.') : result(false, 'A expressão produz o outro valor booleano.');
++  }
++  if (ts.isNumericLiteral(ref)) {
++    if (!node || !ts.isNumericLiteral(node)) return result(false, 'Responda com o número obtido, sem aspas e sem operações.');
++    return Number(node.text) === Number(ref.text) ? result(true, 'Correto.') : result(false, 'O número obtido é outro.');
++  }
++  throw new Error('No value grader for this kind of result');
++}
 +
 +// A choice arrives as the text of one alternative: the engine resolves the letter a learner taps
 +// or types against the served question before it grades. The verdict names no cause for a miss.
@@ -771,6 +1025,7 @@ index 00000000..e020646f
 +  if (answer.length > 4096) return result(false, 'A resposta excede o tamanho deste exercício.');
 +  if (mode === 'choice') return choice(job);
 +  if (mode === 'token') return token(job);
++  if (mode === 'value') return value(job);
 +  if (mode === 'code' && Object.hasOwn(CODE, family)) return CODE[family](job);
 +  throw new Error(`No grader for family ${family} (${mode})`);
 +}
@@ -1018,10 +1273,10 @@ index 00000000..f75ee4b0
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..bda47520
+index 00000000..857473b7
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,626 @@
+@@ -0,0 +1,1033 @@
 +package main
 +
 +import (
@@ -1035,6 +1290,7 @@ index 00000000..bda47520
 +	"os/exec"
 +	"path/filepath"
 +	"reflect"
++	"regexp"
 +	"strings"
 +	"sync"
 +	"testing"
@@ -1043,6 +1299,7 @@ index 00000000..bda47520
 +	"github.com/chuma-beep/mathua/internal/auth"
 +	"github.com/chuma-beep/mathua/internal/engine"
 +	"github.com/chuma-beep/mathua/internal/generator"
++	"github.com/chuma-beep/mathua/internal/grader"
 +	"github.com/chuma-beep/mathua/internal/lessons"
 +	"github.com/chuma-beep/mathua/internal/mastery"
 +	"github.com/chuma-beep/mathua/internal/repair"
@@ -1143,6 +1400,9 @@ index 00000000..bda47520
 +		{"text_const_number_initializer", "const_text", expectedText, "const id = 1;", false},
 +		{"text_const_wrong_annotation", "const_text", expectedText, `const id: number = "reembolso-01";`, false},
 +		{"text_const_wrong_name", "const_text", expectedText, `const code: string = "reembolso-01";`, false},
++		{"number_const_parenthesized_literal", "const", expected, "const amount = (15000);", true},
++		{"text_const_parenthesized_literal", "const_text", expectedText, `const id: string = ("reembolso-01");`, true},
++		{"number_const_sum_is_not_a_literal", "const", expected, "const amount = (10000 + 5000);", false},
 +	}
 +	for _, tc := range cases {
 +		t.Run(tc.name, func(t *testing.T) {
@@ -1533,7 +1793,7 @@ index 00000000..bda47520
 +			}
 +		}
 +	}
-+	if len(c.Concepts) != 13 || len(c.families) != 14 || cases != 84 {
++	if len(c.Concepts) != 23 || len(c.families) != 25 || cases != 150 {
 +		t.Fatalf("stages 1 to %d: %d concepts, %d families, %d cases", integratedThroughStage, len(c.Concepts), len(c.families), cases)
 +	}
 +	// The three original concepts keep their IDs and the family the package assigns to them.
@@ -1647,6 +1907,408 @@ index 00000000..bda47520
 +		t.Fatalf("lowercase letter of the correct alternative: %s", raw)
 +	}
 +	t.Logf("%s: missed %s with %s, then %s accepted by letter; reference shown: %s", firstFamily, firstCase, wrong, nextCase, res["expected_answer"])
++}
++
++// caseJob is the grader input the exercise builds for one served case: family, mode, reference
++// answer and context code. The caller fills in the answer.
++func caseJob(t *testing.T, caseID string) gradeJob {
++	t.Helper()
++	_, c := testContent(t)
++	for _, f := range c.families {
++		for _, k := range f.Cases {
++			if k.ID == caseID {
++				return gradeJob{Case: k.ID, Family: f.ID, Mode: f.Mode, Expected: expectedText(f, k), ContextCode: k.ContextCode}
++			}
++		}
++	}
++	t.Fatalf("case %s is not served", caseID)
++	return gradeJob{}
++}
++
++// criterion is one answer a learner could write for one served case, and the verdict the contract
++// asks for. says, when set, is a part the feedback must contain: a miss names a cause the answer has.
++type criterion struct {
++	name, caseID, answer string
++	correct              bool
++	says                 string
++}
++
++// judge grades the rows in batches, one grader process per batch, and checks each verdict.
++func judge(t *testing.T, check *checker, rows []criterion) {
++	t.Helper()
++	jobs := make([]gradeJob, len(rows))
++	for i, row := range rows {
++		jobs[i] = caseJob(t, row.caseID)
++		jobs[i].Answer = row.answer
++	}
++	verdicts := make([]grader.Result, 0, len(rows))
++	for start := 0; start < len(jobs); start += 25 {
++		end := min(start+25, len(jobs))
++		got, err := check.gradeBatch(jobs[start:end])
++		if err != nil {
++			t.Fatal(err)
++		}
++		verdicts = append(verdicts, got...)
++	}
++	for i, row := range rows {
++		got := verdicts[i]
++		t.Run(row.name, func(t *testing.T) {
++			if got.Unavailable || got.Correct != row.correct || got.Feedback == "" || !strings.Contains(got.Feedback, row.says) {
++				t.Fatalf("%s %q: grade = %+v, want correct=%t and feedback containing %q", row.caseID, row.answer, got, row.correct, row.says)
++			}
++		})
++	}
++}
++
++// The criteria of stages 4 and 5, as CONTRATO-DE-CORRECAO.md states them for F015 to F025.
++func TestCriteriaOfStagesFourAndFive(t *testing.T) {
++	check := testChecker(t)
++	const (
++		expression = "Uma construção que, quando avaliada normalmente, produz um valor."
++		binding    = "5000. const protege a vinculação, não a propriedade."
++		equality   = "também aceitam a igualdade"
++		notChecked = "A comparação não verifica"
++		reordered  = "outra ordem"
++		different  = "elemento diferente"
++	)
++	rows := []criterion{
++		// F015 and F025, choice. The engine turns the letter into the text of the alternative first.
++		{"f015_correct_alternative", "F015-V0", expression, true, ""},
++		{"f015_surrounding_spaces", "F015-V0", "  " + expression + " ", true, ""},
++		{"f015_other_alternative", "F015-V0", "Uma construção que nunca produz resultado.", false, "não é a alternativa correta"},
++		{"f015_unresolved_letter", "F015-V0", "B", false, ""},
++		{"f025_correct_alternative", "F025-V0", binding, true, ""},
++		{"f025_const_freezes_distractor", "F025-V0", "O valor inicial permanece porque const congela toda propriedade.", false, ""},
++		{"f025_value_typed_instead_of_choice", "F025-V0", "5000", false, ""},
++
++		// F016: `amount > 10000`; `10000 < amount` is the same comparison; `>=` moves the boundary.
++		{"f016_reference", "F016-V0", "amount > 10000", true, ""},
++		{"f016_limit_on_the_left", "F016-V0", "10000 < amount", true, ""},
++		{"f016_limit_on_the_left_other_case", "F016-V4", "800 < requestedValue", true, ""},
++		{"f016_no_spaces", "F016-V0", "amount>10000", true, ""},
++		{"f016_line_breaks", "F016-V0", "amount\n>\n10000", true, ""},
++		{"f016_parentheses", "F016-V0", "(amount > 10000)", true, ""},
++		{"f016_parenthesized_operands", "F016-V0", "(amount) > (10000)", true, ""},
++		{"f016_semicolon", "F016-V0", "amount > 10000;", true, ""},
++		{"f016_numeric_separator", "F016-V0", "amount > 10_000", true, ""},
++		{"f016_greater_or_equal", "F016-V0", "amount >= 10000", false, equality},
++		{"f016_limit_less_or_equal", "F016-V0", "10000 <= amount", false, equality},
++		// `amount <= 10000` compares the other way. Naming only the equality would mislead.
++		{"f016_opposite_inclusive_is_not_only_equality", "F016-V0", "amount <= 10000", false, notChecked},
++		{"f016_opposite_inclusive_limit_left", "F016-V0", "10000 >= amount", false, notChecked},
++		{"f016_less_than", "F016-V0", "amount < 10000", false, notChecked},
++		{"f016_limit_greater_than_name", "F016-V0", "10000 > amount", false, notChecked},
++		{"f016_other_limit", "F016-V0", "amount > 9999", false, notChecked},
++		{"f016_brazilian_thousands_point", "F016-V0", "amount > 10.000", false, notChecked},
++		{"f016_limit_as_text", "F016-V0", `amount > "10000"`, false, ""},
++		{"f016_other_name", "F016-V0", "total > 10000", false, ""},
++		{"f016_any_assertion", "F016-V0", "(amount as any) > 10000", false, ""},
++		{"f016_loose_equality", "F016-V0", "amount == 10000", false, "operador >"},
++		{"f016_declaration_is_not_an_expression", "F016-V0", "const r = amount > 10000;", false, "somente uma expressão"},
++		{"f016_two_statements", "F016-V0", "amount > 10000; amount > 10000", false, "somente uma expressão"},
++		{"f016_empty", "F016-V0", "  ", false, ""},
++
++		// F017, value: the boolean the shown comparison produces, including equality at the limit.
++		{"f017_equal_operands_false", "F017-V0", "false", true, ""},
++		{"f017_spaces", "F017-V0", " false ", true, ""},
++		{"f017_semicolon", "F017-V0", "false;", true, ""},
++		{"f017_parentheses", "F017-V0", "(false)", true, ""},
++		{"f017_above_limit_true", "F017-V1", "true", true, ""},
++		{"f017_opposite_boolean", "F017-V0", "true", false, "outro valor booleano"},
++		{"f017_opposite_boolean_true_case", "F017-V1", "false", false, "outro valor booleano"},
++		{"f017_double_quoted_text", "F017-V0", `"false"`, false, "sem aspas"},
++		{"f017_single_quoted_text", "F017-V0", `'false'`, false, "sem aspas"},
++		{"f017_capitalized_name", "F017-V0", "False", false, ""},
++		{"f017_expression_is_not_the_value", "F017-V0", "10000 > 10000", false, ""},
++		{"f017_negation_is_not_the_value", "F017-V0", "!true", false, ""},
++		{"f017_number_is_not_boolean", "F017-V0", "0", false, ""},
++		{"f017_portuguese_word", "F017-V1", "verdadeiro", false, ""},
++
++		// F018: `===` with the requested operands in either order; `=` and `==` do not do it.
++		{"f018_reference", "F018-V0", `id === "r1"`, true, ""},
++		{"f018_operands_swapped", "F018-V0", `"r1" === id`, true, ""},
++		{"f018_single_quotes", "F018-V0", `id === 'r1'`, true, ""},
++		{"f018_swapped_single_quotes", "F018-V3", `'r31' === id`, true, ""},
++		{"f018_parentheses", "F018-V0", `(id === "r1")`, true, ""},
++		{"f018_parenthesized_operands", "F018-V0", `(id) === ("r1")`, true, ""},
++		{"f018_compact_semicolon", "F018-V0", `id==="r1";`, true, ""},
++		{"f018_loose_equality", "F018-V0", `id == "r1"`, false, "em vez de =="},
++		{"f018_loose_equality_swapped", "F018-V0", `"r1" == id`, false, "em vez de =="},
++		{"f018_assignment", "F018-V0", `id = "r1"`, false, "atribui"},
++		{"f018_strict_inequality", "F018-V0", `id !== "r1"`, false, "==="},
++		{"f018_other_text", "F018-V0", `id === "r2"`, false, ""},
++		{"f018_text_case_matters", "F018-V0", `id === "R1"`, false, ""},
++		{"f018_text_without_quotes", "F018-V0", `id === r1`, false, "entre aspas"},
++		{"f018_any_assertion", "F018-V0", `(id as any) === "r1"`, false, ""},
++		{"f018_text_assertion", "F018-V0", `id === "r1" as string`, false, ""},
++		{"f018_object_is_is_not_the_operator", "F018-V0", `Object.is(id, "r1")`, false, ""},
++
++		// F019: `&&` between the two requested booleans, in either order.
++		{"f019_reference", "F019-V0", "isSigned && hasPages", true, ""},
++		{"f019_order_swapped", "F019-V0", "hasPages && isSigned", true, ""},
++		{"f019_parentheses", "F019-V0", "(isSigned && hasPages)", true, ""},
++		{"f019_parenthesized_operands", "F019-V0", "(isSigned) && (hasPages)", true, ""},
++		{"f019_compact_semicolon", "F019-V0", "isSigned&&hasPages;", true, ""},
++		{"f019_disjunction", "F019-V0", "isSigned || hasPages", false, "||"},
++		{"f019_bitwise_and", "F019-V0", "isSigned & hasPages", false, "&&"},
++		{"f019_same_operand_twice", "F019-V0", "isSigned && isSigned", false, ""},
++		{"f019_extra_operand", "F019-V0", "isSigned && hasPages && true", false, ""},
++		{"f019_name_case_matters", "F019-V0", "isSigned && haspages", false, ""},
++		{"f019_one_operand", "F019-V0", "isSigned", false, ""},
++		{"f019_word_and_is_syntax_error", "F019-V0", "isSigned and hasPages", false, "sintaxe"},
++
++		// F020: negate the requested boolean with `!`.
++		{"f020_reference", "F020-V0", "!isValid", true, ""},
++		{"f020_space_after_operator", "F020-V0", "! isValid", true, ""},
++		{"f020_parenthesized_operand", "F020-V0", "!(isValid)", true, ""},
++		{"f020_parentheses", "F020-V0", "(!isValid)", true, ""},
++		{"f020_semicolon", "F020-V0", "!isValid;", true, ""},
++		{"f020_reference_alone", "F020-V0", "isValid", false, "sozinho mantém o valor"},
++		{"f020_double_negation", "F020-V0", "!!isValid", false, "uma única vez"},
++		{"f020_comparison_instead_of_operator", "F020-V0", "isValid === false", false, "operador !"},
++		{"f020_name_case_matters", "F020-V0", "!isvalid", false, ""},
++		{"f020_any_assertion", "F020-V0", "!(isValid as any)", false, ""},
++		{"f020_word_not_is_syntax_error", "F020-V0", "not isValid", false, "sintaxe"},
++
++		// F021: a const object with the requested properties and values; property order is free.
++		{"f021_reference", "F021-V0", `const refund = { id: "r1", amount: 15000 };`, true, ""},
++		{"f021_properties_in_other_order", "F021-V0", `const refund = { amount: 15000, id: "r1" };`, true, ""},
++		{"f021_compact_single_quotes_separator", "F021-V0", `const refund = {id:'r1',amount:15_000}`, true, ""},
++		{"f021_lines_and_trailing_comma", "F021-V0", "const refund = {\n  id: \"r1\",\n  amount: 15000,\n};", true, ""},
++		{"f021_quoted_keys", "F021-V0", `const refund = { "id": "r1", "amount": 15000 };`, true, ""},
++		{"f021_matching_annotation", "F021-V0", `const refund: { id: string; amount: number } = { id: "r1", amount: 15000 };`, true, ""},
++		{"f021_parenthesized_object", "F021-V0", `const refund = ({ id: "r1", amount: 15000 });`, true, ""},
++		{"f021_parenthesized_values", "F021-V0", `const refund = { id: ("r1"), amount: (15000) };`, true, ""},
++		{"f021_other_case_other_order", "F021-V4", `const refundCase = { requestedValue: 1_200, id: 'r41' }`, true, ""},
++		{"f021_positional_array", "F021-V0", `const refund = ["r1", 15000];`, false, "objeto"},
++		{"f021_let", "F021-V0", `let refund = { id: "r1", amount: 15000 };`, false, "const"},
++		{"f021_missing_property", "F021-V0", `const refund = { id: "r1" };`, false, "exatamente as propriedades"},
++		{"f021_extra_property", "F021-V0", `const refund = { id: "r1", amount: 15000, extra: 1 };`, false, "exatamente as propriedades"},
++		{"f021_key_case_matters", "F021-V0", `const refund = { ID: "r1", amount: 15000 };`, false, "exatamente as propriedades"},
++		{"f021_duplicated_key", "F021-V0", `const refund = { id: "r1", id: "r1", amount: 15000 };`, false, ""},
++		{"f021_wrong_value", "F021-V0", `const refund = { id: "r1", amount: 1500 };`, false, "amount não tem o valor"},
++		{"f021_number_as_text", "F021-V0", `const refund = { id: "r1", amount: "15000" };`, false, "amount não tem o valor"},
++		{"f021_brazilian_thousands_point", "F021-V0", `const refund = { id: "r1", amount: 15.000 };`, false, "amount não tem o valor"},
++		{"f021_text_without_quotes", "F021-V0", `const refund = { id: r1, amount: 15000 };`, false, ""},
++		{"f021_semicolon_separator_is_syntax_error", "F021-V0", `const refund = { id: "r1"; amount: 15000 };`, false, "sintaxe"},
++		{"f021_wrong_name", "F021-V0", `const expense = { id: "r1", amount: 15000 };`, false, "refund"},
++		{"f021_wrong_annotation", "F021-V0", `const refund: { id: number; amount: number } = { id: "r1", amount: 15000 };`, false, "compilador"},
++		// A directive that silences the checker does not make a wrong annotation valid.
++		{"f021_ts_ignore_does_not_hide_wrong_annotation", "F021-V0", "// @ts-ignore\nconst refund: { id: number; amount: number } = { id: \"r1\", amount: 15000 };", false, "compilador"},
++		{"f021_ts_expect_error_does_not_hide_wrong_annotation", "F021-V0", "// @ts-expect-error\nconst refund: { id: number; amount: number } = { id: \"r1\", amount: 15000 };", false, "compilador"},
++		{"f021_ts_nocheck_does_not_hide_wrong_annotation", "F021-V0", "// @ts-nocheck\nconst refund: { id: number; amount: number } = { id: \"r1\", amount: 15000 };", false, "compilador"},
++		{"f021_any_assertion", "F021-V0", `const refund = { id: "r1", amount: 15000 } as any;`, false, ""},
++
++		// F022: dot or brackets with the same textual key.
++		{"f022_dot", "F022-V0", "refund.amount", true, ""},
++		{"f022_brackets_double_quotes", "F022-V0", `refund["amount"]`, true, ""},
++		{"f022_brackets_single_quotes", "F022-V0", `refund['amount']`, true, ""},
++		{"f022_brackets_spaces", "F022-V0", `refund[ "amount" ]`, true, ""},
++		{"f022_brackets_other_case", "F022-V4", `refundCase["requestedValue"]`, true, ""},
++		{"f022_parenthesized_object", "F022-V0", "(refund).amount", true, ""},
++		{"f022_spaces_around_dot", "F022-V0", "refund . amount", true, ""},
++		{"f022_parentheses", "F022-V0", "(refund.amount)", true, ""},
++		{"f022_semicolon", "F022-V0", "refund.amount;", true, ""},
++		{"f022_other_property", "F022-V0", "refund.id", false, "acessa a propriedade id"},
++		{"f022_key_case_matters", "F022-V0", "refund.Amount", false, "acessa a propriedade Amount"},
++		{"f022_brackets_without_quotes", "F022-V0", "refund[amount]", false, "entre aspas"},
++		{"f022_computed_key", "F022-V0", `refund["am" + "ount"]`, false, ""},
++		{"f022_property_name_alone", "F022-V0", "amount", false, ""},
++		{"f022_other_object", "F022-V0", "other.amount", false, "objeto refund"},
++		{"f022_any_assertion", "F022-V0", "(refund as any).amount", false, ""},
++		{"f022_value_instead_of_access", "F022-V0", "15000", false, ""},
++		{"f022_declaration_is_not_an_expression", "F022-V0", "const x = refund.amount;", false, "somente uma expressão"},
++
++		// F023: a const array with the requested elements; the order is part of the result.
++		{"f023_reference", "F023-V0", "const amounts = [15000, 5000, 10000];", true, ""},
++		{"f023_compact_no_semicolon", "F023-V0", "const amounts=[15000,5000,10000]", true, ""},
++		{"f023_numeric_separators", "F023-V0", "const amounts = [15_000, 5_000, 10_000];", true, ""},
++		{"f023_lines_and_trailing_comma", "F023-V0", "const amounts = [\n  15000,\n  5000,\n  10000,\n];", true, ""},
++		{"f023_annotation_brackets", "F023-V0", "const amounts: number[] = [15000, 5000, 10000];", true, ""},
++		{"f023_annotation_generic", "F023-V0", "const amounts: Array<number> = [15000, 5000, 10000];", true, ""},
++		{"f023_annotation_readonly", "F023-V0", "const amounts: readonly number[] = [15000, 5000, 10000];", true, ""},
++		{"f023_parenthesized_array", "F023-V0", "const amounts = ([15000, 5000, 10000]);", true, ""},
++		{"f023_parenthesized_element", "F023-V0", "const amounts = [(15000), 5000, 10000];", true, ""},
++		{"f023_two_swapped", "F023-V0", "const amounts = [5000, 15000, 10000];", false, reordered},
++		{"f023_reversed", "F023-V0", "const amounts = [10000, 5000, 15000];", false, reordered},
++		// A repeated element with another missing is not a reordering.
++		{"f023_repetition_is_not_reordering", "F023-V0", "const amounts = [15000, 15000, 10000];", false, different},
++		{"f023_repetition_of_last_is_not_reordering", "F023-V0", "const amounts = [15000, 5000, 5000];", false, different},
++		{"f023_missing_element", "F023-V0", "const amounts = [15000, 5000];", false, "exatamente 3 elementos"},
++		{"f023_extra_element", "F023-V0", "const amounts = [15000, 5000, 10000, 10000];", false, "exatamente 3 elementos"},
++		{"f023_hole", "F023-V0", "const amounts = [15000, , 10000];", false, ""},
++		{"f023_numbers_as_text", "F023-V0", `const amounts = ["15000", "5000", "10000"];`, false, different},
++		{"f023_brazilian_thousands_point", "F023-V0", "const amounts = [15.000, 5.000, 10.000];", false, different},
++		{"f023_let", "F023-V0", "let amounts = [15000, 5000, 10000];", false, "const"},
++		{"f023_array_constructor", "F023-V0", "const amounts = new Array(15000, 5000, 10000);", false, "array"},
++		{"f023_object_with_indexes", "F023-V0", "const amounts = { 0: 15000, 1: 5000, 2: 10000 };", false, "array"},
++		{"f023_wrong_name", "F023-V0", "const values = [15000, 5000, 10000];", false, "amounts"},
++		{"f023_wrong_annotation", "F023-V0", "const amounts: string[] = [15000, 5000, 10000];", false, "compilador"},
++		{"f023_ts_ignore_does_not_hide_wrong_annotation", "F023-V0", "// @ts-ignore\nconst amounts: string[] = [15000, 5000, 10000];", false, "compilador"},
++
++		// F024, value: the element at the shown index, counted from zero.
++		{"f024_index_zero", "F024-V0", "15000", true, ""},
++		{"f024_numeric_separator", "F024-V0", "15_000", true, ""},
++		{"f024_spaces", "F024-V0", " 15000 ", true, ""},
++		{"f024_semicolon", "F024-V0", "15000;", true, ""},
++		{"f024_parentheses", "F024-V0", "(15000)", true, ""},
++		{"f024_index_one", "F024-V4", "400", true, ""},
++		{"f024_number_as_double_quoted_text", "F024-V0", `"15000"`, false, "sem aspas"},
++		{"f024_number_as_single_quoted_text", "F024-V0", `'15000'`, false, "sem aspas"},
++		{"f024_access_is_not_the_value", "F024-V0", "amounts[0]", false, ""},
++		{"f024_sum_is_not_the_value", "F024-V0", "10000 + 5000", false, "sem operações"},
++		{"f024_element_of_another_index", "F024-V0", "5000", false, "outro"},
++		{"f024_counted_from_one", "F024-V4", "800", false, "outro"},
++		{"f024_brazilian_thousands_point", "F024-V0", "15.000", false, "outro"},
++		{"f024_brazilian_thousands_comma", "F024-V0", "15,000", false, ""},
++		{"f024_negative", "F024-V0", "-15000", false, ""},
++		{"f024_bigint", "F024-V0", "15000n", false, ""},
++		{"f024_invalid_separator", "F024-V0", "15__000", false, ""},
++	}
++	judge(t, check, rows)
++}
++
++// Every served case of F015 to F025, each judged with its own context: the model answer is
++// accepted, and the equivalence or the refusal the contract names for its family holds too.
++func TestCriteriaHoldInEveryCaseOfStagesFourAndFive(t *testing.T) {
++	_, c := testContent(t)
++	var (
++		comparison = regexp.MustCompile(`^(\w+) > (\d+)$`)
++		equality   = regexp.MustCompile(`^(\w+) === "(\w+)"$`)
++		conjunct   = regexp.MustCompile(`^(\w+) && (\w+)$`)
++		object     = regexp.MustCompile(`^const (\w+) = \{ (id: "\w+"), (\w+: \d+) \};$`)
++		access     = regexp.MustCompile(`^(\w+)\.(\w+)$`)
++		array      = regexp.MustCompile(`^const (\w+) = \[(\d+), (\d+), (\d+)\];$`)
++	)
++	rows := []criterion{}
++	add := func(k exerciseCase, name, answer string, correct bool) {
++		rows = append(rows, criterion{k.ID + "_" + name, k.ID, answer, correct, ""})
++	}
++	for n := 15; n <= 25; n++ {
++		f := c.families[fmt.Sprintf("F%03d", n)]
++		if f == nil {
++			t.Fatalf("F%03d is not served", n)
++		}
++		for _, k := range f.Cases {
++			// For a choice this is the text of the correct alternative, as the engine resolves it.
++			add(k, "model_answer", expectedText(f, k), true)
++			m := func(re *regexp.Regexp) []string {
++				parts := re.FindStringSubmatch(k.Answer)
++				if parts == nil {
++					t.Fatalf("%s: model answer %q has another form", k.ID, k.Answer)
++				}
++				return parts
++			}
++			switch f.ID {
++			case "F015", "F025":
++				// The engine resolves a letter to its text; each other alternative is refused.
++				for _, option := range k.Choices {
++					if option.ID != k.Answer {
++						add(k, "alternative_"+option.ID, option.Text, false)
++					}
++				}
++			case "F016":
++				p := m(comparison)
++				add(k, "limit_on_the_left", p[2]+" < "+p[1], true)
++				add(k, "greater_or_equal", p[1]+" >= "+p[2], false)
++			case "F017", "F024":
++				add(k, "quoted_value", `"`+k.Answer+`"`, false)
++				add(k, "context_expression_instead_of_value", strings.TrimSpace(k.ContextCode[strings.LastIndex(k.ContextCode, "\n")+1:]), false)
++			case "F018":
++				p := m(equality)
++				add(k, "swapped_single_quotes", "'"+p[2]+"' === "+p[1], true)
++				add(k, "loose_equality", p[1]+` == "`+p[2]+`"`, false)
++			case "F019":
++				p := m(conjunct)
++				add(k, "order_swapped", p[2]+" && "+p[1], true)
++				add(k, "disjunction", p[1]+" || "+p[2], false)
++			case "F020":
++				add(k, "without_negation", strings.TrimPrefix(k.Answer, "!"), false)
++			case "F021":
++				p := m(object)
++				add(k, "properties_in_other_order", "const "+p[1]+" = { "+p[3]+", "+p[2]+" }", true)
++				add(k, "positional_array", "const "+p[1]+" = ["+strings.SplitN(p[2], ": ", 2)[1]+", "+strings.SplitN(p[3], ": ", 2)[1]+"];", false)
++			case "F022":
++				p := m(access)
++				add(k, "brackets", p[1]+`['`+p[2]+`']`, true)
++				add(k, "other_property", p[1]+".id", false)
++			case "F023":
++				p := m(array)
++				add(k, "reversed", "const "+p[1]+" = ["+p[4]+", "+p[3]+", "+p[2]+"];", false)
++				separated := regexp.MustCompile(`(\d)(\d{3})$`)
++				elements := []string{}
++				for _, n := range p[2:5] {
++					elements = append(elements, separated.ReplaceAllString(n, "${1}_${2}"))
++				}
++				add(k, "separators_no_semicolon", "const "+p[1]+" = ["+strings.Join(elements, ", ")+"]", true)
++			}
++		}
++	}
++	judge(t, testChecker(t), rows)
++}
++
++// A new learner walks the whole served ladder through the real HTTP API, in the order of the
++// content package: six distinct questions per concept, each answered with its model answer.
++// Every concept must be open once its prerequisites are mastered, and end MASTERED.
++func TestWholeLadderThroughTheAPI(t *testing.T) {
++	t.Setenv("MATHUA_DEV_UNLOCK", "")
++	_, c := testContent(t)
++	e := boot(t, filepath.Join(t.TempDir(), "ladder.db"), testChecker(t))
++	t.Cleanup(func() { e.http.Close(); e.eng.Close(); e.store.Close() })
++	guest, _ := e.request(t, "POST", "/api/auth/guest", "", map[string]any{}, 200)
++	token, student := guest["token"].(string), guest["student_id"].(string)
++	mastered := map[string]bool{}
++	// Before any answer, a concept with prerequisites is locked.
++	for _, spec := range c.Concepts {
++		if len(spec.Prerequisites) == 0 {
++			continue
++		}
++		ready, raw := e.request(t, "GET", "/api/lessons/"+spec.ID+"/readiness", token, nil, 200)
++		if ready["eligible"] != false {
++			t.Fatalf("%s is open before its prerequisites: %s", spec.ID, raw)
++		}
++	}
++	for _, spec := range c.Concepts {
++		for _, p := range spec.Prerequisites {
++			if !mastered[p] {
++				t.Fatalf("%s comes before its prerequisite %s in the content order", spec.ID, p)
++			}
++		}
++		ready, raw := e.request(t, "GET", "/api/lessons/"+spec.ID+"/readiness", token, nil, 200)
++		if ready["eligible"] != true {
++			t.Fatalf("%s stays locked with every prerequisite mastered: %s", spec.ID, raw)
++		}
++		seen := []string{}
++		families := map[string]int{}
++		for i := 0; i < mastery.MasteryEvidenceFloor; i++ {
++			q := e.question(t, token, spec.ID, seen...)
++			for _, previous := range seen {
++				if previous == q {
++					t.Fatalf("%s repeated a question before six distinct ones", spec.ID)
++				}
++			}
++			seen = append(seen, q)
++			familyID, _, _ := c.lookup(spec.ID, q)
++			families[familyID]++
++			answer := solve(t, spec.ID, q)
++			res, raw := e.request(t, "POST", "/api/study/answer", token, submission(spec.ID, q, answer, fmt.Sprintf("%s-%d", spec.ID, i)), 200)
++			if res["correct"] != true || res["ungraded"] == true {
++				t.Fatalf("%s answer %d %q: %s", spec.ID, i, answer, raw)
++			}
++			if i < mastery.MasteryEvidenceFloor-1 && res["new_status"] == "MASTERED" {
++				t.Fatalf("%s mastered after %d answers", spec.ID, i+1)
++			}
++		}
++		progress, err := e.store.GetProgress(student, spec.ID)
++		if err != nil || progress.Status != "MASTERED" {
++			t.Fatalf("%s: progress = %+v, error=%v", spec.ID, progress, err)
++		}
++		mastered[spec.ID] = true
++		t.Logf("%s: %d distinct questions, families %v, status %s", spec.ID, len(seen), families, progress.Status)
++	}
++	if len(mastered) != len(c.Concepts) {
++		t.Fatalf("mastered %d of %d concepts", len(mastered), len(c.Concepts))
++	}
 +}
 diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
 new file mode 100644

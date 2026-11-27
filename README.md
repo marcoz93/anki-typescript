@@ -10,7 +10,8 @@ O [pacote de conteúdo](conteudo/typescript-v1/LEIA-ME.md) preserva os **15 degr
 
 ## Piloto disponível: Mathua
 
-**Bloco 1, integrado em 27/11/2026:** o piloto serve os degraus D01 a D03 do conteúdo em `conteudo/typescript-v1/`: 13 conceitos, 14 famílias e 84 casos, com alternativas, nomes de tipo e código. O registro com conteúdo, comandos, saídas e limites está em [pilotos/mathua/BLOCO-1-D01-D03.md](pilotos/mathua/BLOCO-1-D01-D03.md). Os degraus D04 a D15 ainda não estão no aplicativo.
+**Bloco 1, integrado em 27/11/2026:** o piloto serve os degraus D01 a D03 do conteúdo em `conteudo/typescript-v1/`: 13 conceitos, 14 famílias e 84 casos, com alternativas, nomes de tipo e código. O registro com conteúdo, comandos, saídas e limites está em [pilotos/mathua/BLOCO-1-D01-D03.md](pilotos/mathua/BLOCO-1-D01-D03.md). 
+**Bloco 2, integrado em 27/11/2026:** entraram os degraus D04 e D05. O piloto serve agora 23 conceitos, 25 famílias e 150 casos, com comparação, igualdade, operadores booleanos, objeto, propriedade e array. O registro está em [pilotos/mathua/BLOCO-2-D04-D05.md](pilotos/mathua/BLOCO-2-D04-D05.md). Os degraus D06 a D15 ainda não estão no aplicativo.
 
 O piloto integra três conceitos ao motor existente do Mathua: literal numérico, tipo `number` e declaração `const` com valor numérico.
 
