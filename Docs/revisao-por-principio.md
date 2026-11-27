@@ -7,7 +7,7 @@ O objeto de estudo é o reencontro do aluno com algo que aprendeu ou errou no pi
 | ID | Objeto focal | Pergunta sobre o produto | Estado |
 | --- | --- | --- | --- |
 | P | Finalidade da revisão | O que se quer descobrir ao voltar a um conteúdo? | **Decidida neste recorte.** Queremos observar a aplicação do mesmo princípio em outro contexto ao longo do tempo. A repetição imediata após erro é admissível. |
-| Q1 | Equivalência de duas tarefas | O que precisa permanecer igual para que dois exercícios contem como revisão do mesmo aprendizado? | **Aberta. Em deliberação.** |
+| Q1 | Equivalência de duas tarefas | Que relações da tarefa original precisam reaparecer na revisão? | **Aberta.** O critério é a estrutura lógica comum. Falta delimitar se o caso específico do erro integra essa estrutura. |
 | Q2 | Retomada logo após um erro | Que oportunidade de refazer a tentativa o aplicativo deve garantir ao aluno naquele momento? | Aberta |
 | Q3 | Novidade do contexto | Que diferença o aluno precisa encontrar para que a revisão exija uma nova aplicação do princípio? | Aberta |
 | Q4 | Significado de um acerto | O que um acerto permite afirmar depois de uma correção imediata e o que permite afirmar numa revisão em outro contexto? | Aberta |
@@ -19,7 +19,9 @@ A fronteira inclui o conteúdo de TypeScript, a tentativa após erro, a revisão
 
 ## 2. Única decisão em deliberação · Q1
 
-**Quando o contexto muda, o resultado correto do exercício também pode mudar?** A questão é de nível **Macro**. O objeto focal é o par formado pela tarefa original e pela tarefa de revisão. A resposta deve produzir um critério que permita aceitar ou rejeitar esse par. P já estabeleceu a finalidade. Q1 pode ser resolvida sem decidir quem cria as perguntas, com que frequência o aluno as vê ou como seu progresso é calculado.
+**Que estrutura lógica os dois exercícios precisam compartilhar?** O termo usado na literatura de aprendizagem é **problemas isomorfos**. Os cenários podem ter objetos, nomes e valores diferentes. Quando abstraímos esses detalhes, as relações relevantes para resolver a tarefa se correspondem. Chamamos de **invariante** aquilo que essa mudança preserva. Ao aplicar o que aprendeu à nova situação, o aluno demonstra o tipo de desempenho estudado como **transferência**. [Uso de “problemas isomorfos” em português](https://revistas.cesmac.edu.br/psicologia/article/view/1187) · [Lin e Singh, estudo sobre problemas isomorfos](https://arxiv.org/abs/1602.05689)
+
+A questão é de nível **Macro** e seu objeto focal é o par formado pela tarefa original e pela revisão. No exemplo da comparação estrita, o peso da mala faz o papel de valor observado e a franquia de bagagem faz o papel de limite. No tanque, o volume e a capacidade ocupam esses mesmos papéis. Nos dois problemas, a pergunta abstrata é `valor > limite`. Para revisar especificamente o que acontece na igualdade, o valor apresentado precisa coincidir com o limite. É essa diferença de alcance que ainda pede uma decisão.
 
 **Um caso que separa as alternativas.** Imagine que a primeira pergunta seja “Uma mala pode pesar até 12 kg sem taxa. Uma mala de exatamente 12 kg paga taxa?”. A resposta é **não**. Em outra sessão, o aplicativo pergunta “Um tanque de 50 litros transborda quando recebe mais que sua capacidade. Com 51 litros, ele transborda?”. A resposta é **sim**. Nas duas situações o aluno decide se um valor ultrapassou um limite. Só a primeira exige que ele resolva o caso de **igualdade**. Se a dificuldade original era justamente o que acontece na igualdade, acertar a segunda pergunta ainda deixa essa dúvida em aberto.
 
@@ -33,7 +35,7 @@ A fronteira inclui o conteúdo de TypeScript, a tentativa após erro, a revisão
 
 **Evidência para ponderar a escolha.** No currículo atual, F016 pede ao aluno que **construa** uma comparação estrita. F017 pede que ele **calcule** seu resultado. As duas famílias pertencem ao mesmo conceito. Em F017 há gabaritos `true` e `false`. Em F016, duas expressões diferentes, como `peso > 12` e `12 < peso`, podem satisfazer a mesma exigência. Esses fatos mostram por que “mesma resposta” admite mais de uma leitura. A regra editorial atual é um precedente para a decisão de produto. [Famílias F016 e F017](../conteudo/typescript-v1/EXERCICIOS.md#c016--f016--construtivo) · [Contrato dos exercícios](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md)
 
-**Escolha em aberto.** Entre A, B e C, qual expressa o que o aluno deve reencontrar? Também cabe formular outro critério usando o exemplo da mala e do tanque.
+**Escolha em aberto.** Quando o aluno erra justamente na igualdade, uma revisão com 51 litros em um tanque de 50 já conta como revisão daquele erro, ou é preciso reencontrar uma situação em que o valor coincide com o limite?
 
 ## 3. Parte–todo e níveis de descrição
 
