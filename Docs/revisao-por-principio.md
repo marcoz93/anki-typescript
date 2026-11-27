@@ -7,35 +7,45 @@ O objeto de estudo é o reencontro do aluno com algo que aprendeu ou errou no pi
 | ID | Objeto focal | Pergunta sobre o produto | Estado |
 | --- | --- | --- | --- |
 | P | Finalidade da revisão | O que se quer descobrir ao voltar a um conteúdo? | **Decidida neste recorte.** Queremos observar a aplicação do mesmo princípio em outro contexto ao longo do tempo. A repetição imediata após erro é admissível. |
-| Q1 | Equivalência de duas tarefas | Que relações da tarefa original precisam reaparecer na revisão? | **Aberta.** O critério é a estrutura lógica comum. Falta delimitar se o caso específico do erro integra essa estrutura. |
-| Q2 | Retomada logo após um erro | Que oportunidade de refazer a tentativa o aplicativo deve garantir ao aluno naquele momento? | Aberta |
+| Q1 | Equivalência de duas tarefas | Que relações da tarefa original precisam reaparecer na revisão? | **Decidida.** Preservar a estrutura de solução. Ao revisar um erro específico, preservar também a condição que permite distingui-lo da solução correta. |
+| Q2 | Retomada logo após um erro | Que oportunidade de refazer a tentativa o aplicativo deve garantir ao aluno naquele momento? | **Aberta. Em deliberação.** |
 | Q3 | Novidade do contexto | Que diferença o aluno precisa encontrar para que a revisão exija uma nova aplicação do princípio? | Aberta |
 | Q4 | Significado de um acerto | O que um acerto permite afirmar depois de uma correção imediata e o que permite afirmar numa revisão em outro contexto? | Aberta |
 | Q5 | Compromisso na revisão posterior | O que o aluno pode esperar na data de revisão, inclusive se não houver um contexto suficientemente diferente e adequado? | Aberta |
-| Q6 | Regra de equivalência por objetivo | Se o invariante depender do objetivo da tarefa, como delimitar o que precisa ficar fixo em cada objetivo? | Aberta, condicional |
+| Q6 | Regra de equivalência por objetivo | Como delimitar o que precisa ficar fixo em cada objetivo? | Aberta. A decisão Q1 ativou esta questão. |
 | Q7 | Aceite do comportamento do aplicativo | Que observações justificam aceitar que o aplicativo cumpriu a promessa de revisão e que limites têm essas observações? | Aberta |
 
 A fronteira inclui o conteúdo de TypeScript, a tentativa após erro, a revisão posterior e a interpretação do desempenho. O agendamento existente e as referências do ecossistema Anki são dados de partida. A autoria por agente é uma possibilidade solicitada para investigação. O momento em que o aluno vê uma pergunta e o momento em que alguém a escreve podem ser diferentes.
 
-## 2. Única decisão em deliberação · Q1
+## 2. Única decisão em deliberação · Q2
+
+**Depois de receber a correção, o que acontece na próxima tentativa da mesma sessão?** O objeto focal é a retomada imediata de uma resposta avaliada como incorreta. A decisão é Macro. P já admite repetir a pergunta. Resta definir que oportunidade o aluno tem ao continuar, quando tanto o exercício original quanto uma variante adequada estão disponíveis.
+
+| Alternativa | O que se privilegia | Consequência e questão suscitada |
+| --- | --- | --- |
+| **A · Refazer a mesma pergunta primeiro.** | O aluno pode localizar e corrigir exatamente o passo em que errou. | O enunciado e a correção estão frescos na memória. Em Q4, quanto esse acerto permite concluir? |
+| **B · Receber a variante primeiro.** | O aluno pode usar a explicação imediatamente em outro contexto que ainda exponha o mesmo erro. | É preciso interpretar um novo enunciado. Em Q4, o que o acerto demonstra enquanto a explicação anterior ainda está disponível? |
+| **C · O aluno escolhe entre as duas.** | Quem quer corrigir o próprio raciocínio pode refazer a original. Quem quer pô-lo à prova pode tentar a variante. | A escolha acrescenta um passo e produz experiências diferentes. Em Q4, como interpretar o acerto sabendo qual percurso o aluno escolheu? |
+
+**Evidência.** O ensaio com F042 registrou a sequência “erro → variante → acerto”. A política editorial também prevê uma variante após erro. Isso demonstra que o caminho B já ocorre no piloto. A escolha acima trata do compromisso a assumir com o aluno. A falha técnica de correção fica fora deste caso. [Ensaio de integração](../pilotos/mathua/BLOCO-4-D09-D15.md) · [Uso após um erro](../conteudo/typescript-v1/LEIA-ME.md#uso-após-um-erro-e-uso-dos-relatos)
+
+### Decisão registrada · Q1
 
 **Que estrutura lógica os dois exercícios precisam compartilhar?** O termo usado na literatura de aprendizagem é **problemas isomorfos**. Os cenários podem ter objetos, nomes e valores diferentes. Quando abstraímos esses detalhes, as relações relevantes para resolver a tarefa se correspondem. Chamamos de **invariante** aquilo que essa mudança preserva. Ao aplicar o que aprendeu à nova situação, o aluno demonstra o tipo de desempenho estudado como **transferência**. [Uso de “problemas isomorfos” em português](https://revistas.cesmac.edu.br/psicologia/article/view/1187) · [Lin e Singh, estudo sobre problemas isomorfos](https://arxiv.org/abs/1602.05689)
 
-A questão é de nível **Macro** e seu objeto focal é o par formado pela tarefa original e pela revisão. No exemplo da comparação estrita, o peso da mala faz o papel de valor observado e a franquia de bagagem faz o papel de limite. No tanque, o volume e a capacidade ocupam esses mesmos papéis. Nos dois problemas, a pergunta abstrata é `valor > limite`. Para revisar especificamente o que acontece na igualdade, o valor apresentado precisa coincidir com o limite. É essa diferença de alcance que ainda pede uma decisão.
+A questão é de nível **Macro** e seu objeto focal é o par formado pela tarefa original e pela revisão. A decisão corresponde à alternativa **Q1.C**, com um critério para a revisão de um erro específico. Ao aplicar a regra correta e a regra equivocada ao novo caso, as duas devem produzir respostas distinguíveis. Para a comparação estrita, o peso da mala e o volume no tanque ocupam o papel de valor observado. A franquia e a capacidade ocupam o papel de limite.
 
-**Um caso que separa as alternativas.** Imagine que a primeira pergunta seja “Uma mala pode pesar até 12 kg sem taxa. Uma mala de exatamente 12 kg paga taxa?”. A resposta é **não**. Em outra sessão, o aplicativo pergunta “Um tanque de 50 litros transborda quando recebe mais que sua capacidade. Com 51 litros, ele transborda?”. A resposta é **sim**. Nas duas situações o aluno decide se um valor ultrapassou um limite. Só a primeira exige que ele resolva o caso de **igualdade**. Se a dificuldade original era justamente o que acontece na igualdade, acertar a segunda pergunta ainda deixa essa dúvida em aberto.
+**Par que atende ao critério.** Uma mala de exatamente 12 kg, com franquia de 12 kg, paga excesso? Um tanque com exatamente 50 litros, cuja capacidade é de 50 litros, transborda? Em ambos os casos, `valor > limite` dá falso e `valor >= limite` dá verdadeiro. O novo contexto permite observar a mesma distinção. Com **51 litros**, ambas as expressões dão verdadeiro. Essa situação serve para praticar a comparação geral, mas o acerto ali é inconclusivo sobre o erro na igualdade.
 
 | Alternativa para Q1 | Critério favorecido e custo | Consequência e questão que fica para depois |
 | --- | --- | --- |
 | **A · Conservar a tarefa e a resposta correta.** Só conta como revisão equivalente uma situação que peça a mesma ação e preserve a resposta esperada em significado. Formulações de código equivalentes continuam possíveis. | Facilita reencontrar uma resposta específica. Uma resposta constante também pode virar uma pista. | O tanque com 51 litros ficaria fora desse par. Um tanque com 49 e um com exatamente 50 produziriam a mesma resposta “não”, mas só o de 50 verificaria a igualdade. Em Q3 caberia decidir que mudança de contexto preserva essa distinção. |
 | **B · Conservar a tarefa e a regra de solução.** O resultado concreto pode variar quando o aluno aplica a mesma operação a outros dados. | Permite observar se o aluno recalcula a resposta e reduz a utilidade de decorar um resultado. Um exemplo escolhido longe do limite pode deixar um erro específico invisível. | Se o alvo é aplicar a comparação estrita em geral, o tanque com 51 litros pode servir. Em Q4 caberia definir o que esse acerto permite afirmar sobre a dificuldade na igualdade. |
-| **C · Fixar o invariante conforme o objetivo de aprendizagem.** Em alguns objetivos o resultado ou o caso de fronteira integra o alvo. Em outros, o aluno deve obter resultados diferentes aplicando a mesma regra. | Distingue uma dificuldade pontual do uso geral do conceito. Exige um objetivo preciso o bastante para dois avaliadores concordarem sobre o mesmo par. | O tanque com 51 litros seria admissível para o objetivo geral e insuficiente para verificar o erro na igualdade. Essa escolha abriria Q6. |
+| **C · Fixar o invariante conforme o objetivo de aprendizagem (decidida).** Em alguns objetivos o caso de fronteira integra o alvo. Em outros, o aluno pode obter resultados diferentes aplicando a mesma regra. | Distingue uma dificuldade pontual do uso geral do conceito. Exige um objetivo preciso o bastante para dois avaliadores concordarem sobre o mesmo par. | O tanque com 51 litros é admissível para o objetivo geral e insuficiente para verificar o erro na igualdade. Essa escolha abriu Q6. |
 
 **Restrições comuns.** A variação conserva o princípio e permite que alguém que o compreenda deduza a resposta a partir da nova situação. Alternar entre escrever código e interpretar código muda a ação exigida do aluno. Esse é outro contraste a controlar ao julgar um par. No exemplo, valeu a mesma ação nas duas perguntas.
 
 **Evidência para ponderar a escolha.** No currículo atual, F016 pede ao aluno que **construa** uma comparação estrita. F017 pede que ele **calcule** seu resultado. As duas famílias pertencem ao mesmo conceito. Em F017 há gabaritos `true` e `false`. Em F016, duas expressões diferentes, como `peso > 12` e `12 < peso`, podem satisfazer a mesma exigência. Esses fatos mostram por que “mesma resposta” admite mais de uma leitura. A regra editorial atual é um precedente para a decisão de produto. [Famílias F016 e F017](../conteudo/typescript-v1/EXERCICIOS.md#c016--f016--construtivo) · [Contrato dos exercícios](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md)
-
-**Escolha em aberto.** Quando o aluno erra justamente na igualdade, uma revisão com 51 litros em um tanque de 50 já conta como revisão daquele erro, ou é preciso reencontrar uma situação em que o valor coincide com o limite?
 
 ## 3. Parte–todo e níveis de descrição
 
@@ -72,8 +82,8 @@ A tabela é a lista de arestas que fundamenta a DSM. Em cada linha, a **decisão
 | Q1 | P | Sempre | A finalidade de testar o mesmo aprendizado determina para que se precisa comparar duas tarefas. |
 | Q2 | P | Sempre | A autorização para repetir após erro delimita a retomada imediata. Ainda resta decidir que oportunidade é garantida ao aluno. |
 | Q3 | Q1 | Sempre | É preciso conhecer o que deve permanecer fixo para decidir quais mudanças de contexto podem qualificar uma pergunta como nova. |
-| Q6 | Q1 | Só com C | A política por objetivo cria a necessidade de especificar qual parte da resposta cada objetivo preserva. |
-| Q3 | Q6 | Só com C | Para aplicar o critério de novidade a um objetivo específico, é preciso saber quais mudanças preservam a tarefa naquele objetivo. |
+| Q6 | Q1 | Ativa por Q1.C | A política por objetivo cria a necessidade de especificar que relação cada objetivo preserva. |
+| Q3 | Q6 | Ativa por Q1.C | Para aplicar o critério de novidade a um objetivo específico, é preciso saber quais mudanças preservam a tarefa naquele objetivo. |
 | Q4 | Q1 | Sempre | A unidade de equivalência determina a que aprendizado o acerto pode ser atribuído. |
 | Q4 | Q2 | Sempre | A oportunidade de retomar define em que condições ocorreu o acerto imediato, inclusive se a mesma pergunta pôde ser refeita. Esse contexto limita sua interpretação. |
 | Q4 | Q3 | Sempre | Para atribuir um acerto à aplicação em um cenário novo, é preciso saber qual diferença de contexto satisfaz essa qualificação. |
@@ -93,7 +103,7 @@ A tabela é a lista de arestas que fundamenta a DSM. Em cada linha, a **decisão
 
 ## 5. DSM e ordem de resolução
 
-Leia **a linha como consumidora e a coluna como fornecedora** da informação. `●` indica dependência direta em todos os ramos. `C` indica dependência direta ativada por Q1.C. `·` indica ausência de aresta direta e `—` a diagonal. A matriz inclui a finalidade já decidida para tornar visível por que Q1 e Q2 estão prontas. As colunas estão em uma ordem que também permite ler o ramo C.
+Leia **a linha como consumidora e a coluna como fornecedora** da informação. `●` indica dependência direta incondicional. `C` indica dependência direta agora ativa pela escolha Q1.C. `·` indica ausência de aresta direta e `—` a diagonal. P e Q1 já fornecem suas decisões. A matriz preserva essas colunas para permitir o rastreamento.
 
 | Recebe de → | P | Q1 | Q2 | Q6 | Q3 | Q4 | Q5 | Q7 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -106,14 +116,9 @@ Leia **a linha como consumidora e a coluna como fornecedora** da informação. `
 | Q5 | · | · | · | · | ● | · | — | · |
 | Q7 | · | · | · | · | · | ● | ● | — |
 
-**Fronteira atual.** P está decidida. Q1 e Q2 têm zero antecedentes pendentes e podem ser resolvidas independentemente. Abre-se Q1 primeiro porque sua resposta muda quais pares de perguntas pertencem ao mesmo aprendizado e pode ativar Q6. Essa escolha de condução não cria precedência entre Q1 e Q2.
+**Fronteira atual.** Com P e Q1 decididas, Q2 e Q6 têm zero antecedentes pendentes. São independentes. Abre-se Q2 para definir primeiro o que o aluno experimenta imediatamente depois de errar. Q6 permanece disponível para uma rodada posterior.
 
-**Camadas topológicas.** As chaves agrupam decisões que podem tramitar em paralelo. Cada decisão fica disponível assim que seus próprios antecedentes forem satisfeitos.
-
-- **A ou B** admite a sequência P → {Q1, Q2} → Q3 → {Q4, Q5} → Q7. Q6 fica inativa.
-- **C** admite a sequência P → {Q1, Q2} → Q6 → Q3 → {Q4, Q5} → Q7.
-
-Nos três ramos desenhados, todas as arestas de precedência ficam abaixo da diagonal. Não há grupo mutuamente acoplado com mais de uma decisão. Q4 e Q5 compartilham uma entrada, mas nenhuma precisa do resultado da outra. Se uma escolha futura revelar dependência recíproca, as decisões do ciclo serão tratadas em conjunto antes de recalcular a ordem entre os grupos.
+**Camadas topológicas das decisões restantes.** {Q2, Q6} → Q3 → {Q4, Q5} → Q7. As chaves agrupam decisões independentes. Cada questão fica disponível ao satisfazer seus próprios antecedentes. Por exemplo, decidir Q6 libera Q3 mesmo que Q2 ainda esteja em aberto. Todas as precedências ativas ficam abaixo da diagonal da DSM. Não há grupo mutuamente acoplado com mais de uma decisão.
 
 ## 6. Estado empírico e rastreabilidade
 
@@ -123,7 +128,7 @@ Inspeção do repositório em `26c784b98965`, com o patch distribuído para o Ma
 | --- | --- | --- |
 | E1 | O pacote contém 46 conceitos, 74 famílias e 444 casos em 15 degraus. A autoria dos seis casos por família antecede a sessão de estudo. [Pacote editorial](../conteudo/typescript-v1/LEIA-ME.md) | Há exemplos concretos para Q1, Q3 e Q5. A quantidade por família é uma propriedade da entrega atual. |
 | E2 | F016 conserva a formulação “estritamente maior” nos seis casos. F017 inclui igualdade, valores acima e abaixo do limite. As duas famílias pedem ações diferentes. [Instâncias](../conteudo/typescript-v1/exercicios.json) · [Critérios das famílias](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md) | Q1 e Q6 têm casos que distinguem tarefa, princípio e resultado. Para Q3, o banco também exemplifica uma pista verbal que sobrevive à troca de valores. |
-| E3 | A revisão escolhe um conceito devido e passa seu identificador ao gerador. Na revisão geral, pode sair outra família do mesmo conceito. O gerador do piloto seleciona casos do banco finito. [Motor na revisão-base](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L969-L1005) · [Gerador no patch distribuído](https://github.com/marcoz93/anki-typescript/blob/26c784b98965bae668e45959e87f4f52c4ae3e97/pilotos/mathua/mathua-typescript-pilot.patch#L510-L539) | Retomar um conceito já é possível. Garantir que uma revisão posterior retome a tarefa específica que originou o erro é uma propriedade adicional a decidir em Q1, Q4 e Q5. |
+| E3 | A revisão escolhe um conceito devido e passa seu identificador ao gerador. Na revisão geral, pode sair outra família do mesmo conceito. O gerador do piloto seleciona casos do banco finito. [Motor na revisão-base](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L969-L1005) · [Gerador no patch distribuído](https://github.com/marcoz93/anki-typescript/blob/26c784b98965bae668e45959e87f4f52c4ae3e97/pilotos/mathua/mathua-typescript-pilot.patch#L510-L539) | Retomar um conceito já é possível. Q1 define a equivalência exigida quando o objetivo é revisar o erro específico. O mecanismo atual, por si só, não garante essa equivalência. |
 | E4 | O navegador registrou um erro seguido de outra instância da mesma família e de um acerto. A correção distingue resposta errada de falha técnica. [Ensaio de integração](../pilotos/mathua/BLOCO-4-D09-D15.md) · [Contrato de correção](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md#explicação-variante-e-falha-técnica) | Há evidência do comportamento imediato relevante para Q2. O estudante desse ensaio era simulado. |
 | E5 | O projeto registra como não verificada a calibração pedagógica com alunos reais. [Limites da entrega](../README.md#como-retomar) | **Insuficientemente conhecido** se as variantes atuais permitem distinguir, dias depois, lembrança do enunciado e aplicação independente. Essa lacuna informa Q3, Q4 e Q7. |
 
@@ -131,7 +136,7 @@ Dois precedentes do Anki esclarecem a fronteira. Randomized Basic conserva um ca
 
 ## 7. Continuidade da análise
 
-Após a resposta a Q1, o registro deve guardar a alternativa ou formulação acordada, sua justificativa e um par de exemplos que discrimine o que ficou dentro e fora do critério. Atualizam-se primeiro a vigência das arestas, depois a DSM, os grupos acoplados e a fronteira de decisões prontas. Uma resposta fora de A/B/C pede revisão do mapa antes de ativar um ramo.
+Após a resposta a Q2, registre a formulação acordada, sua justificativa e a consequência para a próxima tentativa. Atualize a vigência das arestas, a DSM e a fronteira de decisões prontas. Uma formulação diferente das alternativas apresentadas pode exigir a revisão do mapa.
 
 Ao abrir uma questão, registram-se seu objeto, nível, pergunta, opções admissíveis, restrições, critérios e estado. Para cada opção, acrescentam-se as consequências, as questões suscitadas e a evidência disponível. Para cada antecedente, registra-se a informação recebida. As demais questões seguem identificadas no mapa. Uma deliberação Meso só ganha conteúdo quando houver um compromisso Macro a explicar. Uma deliberação Micro requer um contrato lógico a realizar ou uma restrição concreta demonstrada. Isso vale também para a redação do prompt e a atribuição de responsabilidades a um agente.
 
