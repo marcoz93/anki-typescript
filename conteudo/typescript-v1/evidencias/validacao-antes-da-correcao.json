@@ -1,0 +1,74 @@
+{
+  "passed": false,
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.22.3",
+    "typescript": "5.9.3"
+  },
+  "compiler_options": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "CommonJS"
+  },
+  "counts": {
+    "stages": 15,
+    "concepts": 46,
+    "families": 74,
+    "cases": 444,
+    "distinct_questions": 444,
+    "compiled_files": 403,
+    "code_answers": 180,
+    "diagnostic_cases": 48,
+    "choice_cases": 126,
+    "interpreted_answers": 72,
+    "type_queries": 5,
+    "function_boundary_assertions": 78,
+    "integrated_assertions": 9
+  },
+  "source_sha256": {
+    "anki_typescript_v1.tsv": "4288391e8f6a49266a82b75d0615dc61be8baa42f513128fed1feae2893f3ac7",
+    "reembolsos.ts": "fc0670be7674b43817c9177aeeb5da00997f833c96ceb03a52b5d954b88df577"
+  },
+  "integrated_observed": [
+    [
+      [
+        "required",
+        "not_required",
+        "not_required"
+      ]
+    ],
+    [
+      [
+        {
+          "id": "reembolso-01",
+          "amount": 15000
+        }
+      ]
+    ],
+    [
+      "not_required"
+    ],
+    [
+      {
+        "$undefined": true
+      }
+    ],
+    [
+      "reembolso-01"
+    ]
+  ],
+  "errors": [
+    {
+      "check": "tipo de find F070-V2",
+      "message": "F070-V2\n+ actual - expected\n\n  [\n+   '\"r22\"',\n-   'string',\n    'undefined'\n  ]\n"
+    }
+  ],
+  "limits": [
+    "Verificação de conteúdo editorial; não executa nem altera o aplicativo Mathua.",
+    "As questões de significado e seus distratores exigem revisão editorial; consistência estrutural não prova qualidade pedagógica.",
+    "Aceitar todas as soluções corretas e rejeitar todas as incorretas depende da implementação futura dos corretores.",
+    "O uso de vm serve apenas para executar gabaritos confiáveis deste repositório; não constitui isolamento para código enviado por alunos.",
+    "Não mede domínio, retenção, dificuldade nem calibração com alunos reais."
+  ]
+}

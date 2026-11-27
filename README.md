@@ -2,6 +2,12 @@
 
 Material e experimentos para aprender TypeScript por conceitos, com variação de exercícios após erros e feedback sobre a qualidade das perguntas.
 
+## Conteúdo completo da escada
+
+O [pacote de conteúdo](conteudo/typescript-v1/LEIA-ME.md) preserva os **15 degraus e 74 cartões originais** e entrega as aulas, gabaritos, explicações, critérios de correção e seis instâncias por família: **444 perguntas completas**, organizadas em 46 conceitos. O [currículo legível](conteudo/typescript-v1/CURRICULO.md), o [banco de exercícios](conteudo/typescript-v1/EXERCICIOS.md) e os JSON estão prontos para a próxima IA integrar ao piloto.
+
+**Conteúdo preparado não significa conteúdo já disponível na aplicação.** O piloto descrito abaixo continua com os três conceitos existentes. A integração deve completar as lacunas dos degraus 1–3 e seguir a ordem da escada, preservando os IDs e o progresso. A [verificação do conteúdo](conteudo/typescript-v1/COMANDOS-E-SAIDAS.md) foi executada em Linux, com Node 24.22.3 e TypeScript 5.9.3; ela é distinta dos testes da aplicação e não mede aprendizagem com alunos reais.
+
 ## Piloto disponível: Mathua
 
 O piloto integra três conceitos ao motor existente do Mathua: literal numérico, tipo `number` e declaração `const` com valor numérico.
