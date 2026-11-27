@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--binary", type=Path, default=Path("pilot-bin"))
     parser.add_argument("--node", default="node")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--previous-mathua", type=Path, help="Clone compilado da versão que cria o banco antes da atualização")
     args = parser.parse_args()
     root = args.mathua.resolve()
     binary = args.binary if args.binary.is_absolute() else root / args.binary
@@ -66,11 +67,14 @@ def main():
         def start(index):
             nonlocal process, log
             log = (work / f"process-{index}.log").open("w")
+            checkout = args.previous_mathua.resolve() if index == 1 and args.previous_mathua else root
+            executable = checkout / args.binary if checkout != root else binary
+            content = Path(__file__).resolve().parents[3] / "conteudo/typescript-v1"
             process = subprocess.Popen(
-                [str(binary), "-addr", f"127.0.0.1:{port}", "-db", str(database), "-node", node],
-                cwd=root, stdout=log, stderr=subprocess.STDOUT,
+                [str(executable), "-content", str(content), "-addr", f"127.0.0.1:{port}", "-db", str(database), "-node", node],
+                cwd=checkout, stdout=log, stderr=subprocess.STDOUT,
             )
-            deadline = time.monotonic() + 20
+            deadline = time.monotonic() + 90
             while time.monotonic() < deadline:
                 if process.poll() is not None:
                     raise RuntimeError(f"O processo terminou com código {process.returncode}")
@@ -89,8 +93,19 @@ def main():
             served, _ = request("GET", f"/api/lessons/{concept}/practice?count=1", token=token)
             question = served["questions"][0]["question"]
             assert served["questions"][0]["answer_input_mode"] == "text"
+            if args.previous_mathua:
+                earlier = {"concept_id": concept, "question": question, "answer": "number",
+                           "elapsed": 30, "submission_id": "before-upgrade"}
+                graded, saved = request("POST", "/api/study/answer", earlier, token)
+                assert graded["correct"]
+                served, _ = request("GET", f"/api/lessons/{concept}/practice?count=1", token=token)
+                question = served["questions"][0]["question"]
             stop()
             start(2)
+            if args.previous_mathua:
+                _, replay = request("POST", "/api/study/answer", earlier, token)
+                assert replay == saved, "A atualização mudou uma resposta já gravada"
+
             payload = {"concept_id": concept, "question": question, "answer": "number",
                        "elapsed": 30, "submission_id": "process-restart-proof"}
             answer, raw = request("POST", "/api/study/answer", payload, token)
@@ -99,7 +114,7 @@ def main():
             assert retry == raw, "A repetição mudou a resposta gravada"
             with sqlite3.connect(database) as connection:
                 attempts = connection.execute("SELECT count(*) FROM attempts").fetchone()[0]
-            assert attempts == 1, f"A repetição gravou {attempts} tentativas"
+            assert attempts == (2 if args.previous_mathua else 1), f"A repetição gravou {attempts} tentativas"
             result = {
                 "passed": True,
                 "test": "real_process_restart",
@@ -111,6 +126,7 @@ def main():
                 "pre_restart_question_graded": True,
                 "retry_body_identical": True,
                 "persisted_attempts": attempts,
+                "previous_version_answer_replayed": bool(args.previous_mathua),
                 "ungraded_key_present_in_normal_response": "ungraded" in answer,
                 "normal_response": answer,
             }

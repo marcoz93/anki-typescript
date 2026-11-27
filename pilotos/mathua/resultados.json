@@ -51,7 +51,7 @@
         "linhas_removidas": 0
       },
       "web/next-app/components/LearnStepper.tsx": {
-        "linhas_adicionadas": 128,
+        "linhas_adicionadas": 129,
         "linhas_removidas": 65
       },
       "web/next-app/components/NextUpCard.tsx": {
@@ -81,6 +81,10 @@
       "web/next-app/lib/recommendations.ts": {
         "linhas_adicionadas": 11,
         "linhas_removidas": 10
+      },
+      "web/next-app/components/math/MathInput.tsx": {
+        "linhas_adicionadas": 23,
+        "linhas_removidas": 0
       }
     },
     "arquivos_novos": [
@@ -95,16 +99,17 @@
       "web/next-app/test/pilot.test.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "9bc6f4e573ef67e509561194c19ec4c493afdfe5a2e9eff32ee64799bce773ec",
+    "patch_sha256": "ad41230c31e3735b07106e6fb0a5cf9509e9f9ddf712b4cc613eed3fcf5927ca",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
-    "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos os degraus D01 a D05: 23 conceitos, 25 famílias, 150 casos.",
-    "patch_sha256_anterior": "33816d5aa244870669006facf7a6424131b0d9980afed73c78eb5a2355ae4898",
+    "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos D01 a D08 com 32 conceitos, 38 famílias e 228 casos.",
+    "patch_sha256_anterior": "9bc6f4e573ef67e509561194c19ec4c493afdfe5a2e9eff32ee64799bce773ec",
     "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
     "ajustes_da_tela": [
       "Campo de resposta sem a paleta de símbolos matemáticos.",
       "Textos do percurso de estudo em português: campo de resposta, correção, continuar, praticar novamente, pré-requisitos e relato de problema.",
       "Menus sem o grafo de conceitos, o glossário, o grupo Resources e o rodapé.",
-      "Página /my-reports aberta para o visitante do piloto."
+      "Página /my-reports aberta para o visitante do piloto.",
+      "Resposta em múltiplas linhas na definição de funções (D07)."
     ]
   },
   "testes_linux_patch_anterior": {
@@ -587,5 +592,48 @@
     "Configuração original de domínio e política de diagnóstico não foram substituídas.",
     "Os testes não medem aprendizagem, retenção ou calibração pedagógica com alunos reais."
   ],
-  "data_local_macos": "2026-11-27"
+  "data_local_macos": "2026-11-27",
+  "bloco_3_d06_d08": {
+    "base_anki": "f028170d6b3ef4c1f267634b1c655dcda58bbf95",
+    "patch_sha256": "ad41230c31e3735b07106e6fb0a5cf9509e9f9ddf712b4cc613eed3fcf5927ca",
+    "conteudo": {
+      "degraus_servidos": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "conceitos": 32,
+      "familias": 38,
+      "casos": 228,
+      "entraram_neste_bloco": {
+        "conceitos": 9,
+        "familias": 13,
+        "casos": 78
+      }
+    },
+    "testes_macos": {
+      "piloto_go": 516,
+      "novos_casos_go": 38,
+      "motor_go": 154,
+      "api_nativa_go": 26,
+      "conceitos_dominados_api": 32,
+      "vitest_arquivos": 199,
+      "vitest_testes": 1897,
+      "verificacoes_chromium": 42,
+      "conceitos_dominados_pela_tela": 25,
+      "familias_novas_pela_tela": 13,
+      "atualizacao_bloco_2_para_3": "tentativa recuperada, pergunta pendente corrigida e reenvio idempotente"
+    },
+    "relatorio": "BLOCO-3-D06-D08.md",
+    "evidencias": [
+      "evidencias/bloco-3-d06-d08/atualizacao.json",
+      "evidencias/bloco-3-d06-d08/go.jsonl",
+      "evidencias/bloco-3-d06-d08/navegador.json"
+    ]
+  }
 }

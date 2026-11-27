@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "test": "real_process_restart",
+  "runtime": {
+    "system": "Darwin",
+    "release": "25.4.0",
+    "machine": "arm64",
+    "python": "3.14.6",
+    "node": "v24.14.1"
+  },
+  "processes_started": 2,
+  "old_bearer_token_accepted": true,
+  "pre_restart_question_graded": true,
+  "retry_body_identical": true,
+  "persisted_attempts": 2,
+  "previous_version_answer_replayed": true,
+  "ungraded_key_present_in_normal_response": false,
+  "normal_response": {
+    "correct": true,
+    "diagnosis": "",
+    "expected_answer": "number",
+    "explanation": "number é o nome do tipo numérico geral. O trecho numérico mostrado representa um valor admitido por esse tipo.",
+    "feedback": "Correto.",
+    "halted": false,
+    "new_status": "PRACTICING",
+    "required_streak": 3,
+    "scaffold_active": false,
+    "scaffold_step": 0,
+    "scaffold_total": 0,
+    "streak": 1,
+    "xp": 1,
+    "xp_adjustment": 0,
+    "xp_note": "",
+    "xp_reason_code": "",
+    "xp_source": ""
+  }
+}

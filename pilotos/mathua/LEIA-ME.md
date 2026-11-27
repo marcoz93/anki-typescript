@@ -1,12 +1,10 @@
 # Piloto do Mathua com TypeScript
 
-**Bloco 1 (27/11/2026, macOS):** o piloto serve os degraus D01 a D03 do pacote `conteudo/typescript-v1`: 13 conceitos, 14 famílias e 84 casos. Os três conceitos antigos mantêm os IDs. A entrega, com conteúdo, comandos, saídas e limites, está em [BLOCO-1-D01-D03.md](BLOCO-1-D01-D03.md). **Bloco 2 (27/11/2026, macOS):** entraram os degraus D04 e D05; o piloto serve agora 23 conceitos, 25 famílias e 150 casos. A entrega está em [BLOCO-2-D04-D05.md](BLOCO-2-D04-D05.md).
-
-As seções abaixo descrevem as rodadas anteriores; onde elas citam três conceitos, enunciados sorteados ou a pasta `lessons/`, vale o registro do bloco 1.
+O bloco atual serve D01 a D08, com 32 conceitos, 38 famílias e 228 casos. O [registro dos degraus D06 a D08](BLOCO-3-D06-D08.md) descreve a correção e os testes. Os registros de [D01 a D03](BLOCO-1-D01-D03.md) e [D04 a D05](BLOCO-2-D04-D05.md) documentam as duas entregas anteriores.
 
 Para rodar, o executável precisa do diretório `conteudo/typescript-v1` deste repositório. Ele o encontra sozinho quando o clone do Mathua está em `pilotos/mathua/mathua/`. Em outro local, use a opção `-content`.
 
-**Resultado atual (27/11/2026, macOS):** a tela existente do Mathua está ajustada para estudar TypeScript. O campo de resposta não mostra mais o teclado de símbolos matemáticos. O percurso de estudo e o menu lateral estão em português. Os menus que levavam ao catálogo de matemática estão ocultos. A página de relatos mostra os relatos do visitante.
+**Rodada inicial (27/11/2026, macOS)** — a tela existente do Mathua está ajustada para estudar TypeScript. O campo de resposta não mostra mais o teclado de símbolos matemáticos. O percurso de estudo e o menu lateral estão em português. Os menus que levavam ao catálogo de matemática estão ocultos. A página de relatos mostra os relatos do visitante.
 
 O teste de navegador no Mac passou com 14 verificações: abrir o endereço, ler a explicação, responder, receber a correção, receber uma variante após errar, avançar após os pré-requisitos, relatar uma pergunta, consultar o relato, recarregar a página e reiniciar o servidor sem perder o progresso. Os **29 cenários do piloto** e os **1885 testes unitários da interface** passaram no Mac. O registro está em [COMANDOS-E-SAIDAS-MAC.md](COMANDOS-E-SAIDAS-MAC.md).
 

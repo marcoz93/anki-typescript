@@ -6,16 +6,15 @@ Material e experimentos para aprender TypeScript por conceitos, com variação d
 
 O [pacote de conteúdo](conteudo/typescript-v1/LEIA-ME.md) preserva os **15 degraus e 74 cartões originais** e entrega as aulas, gabaritos, explicações, critérios de correção e seis instâncias por família: **444 perguntas completas**, organizadas em 46 conceitos. O [currículo legível](conteudo/typescript-v1/CURRICULO.md), o [banco de exercícios](conteudo/typescript-v1/EXERCICIOS.md) e os JSON estão prontos para a próxima IA integrar ao piloto.
 
-**Conteúdo preparado não significa conteúdo já disponível na aplicação.** O piloto descrito abaixo continua com os três conceitos existentes. A integração deve completar as lacunas dos degraus 1–3 e seguir a ordem da escada, preservando os IDs e o progresso. A [verificação do conteúdo](conteudo/typescript-v1/COMANDOS-E-SAIDAS.md) foi executada em Linux, com Node 24.22.3 e TypeScript 5.9.3; ela é distinta dos testes da aplicação e não mede aprendizagem com alunos reais.
+## Estudar no piloto do Mathua
 
-## Piloto disponível: Mathua
+Os degraus **D01 a D08** estão disponíveis no aplicativo. São **32 conceitos, 38 famílias e 228 perguntas**. O piloto usa as aulas e os exercícios do pacote editorial, com os pré-requisitos, a revisão e o progresso do Mathua. Os degraus D09 a D15 estão no pacote de conteúdo para integração futura.
 
-**Bloco 1, integrado em 27/11/2026:** o piloto serve os degraus D01 a D03 do conteúdo em `conteudo/typescript-v1/`: 13 conceitos, 14 famílias e 84 casos, com alternativas, nomes de tipo e código. O registro com conteúdo, comandos, saídas e limites está em [pilotos/mathua/BLOCO-1-D01-D03.md](pilotos/mathua/BLOCO-1-D01-D03.md). 
-**Bloco 2, integrado em 27/11/2026:** entraram os degraus D04 e D05. O piloto serve agora 23 conceitos, 25 famílias e 150 casos, com comparação, igualdade, operadores booleanos, objeto, propriedade e array. O registro está em [pilotos/mathua/BLOCO-2-D04-D05.md](pilotos/mathua/BLOCO-2-D04-D05.md). Os degraus D06 a D15 ainda não estão no aplicativo.
-
-O piloto integra três conceitos ao motor existente do Mathua: literal numérico, tipo `number` e declaração `const` com valor numérico.
-
-**Estado validado em 27/11/2026, em macOS:** a tela existente do Mathua está ajustada para estudar TypeScript. O campo de resposta não mostra o teclado de símbolos matemáticos. O percurso de estudo e o menu lateral estão em português. Os menus do catálogo de matemática estão ocultos. O teste em Chromium passou com 14 verificações: ler a explicação, responder, receber a correção, receber uma variante após errar, avançar após os pré-requisitos, relatar uma pergunta, consultar o relato, recarregar a página e reiniciar o servidor sem perder o progresso. Os 29 cenários do piloto e os 1885 testes unitários da interface passaram.
+| Bloco | Conteúdo disponível |
+| --- | --- |
+| [D01–D03](pilotos/mathua/BLOCO-1-D01-D03.md) | Literais, tipos primitivos e declarações |
+| [D04–D05](pilotos/mathua/BLOCO-2-D04-D05.md) | Expressões, comparações, objetos e arrays |
+| [D06–D08](pilotos/mathua/BLOCO-3-D06-D08.md) | Aliases de objeto, arrays tipados, definições de função, chamadas e saída no console |
 
 **Linux e Mac são execuções separadas.** As execuções em Linux são de 26/11/2026 e usaram o patch anterior. Os ajustes da tela desta rodada foram validados só em macOS.
 
@@ -41,7 +40,7 @@ A instalação compila a interface e o executável. Depois de iniciá-lo, abra `
 
 Versão exigida: a compilação da interface exige Node `^22.23.4 || ^24.22.1 || ^26.12.1`, conforme o campo `engines.node` de `web/next-app/package.json` do Mathua. Versões testadas: em Linux x86_64, Node `24.22.3`, Go `1.26.6` e Chromium `158.0.8127.0`; em macOS arm64, Node `24.22.3` na compilação da interface, Node `24.14.1` na execução, Go `1.26.6` e Chromium `151.0.7922.34`. A versão testada não é a versão mínima.
 
-Há três conceitos introdutórios, uma família por conceito. A geração automática de novas famílias a partir do feedback continua pendente. Hoje, o feedback permite registrar, revisar e resolver problemas com participação humana. A calibração pedagógica com alunos reais não foi verificada. As páginas fora do percurso de estudo continuam em inglês.
+A geração automática de novas famílias a partir do feedback continua pendente. Hoje, o feedback permite registrar, revisar e resolver problemas com participação humana. A calibração pedagógica com alunos reais não foi verificada. As páginas fora do percurso de estudo continuam em inglês.
 
 ## Origem
 

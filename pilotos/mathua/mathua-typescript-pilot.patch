@@ -1,9 +1,9 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 00000000..6b7e6b92
+index 00000000..98b03386
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,207 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
@@ -20,8 +20,8 @@ index 00000000..6b7e6b92
 +of the companion `anki-typescript` repository. It finds that directory above the working directory,
 +or takes it from `-content`. Nothing is copied into this patch, so the package stays the one source.
 +
-+`integratedThroughStage` in `content.go` is the last ladder stage served. It is 5 now:
-+23 concepts, 25 families and 150 cases of stages D01 to D05. Later stages have no grader yet.
++`integratedThroughStage` in `content.go` is the last ladder stage served. It is 8 now.
++The pilot serves 32 concepts, 38 families and 228 cases of stages D01 to D08.
 +
 +| What the package holds | How the existing engine receives it |
 +| --- | --- |
@@ -139,7 +139,12 @@ index 00000000..6b7e6b92
 +| F021 const object | properties in any order, quoted keys, parentheses | an array, a missing, extra or wrong property |
 +| F022 property access | `refund.amount`, `refund["amount"]` | another property, another object |
 +| F023 array | the elements in the requested order, declared with `const` or `let` | another order, another or repeated element |
-+| `value` families F017, F024 | `true`, `false`, `15000`, `15_000` | the value in quotes, the expression itself |
++| F026 object alias | `type` with the requested name and required property types in either order | a runtime object, optional or extra properties |
++| F027 typed empty array | `Refund[]`, `Array<Refund>` or an empty typed array constructor | a populated array, an array of `any` |
++| F030 function definition | a named binding with the requested signature and a return that reads the property, including a renamed parameter or inferred return | a constant result, an unrelated property, an incompatible public signature |
++| F035 function call | the requested function and numeric argument | a function reference or different argument |
++| F038 console output | `console.log(amount)` or `console['log'](amount)` | a different method or variable |
++| `value` families F017, F024, F036 and F037 | `true`, `false`, `15000`, `15_000` | the value in quotes, the expression itself |
 +| `token` families | the exact name or symbol; spaces and comments around it are ignored | another case, such as `Number`; two names |
 +| `choice` families | the letter of the correct alternative, or its text | any other alternative |
 +
@@ -208,7 +213,7 @@ index 00000000..6b7e6b92
 +These checks do not measure a deployed installation or long-term retention.
 diff --git a/cmd/typescript-pilot/content.go b/cmd/typescript-pilot/content.go
 new file mode 100644
-index 00000000..2747118e
+index 00000000..e9a4234b
 --- /dev/null
 +++ b/cmd/typescript-pilot/content.go
 @@ -0,0 +1,422 @@
@@ -230,7 +235,7 @@ index 00000000..2747118e
 +// integratedThroughStage is the last ladder stage whose families have graders in grade.cjs.
 +// Raising it serves more of the content package. Startup grades every model answer of the
 +// served stages and refuses to run when a grader is missing or rejects its own model answer.
-+const integratedThroughStage = 5
++const integratedThroughStage = 8
 +
 +// contentDirName is where the editorial package lives in the repository that carries this pilot.
 +const contentDirName = "conteudo/typescript-v1"
@@ -636,10 +641,10 @@ index 00000000..2747118e
 +}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..7b94049f
+index 00000000..441add73
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,507 @@
+@@ -0,0 +1,665 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
@@ -1013,23 +1018,176 @@ index 00000000..7b94049f
 +}
 +
 +// F022: `object.property`, or `object["property"]` with the same key.
++function propertyRead(expr) {
++  let owner = null, key = null;
++  if (ts.isPropertyAccessExpression(expr) && !expr.questionDotToken) {
++    owner = unwrap(expr.expression);
++    key = expr.name.text;
++  } else if (ts.isElementAccessExpression(expr) && !expr.questionDotToken && isTextKey(unwrap(expr.argumentExpression))) {
++    owner = unwrap(expr.expression);
++    key = unwrap(expr.argumentExpression).text;
++  }
++  return {owner, key};
++}
++
 +function propertyAccess(job) {
 +  const ref = referenceExpression(job.expected);
 +  if (!ref || !ts.isPropertyAccessExpression(ref) || !ts.isIdentifier(ref.expression)) throw new Error('Invalid reference property access');
 +  const given = expressionAnswer(job.answer);
 +  if (given.fail) return given.fail;
-+  let owner = null, key = null;
-+  if (ts.isPropertyAccessExpression(given.expr) && !given.expr.questionDotToken) {
-+    owner = unwrap(given.expr.expression);
-+    key = given.expr.name.text;
-+  } else if (ts.isElementAccessExpression(given.expr) && !given.expr.questionDotToken && isTextKey(unwrap(given.expr.argumentExpression))) {
-+    owner = unwrap(given.expr.expression);
-+    key = unwrap(given.expr.argumentExpression).text;
-+  }
++  const {owner, key} = propertyRead(given.expr);
 +  if (key === null) return result(false, `Escreva o acesso à propriedade ${ref.name.text}, com ponto ou com colchetes e o nome entre aspas.`);
 +  if (!ts.isIdentifier(owner) || owner.text !== ref.expression.text) return result(false, `Acesse a propriedade no objeto ${ref.expression.text}.`);
 +  if (key !== ref.name.text) return result(false, `A expressão acessa a propriedade ${key}. A tarefa pede ${ref.name.text}.`);
 +  return rejectedByCompiler(job, `(${given.text});`) || result(true, `Correto. A expressão obtém a propriedade ${ref.name.text}.`);
++}
++
++// Check one declaration in the case's scope. Inspect nodes from this same program so
++// the checker can resolve inferred types, aliases and contextual function signatures.
++function typedDeclaration(job, inspect) {
++  const sf = parsedAnswer(job.answer);
++  if (!sf) return result(false, SYNTAX);
++  const statements = sf.statements.filter(s => !ts.isEmptyStatement(s));
++  if (statements.length !== 1) return result(false, 'Escreva somente a declaração solicitada.');
++  const compiled = compile((job.context_code || '') + '\n' + job.answer);
++  if (compiled.errors.length) return result(false, `O compilador TypeScript rejeitou a resposta: ${compiled.errors[0]}`);
++  const statement = compiled.file.statements.filter(s => !ts.isEmptyStatement(s)).at(-1);
++  return inspect(compiled.program.getTypeChecker(), statement);
++}
++
++// The editorial object types in D06-D08 have required string and number properties.
++// Read the requested names and primitive types from the case, including its variants.
++function matchesRecord(checker, type, model) {
++  if (!(type.flags & (ts.TypeFlags.Object | ts.TypeFlags.Intersection)) ||
++      type.getProperties().length !== model.members.length || checker.getIndexInfosOfType(type).length ||
++      type.getCallSignatures().length || type.getConstructSignatures().length) return false;
++  return model.members.every(member => {
++    const property = type.getProperty(member.name.text);
++    if (!property || property.flags & ts.SymbolFlags.Optional) return false;
++    const wanted = member.type.kind === K.StringKeyword ? checker.getStringType() : checker.getNumberType();
++    return checker.getTypeOfSymbol(property) === wanted;
++  });
++}
++
++function objectAlias(job) {
++  const model = parse(job.expected).statements[0];
++  return typedDeclaration(job, (checker, statement) => {
++    if (!ts.isTypeAliasDeclaration(statement) || statement.name.text !== model.name.text || statement.typeParameters)
++      return result(false, `Declare o alias pedido com type ${model.name.text}.`);
++    if (!matchesRecord(checker, checker.getTypeAtLocation(statement.name), model.type))
++      return result(false, 'Confira os nomes, a obrigatoriedade e os tipos das propriedades pedidas.');
++    return result(true, 'Correto. O alias descreve as propriedades solicitadas.');
++  });
++}
++
++function namedVariable(statement, name) {
++  if (!ts.isVariableStatement(statement) || statement.declarationList.declarations.length !== 1) return null;
++  const item = statement.declarationList.declarations[0];
++  return ts.isIdentifier(item.name) && item.name.text === name ? item : null;
++}
++
++function typedEmptyArray(job) {
++  const name = declaration(parse(job.expected)).item.name.text;
++  const model = parse(job.context_code).statements[0];
++  return typedDeclaration(job, (checker, statement) => {
++    const item = namedVariable(statement, name);
++    if (!item) return result(false, `Declare o array com o nome ${name}.`);
++    const init = unwrap(item.initializer);
++    const emptyLiteral = init && ts.isArrayLiteralExpression(init) && !init.elements.length;
++    const emptyConstructor = init && ts.isNewExpression(init) && ts.isIdentifier(init.expression) &&
++      init.expression.text === 'Array' && !init.arguments?.length;
++    if (!emptyLiteral && !emptyConstructor) return result(false, 'Inicialize o array sem elementos.');
++    const type = checker.getTypeAtLocation(item.name);
++    if (!checker.isArrayType(type) || !matchesRecord(checker, checker.getTypeArguments(type)[0], model.type))
++      return result(false, `Declare o tipo dos elementos do array como ${model.name.text}.`);
++    return result(true, 'Correto. O array começa vazio e tem o tipo de elementos pedido.');
++  });
++}
++
++// Follow a direct projection and local const bindings of it. No learner code runs.
++function returnsProperty(fn, key) {
++  const parameter = fn.parameters[0].name;
++  const values = new Set();
++  if (ts.isObjectBindingPattern(parameter)) {
++    for (const entry of parameter.elements) {
++      if (!entry.dotDotDotToken && !entry.initializer && ts.isIdentifier(entry.name) &&
++          (entry.propertyName || entry.name).text === key) values.add(entry.name.text);
++    }
++  }
++  const projects = expression => {
++    const expr = unwrap(expression);
++    if (!expr) return false;
++    if (ts.isIdentifier(expr)) return values.has(expr.text);
++    const access = propertyRead(expr);
++    return access.key === key && ts.isIdentifier(parameter) && ts.isIdentifier(access.owner) &&
++      access.owner.text === parameter.text;
++  };
++  if (!ts.isBlock(fn.body)) return projects(fn.body);
++  const body = fn.body.statements.filter(s => !ts.isEmptyStatement(s));
++  for (const s of body.slice(0, -1)) {
++    if (!ts.isVariableStatement(s) || !(s.declarationList.flags & ts.NodeFlags.Const)) return false;
++    for (const d of s.declarationList.declarations) {
++      if (!ts.isIdentifier(d.name) || !projects(d.initializer)) return false;
++      values.add(d.name.text);
++    }
++  }
++  const last = body.at(-1);
++  return !!last && ts.isReturnStatement(last) && projects(last.expression);
++}
++
++function functionDefinition(job) {
++  const model = parse(job.expected).statements[0];
++  const record = parse(job.context_code).statements[0];
++  const key = model.body.statements[0].expression.name.text;
++  const name = model.name.text;
++  return typedDeclaration(job, (checker, statement) => {
++    const variable = namedVariable(statement, name);
++    const fn = variable ? unwrap(variable.initializer) : statement;
++    if (!fn || !(ts.isFunctionDeclaration(fn) && fn.name?.text === name ||
++        ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) || !fn.body)
++      return result(false, `Defina uma função com o nome ${name}.`);
++    const signature = checker.getSignatureFromDeclaration(fn);
++    const publicType = checker.getTypeAtLocation(variable ? variable.name : fn.name);
++    const signatures = publicType.getCallSignatures();
++    const acceptsRecord = sig => {
++      if (sig.typeParameters || sig.parameters.length !== 1) return false;
++      const param = sig.parameters[0];
++      const declaration = param.valueDeclaration;
++      return declaration && !declaration.questionToken && !declaration.dotDotDotToken && !declaration.initializer &&
++        matchesRecord(checker, checker.getTypeOfSymbol(param), record.type);
++    };
++    if (signatures.length !== 1 || !acceptsRecord(signatures[0]) || !acceptsRecord(signature))
++      return result(false, `A função deve receber um parâmetro do tipo ${record.name.text}.`);
++    if (!returnsProperty(fn, key)) return result(false, `Devolva a propriedade ${key} do objeto recebido.`);
++    if ([signature, signatures[0]].some(sig => sig.getReturnType() !== checker.getNumberType()))
++      return result(false, 'O tipo de retorno da função deve ser number.');
++    return result(true, 'Correto. A função devolve a propriedade numérica do objeto recebido.');
++  });
++}
++
++function callWithArgument(job) {
++  const model = referenceExpression(job.expected);
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  const call = given.expr;
++  const target = model.expression;
++  const wanted = target.getText();
++  if (!ts.isCallExpression(call)) return result(false, `Invoque ${wanted} usando parênteses.`);
++  const callee = unwrap(call.expression);
++  if (ts.isIdentifier(target)) {
++    if (!ts.isIdentifier(callee) || callee.text !== target.text) return result(false, `Invoque a função ${wanted}.`);
++  } else {
++    const {owner, key} = propertyRead(callee);
++    if (key !== target.name.text || !ts.isIdentifier(owner) || owner.text !== target.expression.text)
++      return result(false, `Use ${wanted} para apresentar o valor.`);
++  }
++  const arg = unwrap(call.arguments[0]);
++  const expected = model.arguments[0];
++  const matches = arg && (ts.isIdentifier(expected)
++    ? ts.isIdentifier(arg) && arg.text === expected.text
++    : ts.isNumericLiteral(arg) && sameLiteral(arg, expected));
++  if (call.arguments.length !== 1 || !matches) return result(false, `Forneça ${expected.getText()} como único argumento.`);
++  return rejectedByCompiler(job, `(${given.text});`) || result(true, 'Correto. A chamada usa a função e o argumento pedidos.');
 +}
 +
 +const CODE = {
@@ -1045,6 +1203,11 @@ index 00000000..7b94049f
 +  F021: objectDeclaration,
 +  F022: propertyAccess,
 +  F023: arrayDeclaration,
++  F026: objectAlias,
++  F027: typedEmptyArray,
++  F030: functionDefinition,
++  F035: callWithArgument,
++  F038: callWithArgument,
 +};
 +
 +// A value is the result a question asks the learner to read off: a number, a boolean, the absence
@@ -1367,10 +1530,10 @@ index 00000000..f75ee4b0
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..e79d851c
+index 00000000..f9e8d34f
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,1128 @@
+@@ -0,0 +1,1168 @@
 +package main
 +
 +import (
@@ -1887,7 +2050,7 @@ index 00000000..e79d851c
 +			}
 +		}
 +	}
-+	if len(c.Concepts) != 23 || len(c.families) != 25 || cases != 150 {
++	if len(c.Concepts) != 32 || len(c.families) != 38 || cases != 228 {
 +		t.Fatalf("stages 1 to %d: %d concepts, %d families, %d cases", integratedThroughStage, len(c.Concepts), len(c.families), cases)
 +	}
 +	// The three original concepts keep their IDs and the family the package assigns to them.
@@ -1902,13 +2065,10 @@ index 00000000..e79d851c
 +			t.Fatalf("%s must be served by family %s alone", id, want)
 +		}
 +	}
-+	// A stage beyond the integrated ones has no grader yet, so the self-check must refuse it.
-+	next, err := loadContent(dir, integratedThroughStage+1)
-+	if err != nil {
-+		t.Fatal(err)
-+	}
-+	if err := next.verifyModelAnswers(testChecker(t)); err == nil || !strings.Contains(err.Error(), "No grader for family") {
-+		t.Fatalf("stage %d must be refused until its graders exist, got %v", integratedThroughStage+1, err)
++	// D09 introduces a fourth family in a concept. Refuse it as a whole until
++	// the practice route can serve that fourth section.
++	if _, err := loadContent(dir, 9); err == nil || !strings.Contains(err.Error(), "ts.function.composition: 4 families") {
++		t.Fatalf("expected the four-section D09 concept to be rejected, got %v", err)
 +	}
 +	t.Logf("%s: %d concepts, %d families, %d cases, %d questions identified", c.Version, len(c.Concepts), len(c.families), cases, questions)
 +}
@@ -2499,6 +2659,49 @@ index 00000000..e79d851c
 +		})
 +	}
 +}
++
++func TestCriteriaOfStagesSixThroughEight(t *testing.T) {
++	judge(t, testChecker(t), []criterion{
++		{"alias_reordered", "F026-V0", "type Refund = { 'amount': (number), id: string }", true, ""},
++		{"alias_interface", "F026-V0", "interface Refund { amount: number; id: string }", false, "type Refund"},
++		{"alias_optional", "F026-V0", "type Refund = { amount?: number; id: string }", false, ""},
++		{"alias_literal", "F026-V0", "type Refund = { amount: 0; id: string }", false, ""},
++		{"alias_extra", "F026-V0", "type Refund = { amount: number; id: string; tag?: string }", false, ""},
++		{"alias_any", "F026-V0", "type Refund = { amount: ReturnType<typeof JSON.parse>; id: string }", false, ""},
++		{"alias_wrong_name", "F026-V1", "type Refund = {id: string; total: number}", false, "Expense"},
++		{"array_generic", "F027-V0", "let refunds: Array<(Refund)> = ([])", true, ""},
++		{"array_constructor", "F027-V1", "const expenses = new Array<Expense>()", true, ""},
++		{"array_any", "F027-V0", "const refunds: any[] = []", false, ""},
++		{"array_inferred", "F027-V0", "const refunds = []", false, ""},
++		{"array_populated", "F027-V0", "const refunds: Refund[] = [{id:'r',amount:1}]", false, "sem elementos"},
++		{"array_assertion", "F027-V0", "const refunds = [] as Refund[]", false, ""},
++		{"array_wrong_case", "F027-V1", "const expenses: Refund[] = []", false, "compilador"},
++		{"function_renamed_inferred", "F030-V0", "function getRefundAmount(r: Refund) { return (r)['amount'] }", true, ""},
++		{"function_local", "F030-V0", "function getRefundAmount(r: Refund) { const amount = r.amount; return amount }", true, ""},
++		{"function_contextual_arrow", "F030-V0", "const getRefundAmount: (r: Refund) => number = r => r.amount", true, ""},
++		{"function_destructured", "F030-V1", "const readExpenseTotal = ({total: cost}: Expense) => cost", true, ""},
++		{"function_constant", "F030-V0", "function getRefundAmount(r: Refund): number { return 15000 }", false, "propriedade"},
++		{"function_wrong_property", "F030-V0", "function getRefundAmount(r: Refund) { return r.id }", false, "propriedade"},
++		{"function_any_parameter", "F030-V0", "function getRefundAmount(r: any): number { return r.amount }", false, "parâmetro"},
++		{"function_any_binding", "F030-V0", "const getRefundAmount: any = (r: Refund) => r.amount", false, ""},
++		{"function_any_result", "F030-V0", "function getRefundAmount(r: Refund): any { return r.amount }", false, "retorno"},
++		{"function_suppressed", "F030-V0", "// @ts-ignore\nfunction getRefundAmount(r: Refund): string { return r.amount }", false, "compilador"},
++		{"function_generator", "F030-V0", "function* getRefundAmount(r: Refund) { return r.amount }", false, ""},
++		{"function_extra_statement", "F030-V0", "function getRefundAmount(r: Refund) { return r.amount }; getRefundAmount", false, ""},
++		{"call_equivalent", "F035-V0", "(isPositive)((5_000))", true, ""},
++		{"call_missing", "F035-V0", "isPositive", false, "Invoque"},
++		{"call_wrong", "F035-V0", "isPositive(5001)", false, "5000"},
++		{"call_extra", "F035-V0", "isPositive(5000, 0)", false, ""},
++		{"console_brackets", "F038-V0", "console['log']((amount))", true, ""},
++		{"console_other_method", "F038-V0", "console.warn(amount)", false, "console.log"},
++		{"console_constant", "F038-V0", "console.log(15000)", false, "amount"},
++		{"console_instead_of_invoking", "F038-V0", "const shown = amount", false, ""},
++		{"parameter_is_not_argument", "F032-V0", "5000", false, ""},
++		{"return_type_is_not_value", "F033-V0", "true", false, ""},
++		{"invocation_boundary", "F036-V0", "true", false, ""},
++		{"argument_is_not_parameter", "F037-V0", "amount", false, ""},
++	})
++}
 diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
 new file mode 100644
 index 00000000..10f8e984
@@ -2681,7 +2884,7 @@ index 913a6102..6733c0ca 100644
      <footer
        // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae4..852e16d3 100644
+index 2f6abae4..5d1ab853 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
 @@ -1,5 +1,6 @@
@@ -3079,13 +3282,14 @@ index 2f6abae4..852e16d3 100644
                    <MathAnswerInput
                      id={`learn-answer-${qe.key}`}
                      focusRef={qe.key === lastEntryKey ? answerFocusRef : undefined}
-@@ -935,20 +994,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -935,20 +994,23 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      disabled={qe.checking}
                      status={qe.feedback ? (qe.feedback.correct ? 'correct' : 'incorrect') : 'default'}
                      inputMode={format.inputMode}
 -                  placeholder="Your answer"
 +                    placeholder={pt('Your answer')}
 +                    ariaLabel={pt('Your answer')}
++                    multiline={TS_PILOT && conceptId === 'ts.function.definition'}
 +                    showPalette={!TS_PILOT}
                      className="sm:flex-1"
                    />
@@ -3107,7 +3311,7 @@ index 2f6abae4..852e16d3 100644
                      prerequisites={(qe.blockedPrerequisiteIds?.length ? qe.blockedPrerequisiteIds : prerequisites.flatMap(p => p.met ? [] : [p.conceptId])).map(id => ({
                        conceptId: id,
                        title: prerequisites.find(p => p.conceptId === id)?.title ?? concepts.find(c => c.id === id)?.label ?? id,
-@@ -957,7 +1018,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -957,7 +1019,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      }))}
                      returnStack={prereqStack}
                    />
@@ -3116,7 +3320,7 @@ index 2f6abae4..852e16d3 100644
                  </div>
                )}
                <div className="mt-2 flex justify-end">
-@@ -967,6 +1028,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -967,6 +1029,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    kind="question"
                    question={qe.q.question}
                    source="practice"
@@ -3125,7 +3329,7 @@ index 2f6abae4..852e16d3 100644
                    answerGiven={qe.answer}
                    gradingType={conceptGradingType}
                    answerHint={format.hint}
-@@ -976,8 +1039,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -976,8 +1040,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                {locked && qe.feedback && (
                  <div className="mt-3">
                    <p className={`font-mono text-xs ${qe.feedback.correct ? 'text-green-400' : 'text-red-400'}`}>
@@ -3136,7 +3340,7 @@ index 2f6abae4..852e16d3 100644
                    </p>
                    <XPAdjustmentNote
                      adjustment={qe.feedback.xpAdjustment}
-@@ -986,7 +1049,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -986,7 +1050,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      className="mt-2"
                    />
                    <p className="mt-1.5 font-mono text-xs text-mathua-primary">
@@ -3145,7 +3349,7 @@ index 2f6abae4..852e16d3 100644
                    </p>
                    {/* The explanation is the solution for *this* instance, shown
                        on both verdicts: a correct answer still needs the
-@@ -1002,7 +1065,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -1002,7 +1066,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    {qe.feedback.text && (
                      <div className="mt-1.5">
                        <p className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted">
@@ -3501,6 +3705,54 @@ index d9f178f7..829bfd18 100644
              </SidebarMenuButton>
            </SidebarMenuItem>
          </SidebarMenu>
+diff --git a/web/next-app/components/math/MathInput.tsx b/web/next-app/components/math/MathInput.tsx
+index 8d2faeb7..5986ca56 100644
+--- a/web/next-app/components/math/MathInput.tsx
++++ b/web/next-app/components/math/MathInput.tsx
+@@ -391,6 +391,7 @@ export interface MathAnswerInputProps {
+   focusRef?: MutableRefObject<MathFocusHandle | null>
+   /** Render the legacy SymbolPalette under a text-mode input. Off in math mode, where the keypad replaces it. */
+   showPalette?: boolean
++  multiline?: boolean
+ }
+
+ export function MathAnswerInput({
+@@ -408,6 +409,7 @@ export function MathAnswerInput({
+   inputMode,
+   focusRef,
+   showPalette = true,
++  multiline = false,
+ }: MathAnswerInputProps) {
+   const { editor, keyboard } = presentationForQuestion(gradingType, conceptId)
+
+@@ -440,6 +442,27 @@ export function MathAnswerInput({
+     rerender(n => n + 1)
+   }, [value])
+
++  const textareaRef = useRef<HTMLTextAreaElement>(null)
++  if (multiline) {
++    if (focusRef) focusRef.current = { focus: () => textareaRef.current?.focus() }
++    return (
++      <textarea
++        ref={textareaRef}
++        id={id}
++        rows={4}
++        value={value}
++        onChange={e => onChange(e.target.value)}
++        disabled={disabled}
++        aria-label={ariaLabel}
++        placeholder={placeholder}
++        spellCheck={false}
++        autoCapitalize="off"
++        autoCorrect="off"
++        className={`w-full min-w-0 border border-mathua-border bg-mathua-bg px-3 py-2 font-mono text-sm text-mathua-primary ${className ?? ''}`}
++      />
++    )
++  }
++
+   if (editor === 'text') {
+     if (focusRef) focusRef.current = { focus: () => inputRef.current?.focus() }
+     return (
 diff --git a/web/next-app/lib/nav.ts b/web/next-app/lib/nav.ts
 index 5bd3fb8f..18ec286b 100644
 --- a/web/next-app/lib/nav.ts

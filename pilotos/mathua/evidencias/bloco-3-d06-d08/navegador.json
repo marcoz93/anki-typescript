@@ -1,0 +1,672 @@
+{
+  "passed": true,
+  "platform": "darwin arm64",
+  "node": "v24.14.1",
+  "browser": "151.0.7922.34",
+  "checks": [
+    {
+      "name": "home_opens_first_concept_with_its_lesson",
+      "passed": true,
+      "observed": {
+        "status": 200,
+        "concept": "ts.value.literal_notation"
+      }
+    },
+    {
+      "name": "navigation_fits_the_pilot",
+      "passed": true,
+      "observed": {
+        "hidden_absent": [
+          "/graph",
+          "/glossary",
+          "/docs",
+          "/docs/contributing",
+          "/how-it-works",
+          "/note",
+          "/announcements"
+        ],
+        "required_present": [
+          "/learn",
+          "/domains",
+          "/history",
+          "/reports",
+          "/my-reports"
+        ],
+        "sidebar": [
+          "λ Mathua",
+          "Estudar",
+          "Domínios",
+          "Ranking",
+          "Histórico",
+          "Relatório de progresso",
+          "Configurações",
+          "Meus relatos e avisos",
+          "G Guest",
+          "Trocar tema",
+          "Sair"
+        ]
+      }
+    },
+    {
+      "name": "ui_blocks_unmet_prerequisites",
+      "passed": true,
+      "observed": {
+        "concept": "ts.binding.const_number",
+        "answer_fields": 0
+      }
+    },
+    {
+      "name": "choice_miss_shows_instance_explanation_and_same_family_variant",
+      "passed": true,
+      "observed": {
+        "family": "F001",
+        "missed_case": "F001-V2",
+        "tapped": "A",
+        "reference_shown": "Uma notação que expressa diretamente um valor.",
+        "explanation_shown": "Um literal escreve diretamente um valor; um identificador referencia uma vinculação, e uma operação pode combinar valores.",
+        "variant_case": "F001-V3"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.literal_notation",
+      "passed": true,
+      "observed": {
+        "answers": 5,
+        "new_status": "MASTERED",
+        "distinct_cases": 5,
+        "cases": [
+          "F001-V3",
+          "F001-V4",
+          "F001-V1",
+          "F001-V5",
+          "F001-V0"
+        ],
+        "sample_answer": "D"
+      }
+    },
+    {
+      "name": "new_concept_mastery_unlocks_its_dependent",
+      "passed": true,
+      "observed": {
+        "mastered": "ts.value.literal_notation",
+        "eligible": "ts.value.string_literal"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.numeric_literal",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F002-V0",
+          "F002-V1",
+          "F002-V2",
+          "F002-V3",
+          "F002-V5",
+          "F002-V4"
+        ],
+        "sample_answer": "1_200"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.number",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F005-V5",
+          "F005-V0",
+          "F005-V2",
+          "F005-V3",
+          "F005-V1",
+          "F005-V4"
+        ],
+        "sample_answer": "number"
+      }
+    },
+    {
+      "name": "navigation_to_ts.binding.const_number",
+      "passed": true,
+      "observed": {
+        "label": "Novo: Declaração const numérica →",
+        "concept": "ts.binding.const_number"
+      }
+    },
+    {
+      "name": "code_miss_names_the_cause_then_variant_accepts_valid_alternative",
+      "passed": true,
+      "observed": {
+        "missed_case": "F010-V2",
+        "wrong_answer": "let value: number = 9000;",
+        "cause_shown": "A tarefa pede const, que impede reatribuir esse nome após a inicialização. let permite reatribuição.",
+        "variant_case": "F010-V3",
+        "model_answer": "const quantity: number = 30000;",
+        "accepted_answer": "const quantity = 30000"
+      }
+    },
+    {
+      "name": "study_path_text_is_portuguese",
+      "passed": true,
+      "observed": {
+        "english_source_strings_checked": 21,
+        "screens": [
+          "lesson",
+          "locked concept",
+          "choice question",
+          "wrong answer",
+          "report dialog"
+        ]
+      }
+    },
+    {
+      "name": "report_keeps_question_reference_and_given_answer",
+      "passed": true,
+      "observed": {
+        "status": "open",
+        "concept": "ts.binding.const_number",
+        "family": "F010",
+        "case": "F010-V3",
+        "expected": "const quantity: number = 30000;",
+        "answer_given": "const quantity = 30000"
+      }
+    },
+    {
+      "name": "learner_reads_own_report_on_my_reports_page",
+      "passed": true,
+      "observed": {
+        "reports_listed": 1
+      }
+    },
+    {
+      "name": "each_section_keeps_its_family_after_a_miss",
+      "passed": true,
+      "observed": {
+        "concept": "ts.binding.const_semantics",
+        "sections": [
+          {
+            "family": "F009",
+            "cases": [
+              "F009-V1",
+              "F009-V2",
+              "F009-V3"
+            ]
+          },
+          {
+            "family": "F013",
+            "cases": [
+              "F013-V0",
+              "F013-V1",
+              "F013-V2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "reload_preserves_identity_and_prerequisite_progress",
+      "passed": true,
+      "observed": {
+        "eligible": true
+      }
+    },
+    {
+      "name": "server_restart_preserves_progress_and_reports",
+      "passed": true,
+      "observed": {
+        "processes_started": 2,
+        "eligible": true,
+        "reports": 1
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.boolean_literal",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F004-V2",
+          "F004-V3",
+          "F004-V4",
+          "F004-V5",
+          "F004-V0",
+          "F004-V1"
+        ],
+        "sample_answer": "true"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.boolean",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F007-V4",
+          "F007-V5",
+          "F007-V1",
+          "F007-V2",
+          "F007-V3",
+          "F007-V0"
+        ],
+        "sample_answer": "boolean"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.binding.const_number",
+      "passed": true,
+      "observed": {
+        "answers": 4,
+        "new_status": "MASTERED",
+        "distinct_cases": 4,
+        "cases": [
+          "F010-V5",
+          "F010-V0",
+          "F010-V1",
+          "F010-V2"
+        ],
+        "sample_answer": "const value: number = 9000;"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.expression.value",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F015-V0",
+          "F015-V1",
+          "F015-V2",
+          "F015-V3",
+          "F015-V4",
+          "F015-V5"
+        ],
+        "sample_answer": "A"
+      }
+    },
+    {
+      "name": "stage_4_prerequisites_mastered_through_browser",
+      "passed": true,
+      "observed": {
+        "concept": "ts.expression.greater_than",
+        "eligible": true,
+        "prerequisites": [
+          {
+            "concept": "ts.binding.const_number",
+            "met": true
+          },
+          {
+            "concept": "ts.type.boolean",
+            "met": true
+          },
+          {
+            "concept": "ts.expression.value",
+            "met": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "greater_than_section_1_miss_names_cause_then_variant_accepts_limit_first",
+      "passed": true,
+      "observed": {
+        "missed_case": "F016-V1",
+        "wrong_answer": "total >= 12000",
+        "cause_shown": "A tarefa pede estritamente maior. Os operadores >= e <= também aceitam a igualdade.",
+        "variant_case": "F016-V2",
+        "model_answer": "value > 6000",
+        "accepted_answer": "6000 < value"
+      }
+    },
+    {
+      "name": "greater_than_section_2_value_miss_then_same_family_variant",
+      "passed": true,
+      "observed": {
+        "section_1_cases": [
+          "F016-V1",
+          "F016-V2",
+          "F016-V3"
+        ],
+        "missed_case": "F017-V0",
+        "context": "10000 > 10000",
+        "wrong_answer": "true",
+        "cause_shown": "A expressão produz o outro valor booleano.",
+        "variant_case": "F017-V1",
+        "variant_context": "18000 > 12000",
+        "accepted_answer": "true"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.string_literal",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F003-V5",
+          "F003-V0",
+          "F003-V1",
+          "F003-V2",
+          "F003-V3",
+          "F003-V4"
+        ],
+        "sample_answer": "\"reembolso-41\""
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.string",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F006-V4",
+          "F006-V5",
+          "F006-V3",
+          "F006-V0",
+          "F006-V1",
+          "F006-V2"
+        ],
+        "sample_answer": "string"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.binding.const_semantics",
+      "passed": true,
+      "observed": {
+        "answers": 1,
+        "new_status": "MASTERED",
+        "distinct_cases": 1,
+        "cases": [
+          "F009-V1"
+        ],
+        "sample_answer": "C"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.binding.const_string",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F011-V1",
+          "F011-V2",
+          "F011-V3",
+          "F011-V4",
+          "F011-V5",
+          "F011-V0"
+        ],
+        "sample_answer": "const id: string = \"reembolso-01\";"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.binding.annotation",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F012-V5",
+          "F012-V0",
+          "F012-V1",
+          "F012-V2",
+          "F012-V3",
+          "F012-V4"
+        ],
+        "sample_answer": ":"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.expression.greater_than",
+      "passed": true,
+      "observed": {
+        "answers": 1,
+        "new_status": "MASTERED",
+        "distinct_cases": 1,
+        "cases": [
+          "F016-V5"
+        ],
+        "sample_answer": "grossAmount > 50000"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.data.object",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F021-V3",
+          "F021-V4",
+          "F021-V2",
+          "F021-V5",
+          "F021-V0",
+          "F021-V1"
+        ],
+        "sample_answer": "const expense = { id: \"r11\", total: 18000 };"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.data.property",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F022-V4",
+          "F022-V5",
+          "F022-V0",
+          "F022-V1",
+          "F022-V2",
+          "F022-V3"
+        ],
+        "sample_answer": "claim.quantity"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.data.array",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F023-V3",
+          "F023-V4",
+          "F023-V5",
+          "F023-V0",
+          "F023-V1",
+          "F023-V2"
+        ],
+        "sample_answer": "const values = [9000, 3000, 6000];"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.object_alias",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F026-V0",
+          "F026-V1",
+          "F028-V1",
+          "F028-V2",
+          "F029-V3",
+          "F029-V4"
+        ],
+        "sample_answer": "D"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.array",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F027-V4",
+          "F027-V5",
+          "F027-V2",
+          "F027-V3",
+          "F027-V1",
+          "F027-V0"
+        ],
+        "sample_answer": "const refunds: Array<Refund> = [];"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.function.parameter",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F032-V4",
+          "F032-V5",
+          "F032-V3",
+          "F032-V0",
+          "F032-V1",
+          "F032-V2"
+        ],
+        "sample_answer": "value"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.function.return_type",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F033-V1",
+          "F033-V2",
+          "F033-V3",
+          "F033-V4",
+          "F033-V5",
+          "F033-V0"
+        ],
+        "sample_answer": "boolean"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.function.return",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F031-V4",
+          "F031-V5",
+          "F034-V1",
+          "F034-V2",
+          "F031-V1",
+          "F031-V2"
+        ],
+        "sample_answer": "D"
+      }
+    },
+    {
+      "name": "multiline_function_miss_then_same_family_variant",
+      "passed": true,
+      "observed": {
+        "missed": "F030-V2",
+        "variant": "F030-V3",
+        "feedback": "Devolva a propriedade value do objeto recebido."
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.function.definition",
+      "passed": true,
+      "observed": {
+        "answers": 5,
+        "new_status": "MASTERED",
+        "distinct_cases": 5,
+        "cases": [
+          "F030-V3",
+          "F030-V4",
+          "F030-V5",
+          "F030-V0",
+          "F030-V1"
+        ],
+        "sample_answer": "function readExpenseTotal(entry: Expense) {\n  return entry.total;\n}"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.function.invocation",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F035-V3",
+          "F035-V4",
+          "F036-V3",
+          "F036-V4",
+          "F035-V5",
+          "F035-V0"
+        ],
+        "sample_answer": "isPositive(5000);"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.function.argument",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F037-V0",
+          "F037-V1",
+          "F037-V2",
+          "F037-V3",
+          "F037-V4",
+          "F037-V5"
+        ],
+        "sample_answer": "25000"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.effect.console_output",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F038-V1",
+          "F038-V2",
+          "F038-V3",
+          "F038-V4",
+          "F038-V0",
+          "F038-V5"
+        ],
+        "sample_answer": "console.log(grossAmount);"
+      }
+    }
+  ],
+  "page_errors": [],
+  "api_errors": []
+}
