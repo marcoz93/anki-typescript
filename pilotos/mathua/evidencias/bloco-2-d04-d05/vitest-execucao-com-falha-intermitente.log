@@ -1,0 +1,193 @@
+
+> mathua-web@0.1.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vitest.config.mts:16:55). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.12 <repositório>/pilotos/mathua/mathua/web/next-app
+
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+ ❯ test/reportsPage.test.tsx (8 tests | 1 failed) 404ms
+     × renders the overview for an established learner 135ms
+Not implemented: navigation to another Document
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/reportsPage.test.tsx > Reports page > renders the overview for an established learner
+TestingLibraryElementError: Unable to find an element with the text: Mastered. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <main
+        class="max-w-container mx-auto px-4 sm:px-6 pb-[calc(80px+env(safe-area-inset-bottom))] lg:pb-0 overflow-x-hidden min-w-0"
+      >
+        <div
+          class="print-report"
+        >
+          <section
+            class="pt-8 min-w-0 overflow-hidden"
+          >
+            <div
+              class="flex flex-wrap items-start justify-between gap-4 report-no-print"
+            >
+              <div
+                class="min-w-0"
+              >
+                <h1
+                  class="text-2xl font-semibold"
+                >
+                  Reports
+                </h1>
+                <p
+                  class="text-sm text-mathua-secondary mt-1 max-w-2xl"
+                >
+                  A record of what you have learned, the evidence behind it and what you have attempted. It is built from stored progress, answers and completions, not from estimates.
+                </p>
+              </div>
+              <button
+                class="h-9 px-4 font-mono text-[11px] uppercase tracking-wider border border-[var(--border)] rounded-none hover:bg-[var(--surface)] disabled:opacity-50"
+                disabled=""
+                type="button"
+              >
+                Print report
+              </button>
+            </div>
+            <div
+              aria-label="Reporting period"
+              class="flex flex-wrap gap-2 mt-5 report-no-print"
+              role="group"
+            >
+              <button
+                aria-pressed="false"
+                class="px-3 h-8 font-mono text-[11px] uppercase tracking-wider border rounded-none transition-colors border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue"
+                type="button"
+              >
+                Last 7 days
+              </button>
+              <button
+                aria-pressed="true"
+                class="px-3 h-8 font-mono text-[11px] uppercase tracking-wider border rounded-none transition-colors border-mathua-blue bg-mathua-blue text-white"
+                type="button"
+              >
+                Last 30 days
+              </button>
+              <button
+                aria-pressed="false"
+                class="px-3 h-8 font-mono text-[11px] uppercase tracking-wider border rounded-none transition-colors border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue"
+                type="button"
+              >
+                Last 90 days
+              </button>
+              <button
+                aria-pressed="false"
+                class="px-3 h-8 font-mono text-[11px] uppercase tracking-wider border rounded-none transition-colors border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue"
+                type="button"
+              >
+                All history
+              </button>
+              <label
+                class="sr-only"
+                for="report-domain"
+              >
+                Domain
+              </label>
+              <select
+                class="h-8 px-2 border border-[var(--border)] rounded-none bg-[var(--bg)] font-mono text-[11px] uppercase tracking-wider"
+                id="report-domain"
+              >
+                <option
+                  value=""
+                >
+                  All domains
+                </option>
+              </select>
+            </div>
+            <div
+              aria-busy="true"
+              aria-label="Loading report"
+              class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+            >
+              <div
+                class="h-28 rounded-none border border-[var(--border)] bg-[var(--surface)] animate-pulse"
+              />
+              <div
+                class="h-28 rounded-none border border-[var(--border)] bg-[var(--surface)] animate-pulse"
+              />
+              <div
+                class="h-28 rounded-none border border-[var(--border)] bg-[var(--surface)] animate-pulse"
+              />
+              <div
+                class="h-28 rounded-none border border-[var(--border)] bg-[var(--surface)] animate-pulse"
+              />
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ test/reportsPage.test.tsx:83:19
+     81|     render(<ReportsPage />)
+     82|     expect(await screen.findByRole('heading', { name: 'Reports' })).to…
+     83|     expect(screen.getAllByText('Mastered').length).toBeGreaterThan(0)
+       |                   ^
+     84|     expect(screen.getByText(/concepts in view/)).toBeDefined()
+     85|     expect(screen.getAllByText(/1,?200/).length).toBeGreaterThan(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 198 passed (199)
+      Tests  1 failed | 1893 passed (1894)
+   Start at  03:10:18
+   Duration  34.29s (transform 11.98s, setup 20.69s, import 65.14s, tests 86.53s, environment 105.11s)
+

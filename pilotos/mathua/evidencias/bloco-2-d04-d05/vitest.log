@@ -54,7 +54,7 @@ Not implemented: Window's scrollTo() method
 Not implemented: navigation to another Document
 
  Test Files  199 passed (199)
-      Tests  1891 passed (1891)
-   Start at  02:51:45
-   Duration  35.34s (transform 11.25s, setup 22.06s, import 65.02s, tests 87.75s, environment 110.14s)
+      Tests  1894 passed (1894)
+   Start at  03:14:37
+   Duration  34.09s (transform 11.43s, setup 21.59s, import 62.32s, tests 85.20s, environment 106.61s)
 
