@@ -1,0 +1,861 @@
+diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
+new file mode 100644
+index 0000000..36b89af
+--- /dev/null
++++ b/cmd/typescript-pilot/README.md
+@@ -0,0 +1,100 @@
++# TypeScript pilot
++
++This pilot connects TypeScript exercises to Mathua's existing generator interface.
++It uses the existing engine, HTTP routes, SQLite store, prerequisite rules, mastery model and report workflow.
++It provides an API and an integration test. It does not include a new web interface.
++
++The TypeScript content and grader are a separate adaptation.
++They are not Math Academy content or an official Mathua curriculum.
++
++## Scope
++
++| Concept ID | Observable task | Prerequisites in this pilot |
++| --- | --- | --- |
++| `ts.value.numeric_literal` | Write a numeric literal for a stated value | None |
++| `ts.type.number` | Name the numeric type in a type annotation | None |
++| `ts.binding.const_number` | Declare a constant with the requested name and numeric literal | Both concepts above |
++
++The prerequisite edges are a teaching choice.
++They do not define a mandatory sequence for all TypeScript learning.
++The native mastery thresholds remain in `internal/mastery/evidence.go`.
++The pilot does not validate their educational calibration.
++
++Each concept has one exercise family.
++The generator varies the value and, where applicable, the identifier.
++These parameter changes do not create a new exercise family.
++Generation uses a local draw counter because the registry reuses one context within a batch.
++A seed alone does not reproduce a question without the counter state.
++Reports preserve the question, expected answer and learner answer for replay.
++
++## Install and test
++
++Use the Go version declared in the repository's `go.mod`.
++Install Node.js and npm.
++Run these commands from the repository root:
++
++```sh
++npm ci --prefix cmd/typescript-pilot --ignore-scripts
++go test ./cmd/typescript-pilot -count=1 -v
++go run ./cmd/typescript-pilot
++```
++
++The command prints its local API address.
++Use `-addr` to set the listen address.
++Use `-db` to set the SQLite database path.
++Keep the adjacent `.jwt` file with the database to preserve login tokens across process restarts.
++Use `-node` or `-grader` to set non-default executable and script paths.
++
++## Existing routes used by the test
++
++| Operation | Native route |
++| --- | --- |
++| Create learner identity | `POST /api/auth/guest` |
++| Request exercises | `GET /api/lessons/{concept_id}/practice` |
++| Submit an answer | `POST /api/study/answer` |
++| Report a question | `POST /api/reports` |
++| Read report resolutions | `GET /api/reports/mine` |
++| Replay a reported answer | `POST /api/admin/reports/{id}/grade` |
++| Resolve a report | `PATCH /api/admin/reports/{id}` |
++
++Send the returned bearer token on learner requests.
++Send the served question text and a unique `submission_id` with each logical answer.
++Reuse that ID when retrying the same submission.
++Request the next variant with `count=1` and `exclude` set to the previous question text.
++The test supplies actual JSON requests and checks the persisted state.
++Administrative routes use the existing role checks.
++The test grants an operator role only inside its temporary database.
++
++## Grading contract
++
++The constant prompt states that a `number` annotation is optional.
++Both answers below satisfy that task:
++
++```ts
++const amount: number = 15000;
++const amount = 15000;
++```
++
++Each submission contains only one of these declarations.
++The checker rejects `let`, an incorrect name, an incorrect value, a string initializer or extra statements.
++It accepts numeric separators, whitespace and ordinary comments.
++It checks TypeScript syntax and types without executing or emitting learner code.
++Compiler file reads are restricted to the virtual answer and TypeScript's standard library declarations.
++Compiler failure returns an unavailable result instead of a learner error.
++The existing study response needs the added `ungraded` field to transmit that distinction.
++
++## Feedback and limits
++
++A report stores the concrete exercise and answer.
++A reviewer can replay it with the same grader, record a resolution and return that resolution to the learner.
++Reporting and replay do not write learning evidence.
++The native `repair.Run` operation can correct historical false negatives after a grader change.
++The test checks its preview and apply paths with a simulated historical error.
++That repair does not recalculate XP.
++
++Feedback does not automatically generate new exercise families or tune selection in this pilot.
++A reviewer still decides how to change a prompt or grader.
++The prerequisite test covers practice and study submission without diagnostic placement.
++The original diagnostic placement policy remains available in Mathua.
++The API test restarts the server and reopens SQLite within the test process.
++It does not test a browser flow, a deployed installation or long-term retention.
+diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
+new file mode 100644
+index 0000000..2faecb0
+--- /dev/null
++++ b/cmd/typescript-pilot/grade.cjs
+@@ -0,0 +1,88 @@
++'use strict';
++
++// This is a narrow static grader. Learner code is never evaluated or emitted.
++const ts = require('typescript');
++const fs = require('node:fs');
++const path = require('node:path');
++
++const result = (correct, feedback) => ({correct, score: correct ? 1 : 0, feedback});
++const parse = source => ts.createSourceFile('answer.ts', source, ts.ScriptTarget.ES2022, true);
++
++function declaration(sf) {
++  const statement = sf.statements.length === 1 && sf.statements[0];
++  if (!statement || !ts.isVariableStatement(statement) || statement.modifiers?.length) return null;
++  const list = statement.declarationList;
++  if (list.declarations.length !== 1) return null;
++  return {list, item: list.declarations[0]};
++}
++
++function typeErrors(source) {
++  const filename = path.resolve(__dirname, '__answer__.ts');
++  const options = {strict: true, noEmit: true, types: [], skipLibCheck: true, target: ts.ScriptTarget.ES2022};
++  const host = ts.createCompilerHost(options);
++  const library = path.dirname(ts.getDefaultLibFilePath(options));
++  const read = host.readFile.bind(host);
++  // Only compiler library files are accessible. Triple-slash paths in an answer
++  // cannot make the checker read other project or host files.
++  const allowed = file => path.dirname(path.resolve(file)) === library && /^lib(?:\..+)?\.d\.ts$/.test(path.basename(file));
++  host.readFile = file => path.resolve(file) === filename ? source : allowed(file) ? read(file) : undefined;
++  host.fileExists = file => path.resolve(file) === filename || (allowed(file) && ts.sys.fileExists(file));
++  host.getSourceFile = (file, languageVersion) => {
++    const content = host.readFile(file);
++    return content === undefined ? undefined : ts.createSourceFile(file, content, languageVersion, true);
++  };
++  const program = ts.createProgram([filename], options, host);
++  return ts.getPreEmitDiagnostics(program).map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
++}
++
++function grade({kind, expected, answer}) {
++  if (typeof expected !== 'string' || typeof answer !== 'string') throw new Error('Invalid grader input');
++  if (!answer.trim()) return result(false, 'Digite a resposta solicitada.');
++  if (answer.length > 4096) return result(false, 'A resposta excede o tamanho deste exercício.');
++  if (kind === 'type') {
++    if (expected !== 'number') throw new Error('Invalid reference type');
++    return result(answer.trim() === 'number', answer.trim() === 'number'
++      ? 'Correto. number nomeia o tipo numérico.'
++      : 'Use number para nomear o tipo numérico. Um literal como 15000 representa um valor, não o nome do tipo.');
++  }
++  const sf = parse(answer);
++  if (sf.parseDiagnostics.length) return result(false, 'A resposta contém um erro de sintaxe TypeScript.');
++  if (kind === 'literal') {
++    const stmt = sf.statements.length === 1 && sf.statements[0];
++    const expr = stmt && ts.isExpressionStatement(stmt) && stmt.expression;
++    if (!expr || !ts.isNumericLiteral(expr)) return result(false, 'Use somente um literal numérico, sem aspas e sem operações.');
++    if (Number(expr.text) !== Number(expected)) return result(false, 'O literal representa um valor diferente do solicitado.');
++    return result(true, 'Correto. O literal representa o valor solicitado.');
++  }
++  if (kind !== 'const') throw new Error('Unknown exercise kind');
++  const reference = declaration(parse(expected));
++  if (!reference || !ts.isIdentifier(reference.item.name) || !ts.isNumericLiteral(reference.item.initializer)) {
++    throw new Error('Invalid reference declaration');
++  }
++  const actual = declaration(sf);
++  if (!actual) return result(false, 'Escreva somente uma declaração de constante, com um único nome.');
++  if (!(actual.list.flags & ts.NodeFlags.Const)) return result(false, 'A tarefa pede const, que impede reatribuir esse nome após a inicialização. let permite reatribuição.');
++  if (!ts.isIdentifier(actual.item.name) || actual.item.name.text !== reference.item.name.text) {
++    return result(false, `Use o nome solicitado: ${reference.item.name.text}.`);
++  }
++  const init = actual.item.initializer;
++  if (!init || !ts.isNumericLiteral(init)) return result(false, 'Inicialize a constante com um literal numérico, sem aspas e sem operações.');
++  if (Number(init.text) !== Number(reference.item.initializer.text)) return result(false, 'O valor inicial difere do solicitado.');
++  if (actual.item.type && actual.item.type.kind !== ts.SyntaxKind.NumberKeyword) {
++    return result(false, 'Neste exercício, omita a anotação ou use number, como indicado no enunciado.');
++  }
++  const errors = typeErrors(answer);
++  if (errors.length) return result(false, `O compilador TypeScript rejeitou a declaração: ${errors[0]}`);
++  return result(true, 'Correto. A constante tem o nome e o valor solicitados. A anotação number é opcional neste exercício.');
++}
++
++if (require.main === module) {
++  try {
++    process.stdout.write(JSON.stringify(grade(JSON.parse(fs.readFileSync(0, 'utf8')))));
++  } catch (error) {
++    process.stderr.write(error.message + '\n');
++    process.exitCode = 1;
++  }
++}
++
++module.exports = {grade};
+diff --git a/cmd/typescript-pilot/main.go b/cmd/typescript-pilot/main.go
+new file mode 100644
+index 0000000..a8f5a1d
+--- /dev/null
++++ b/cmd/typescript-pilot/main.go
+@@ -0,0 +1,155 @@
++// This pilot composes Mathua's existing engine and HTTP API with TypeScript exercises.
++package main
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"flag"
++	"fmt"
++	"log"
++	"math/rand"
++	"net/http"
++	"os/exec"
++	"path/filepath"
++	"sync/atomic"
++	"time"
++
++	"github.com/chuma-beep/mathua/internal/auth"
++	"github.com/chuma-beep/mathua/internal/concepts"
++	"github.com/chuma-beep/mathua/internal/engine"
++	"github.com/chuma-beep/mathua/internal/generator"
++	"github.com/chuma-beep/mathua/internal/grader"
++	"github.com/chuma-beep/mathua/internal/server"
++	"github.com/chuma-beep/mathua/internal/storage"
++)
++
++const (
++	literalID = "ts.value.numeric_literal"
++	typeID    = "ts.type.number"
++	constID   = "ts.binding.const_number"
++)
++
++// checker parses and typechecks learner input. It never executes that input.
++type checker struct {
++	node   string
++	script string
++}
++
++func (c *checker) grade(kind, expected, answer string) grader.Result {
++	input, err := json.Marshal(map[string]string{"kind": kind, "expected": expected, "answer": answer})
++	if err != nil {
++		return grader.Result{Unavailable: true, Feedback: "Não foi possível preparar a correção."}
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
++	defer cancel()
++	cmd := exec.CommandContext(ctx, c.node, "--max-old-space-size=256", c.script)
++	cmd.Stdin = bytes.NewReader(input)
++	output, err := cmd.Output()
++	var result grader.Result
++	if err != nil || json.Unmarshal(output, &result) != nil || result.Feedback == "" {
++		return grader.Result{Unavailable: true, Feedback: "O corretor TypeScript está indisponível. Sua resposta não foi contada como erro."}
++	}
++	return result
++}
++
++type exercise struct {
++	kind  string
++	check *checker
++	draw  atomic.Int64
++}
++
++func (g *exercise) Generate(ctx generator.GeneratorContext) generator.Problem {
++	// Mathua calls Generate repeatedly with one context in a batch. The local
++	// counter varies those draws. Reports replay the stored question and answer.
++	rng := rand.New(rand.NewSource(ctx.Seed + g.draw.Add(1)))
++	names := []string{"amount", "reviewLimit", "refundAmount", "limit"}
++	name := names[rng.Intn(len(names))]
++	value := 1000 + rng.Intn(19001)
++	var p generator.Problem
++	switch g.kind {
++	case "literal":
++		words := []string{"um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte"}
++		n := rng.Intn(len(words))
++		value = (n + 1) * 1000
++		amount := words[n] + " mil"
++		if n == 0 {
++			amount = "mil"
++		}
++		p.Question = fmt.Sprintf("O valor de um reembolso é %s. Escreva somente um literal numérico TypeScript que represente esse valor.", amount)
++		p.Answer = fmt.Sprint(value)
++		p.Explanation = fmt.Sprintf("%d é um literal numérico: uma expressão que representa diretamente esse valor. Com aspas, seria um literal de texto.", value)
++	case "type":
++		p.Question = fmt.Sprintf("Complete somente a anotação de tipo: const %s: ___ = %d. Qual palavra TypeScript designa o tipo numérico?", name, value)
++		p.Answer = "number"
++		p.Explanation = fmt.Sprintf("number nomeia o tipo numérico. %d é um valor desse tipo. %s é o nome vinculado ao valor na declaração.", value, name)
++	case "const":
++		p.Question = fmt.Sprintf("Declare somente uma constante chamada %s, inicializada com o literal numérico %d. A anotação number é opcional.", name, value)
++		p.Answer = fmt.Sprintf("const %s: number = %d;", name, value)
++		p.Explanation = fmt.Sprintf("%s A declaração cria o vínculo entre o nome %s e o valor %d. const impede reatribuir esse nome. A anotação number pode ser omitida neste exercício.", p.Answer, name, value)
++	}
++	return p
++}
++
++func (g *exercise) Grade(expected, answer string) grader.Result {
++	return g.check.grade(g.kind, expected, answer)
++}
++
++func (g *exercise) AnswerFormat() generator.AnswerFormat {
++	return generator.AnswerFormat{InputMode: "text", Hint: "Digite somente a resposta solicitada, sem bloco Markdown."}
++}
++
++func newPilot(repo storage.Repository, check *checker) (*http.ServeMux, *engine.Engine, error) {
++	// These prerequisite edges are a teaching choice for this narrow pilot.
++	// They do not claim that every TypeScript course needs this sequence.
++	dag, err := concepts.Build([]concepts.Concept{
++		{ID: literalID, Label: "Valor e literal numérico", Domain: "typescript", GradingType: "numeric",
++			MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}},
++		{ID: typeID, Label: "Tipo number", Domain: "typescript", GradingType: "expression",
++			MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}},
++		{ID: constID, Label: "Declaração const com valor numérico", Domain: "typescript", GradingType: "expression",
++			Prerequisites: []string{literalID, typeID}, MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}},
++	})
++	if err != nil {
++		return nil, nil, err
++	}
++	reg := generator.NewRegistry()
++	for _, item := range []struct{ id, kind string }{{literalID, "literal"}, {typeID, "type"}, {constID, "const"}} {
++		if err := reg.Register(item.id, &exercise{kind: item.kind, check: check}); err != nil {
++			return nil, nil, err
++		}
++	}
++	eng := engine.New(repo, dag, reg, nil, nil)
++	mux := http.NewServeMux()
++	server.New(eng, repo, auth.New(repo)).Register(mux)
++	return mux, eng, nil
++}
++
++func main() {
++	addr := flag.String("addr", "127.0.0.1:8081", "HTTP listen address")
++	db := flag.String("db", "typescript-pilot.db", "SQLite database path")
++	node := flag.String("node", "node", "Node executable")
++	script := flag.String("grader", "cmd/typescript-pilot/grade.cjs", "TypeScript grader path")
++	flag.Parse()
++	resolvedNode, err := exec.LookPath(*node)
++	if err != nil {
++		log.Fatal(err)
++	}
++	resolvedScript, err := filepath.Abs(*script)
++	if err != nil {
++		log.Fatal(err)
++	}
++	repo, err := storage.NewSQLiteStore(*db)
++	if err != nil {
++		log.Fatal(err)
++	}
++	defer repo.Close()
++	auth.SetSecretFile(*db + ".jwt")
++	mux, _, err := newPilot(repo, &checker{node: resolvedNode, script: resolvedScript})
++	if err != nil {
++		log.Fatal(err)
++	}
++	log.Printf("TypeScript pilot API: http://%s", *addr)
++	srv := &http.Server{Addr: *addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
++	log.Fatal(srv.ListenAndServe())
++}
+diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
+new file mode 100644
+index 0000000..4934113
+--- /dev/null
++++ b/cmd/typescript-pilot/main_test.go
+@@ -0,0 +1,434 @@
++package main
++
++import (
++	"bytes"
++	"encoding/json"
++	"fmt"
++	"io"
++	"net/http"
++	"net/http/httptest"
++	"net/url"
++	"os/exec"
++	"path/filepath"
++	"reflect"
++	"regexp"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/chuma-beep/mathua/internal/auth"
++	"github.com/chuma-beep/mathua/internal/engine"
++	"github.com/chuma-beep/mathua/internal/mastery"
++	"github.com/chuma-beep/mathua/internal/repair"
++	"github.com/chuma-beep/mathua/internal/storage"
++)
++
++func testChecker(t *testing.T) *checker {
++	t.Helper()
++	node, err := exec.LookPath("node")
++	if err != nil {
++		t.Fatal(err)
++	}
++	script, err := filepath.Abs("grade.cjs")
++	if err != nil {
++		t.Fatal(err)
++	}
++	return &checker{node: node, script: script}
++}
++
++func TestTypeScriptCriteria(t *testing.T) {
++	check := testChecker(t)
++	const expected = "const amount: number = 15000;"
++	cases := []struct {
++		name, kind, reference, answer string
++		correct                       bool
++	}{
++		{"literal", "literal", "15000", "15000", true},
++		{"numeric_separator", "literal", "15000", "15_000", true},
++		{"literal_is_not_a_string", "literal", "15000", `"15000"`, false},
++		{"literal_is_not_an_operation", "literal", "15000", "10000 + 5000", false},
++		{"wrong_literal", "literal", "15000", "15001", false},
++		{"type_name", "type", "number", "number", true},
++		{"value_is_not_type_name", "type", "number", "15000", false},
++		{"number_is_not_string", "type", "number", "string", false},
++		{"explicit_number", "const", expected, expected, true},
++		{"inferred_number", "const", expected, "const amount = 15000;", true},
++		{"spacing_and_comment", "const", expected, "// valor\nconst amount : number = 15_000 ;", true},
++		{"let_is_not_const", "const", expected, "let amount: number = 15000;", false},
++		{"wrong_name", "const", expected, "const other: number = 15000;", false},
++		{"wrong_value", "const", expected, "const amount: number = 15001;", false},
++		{"string_initializer", "const", expected, `const amount = "15000";`, false},
++		{"wrong_annotation", "const", expected, "const amount: string = 15000;", false},
++		{"syntax_error", "const", expected, "const amount: number = ;", false},
++		{"no_extra_statement", "const", expected, expected + " while (true) {}", false},
++		{"no_comment_disguise", "const", expected, "// " + expected + "\nlet amount = 15000;", false},
++		{"compiler_diagnostic", "const", expected, "/// <reference path=\"missing.ts\" />\n" + expected, false},
++		{"empty_answer", "const", expected, "", false},
++	}
++	for _, tc := range cases {
++		t.Run(tc.name, func(t *testing.T) {
++			got := check.grade(tc.kind, tc.reference, tc.answer)
++			if got.Unavailable || got.Correct != tc.correct || got.Feedback == "" {
++				t.Fatalf("grade = %+v, want correct=%t", got, tc.correct)
++			}
++		})
++	}
++}
++
++type pilotEnv struct {
++	http  *httptest.Server
++	store *storage.SQLiteStore
++	eng   *engine.Engine
++}
++
++func boot(t *testing.T, db string, check *checker) *pilotEnv {
++	t.Helper()
++	store, err := storage.NewSQLiteStore(db)
++	if err != nil {
++		t.Fatal(err)
++	}
++	mux, eng, err := newPilot(store, check)
++	if err != nil {
++		store.Close()
++		t.Fatal(err)
++	}
++	e := &pilotEnv{http: httptest.NewServer(mux), store: store, eng: eng}
++	return e
++}
++
++func (e *pilotEnv) request(t *testing.T, method, route, token string, body any, wantStatus int) (map[string]any, string) {
++	t.Helper()
++	var encoded []byte
++	if body != nil {
++		var err error
++		encoded, err = json.Marshal(body)
++		if err != nil {
++			t.Fatal(err)
++		}
++	}
++	req, err := http.NewRequest(method, e.http.URL+route, bytes.NewReader(encoded))
++	if err != nil {
++		t.Fatal(err)
++	}
++	req.Header.Set("Content-Type", "application/json")
++	if token != "" {
++		req.Header.Set("Authorization", "Bearer "+token)
++	}
++	client := &http.Client{Timeout: 15 * time.Second}
++	res, err := client.Do(req)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer res.Body.Close()
++	data, err := io.ReadAll(res.Body)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if res.StatusCode != wantStatus {
++		t.Fatalf("%s %s: status %d, want %d: %s", method, route, res.StatusCode, wantStatus, data)
++	}
++	var decoded map[string]any
++	if err := json.Unmarshal(data, &decoded); err != nil {
++		t.Fatalf("JSON: %v: %s", err, data)
++	}
++	return decoded, string(data)
++}
++
++func (e *pilotEnv) question(t *testing.T, token, concept string, excluded ...string) string {
++	t.Helper()
++	query := url.Values{"count": {"1"}}
++	for _, q := range excluded {
++		query.Add("exclude", q)
++	}
++	res, raw := e.request(t, "GET", "/api/lessons/"+concept+"/practice?"+query.Encode(), token, nil, 200)
++	questions := res["questions"].([]any)
++	if len(questions) != 1 {
++		t.Fatalf("want one question: %s", raw)
++	}
++	q := questions[0].(map[string]any)
++	if _, exposed := q["answer"]; exposed || q["answer_input_mode"] != "text" {
++		t.Fatalf("answer leaked or input excludes TypeScript: %s", raw)
++	}
++	return q["question"].(string)
++}
++
++func submission(concept, question, answer, id string) map[string]any {
++	return map[string]any{"concept_id": concept, "question": question, "answer": answer, "submission_id": id, "elapsed": 30}
++}
++
++// Test answers are obtained from the prompt. The client never reads an anchor.
++func solve(t *testing.T, concept, question string) string {
++	t.Helper()
++	switch concept {
++	case typeID:
++		return "number"
++	case literalID:
++		amounts := map[string]int{"mil": 1000, "dois mil": 2000, "três mil": 3000, "quatro mil": 4000,
++			"cinco mil": 5000, "seis mil": 6000, "sete mil": 7000, "oito mil": 8000, "nove mil": 9000,
++			"dez mil": 10000, "onze mil": 11000, "doze mil": 12000, "treze mil": 13000, "catorze mil": 14000,
++			"quinze mil": 15000, "dezesseis mil": 16000, "dezessete mil": 17000, "dezoito mil": 18000,
++			"dezenove mil": 19000, "vinte mil": 20000}
++		parts := strings.SplitN(question, ".", 2)
++		amount := strings.TrimPrefix(parts[0], "O valor de um reembolso é ")
++		if value, ok := amounts[amount]; ok {
++			return fmt.Sprint(value)
++		}
++	case constID:
++		match := regexp.MustCompile(`chamada ([A-Za-z]+), inicializada com o literal numérico ([0-9]+)`).FindStringSubmatch(question)
++		if len(match) == 3 {
++			return fmt.Sprintf("const %s = %s;", match[1], match[2])
++		}
++	}
++	t.Fatalf("cannot answer prompt: %s", question)
++	return ""
++}
++
++func TestPilotHTTP(t *testing.T) {
++	t.Setenv("MATHUA_DEV_UNLOCK", "")
++	check := testChecker(t)
++	db := filepath.Join(t.TempDir(), "pilot.db")
++	e := boot(t, db, check)
++	t.Cleanup(func() { e.http.Close(); e.eng.Close(); e.store.Close() })
++	guest, _ := e.request(t, "POST", "/api/auth/guest", "", map[string]any{}, 200)
++	token, student := guest["token"].(string), guest["student_id"].(string)
++
++	if !t.Run("prerequisites_block_practice_and_answer", func(t *testing.T) {
++		_, practice := e.request(t, "GET", "/api/lessons/"+constID+"/practice", token, nil, 403)
++		_, answer := e.request(t, "POST", "/api/study/answer", token, submission(constID, "", "const amount = 15000;", "locked"), 403)
++		if !strings.Contains(practice, "TOPIC_LOCKED") || !strings.Contains(answer, "TOPIC_LOCKED") {
++			t.Fatal("missing prerequisite verdict")
++		}
++		attempts, err := e.store.GetAllAttempts()
++		if err != nil || len(attempts) != 0 {
++			t.Fatalf("locked answer wrote evidence: %v, %v", attempts, err)
++		}
++	}) {
++		return
++	}
++
++	if !t.Run("native_mastery_unlocks_from_real_submissions", func(t *testing.T) {
++		for _, concept := range []string{literalID, typeID} {
++			seen := []string{}
++			for i := 0; i < mastery.MasteryEvidenceFloor; i++ {
++				q := e.question(t, token, concept, seen...)
++				for _, previous := range seen {
++					if previous == q {
++						t.Fatal("repeated a root exercise within the tested learning run")
++					}
++				}
++				seen = append(seen, q)
++				answer := solve(t, concept, q)
++				res, raw := e.request(t, "POST", "/api/study/answer", token, submission(concept, q, answer, fmt.Sprintf("%s-%d", concept, i)), 200)
++				if res["correct"] != true || res["ungraded"] == true {
++					t.Fatal(raw)
++				}
++				if i == 0 && res["new_status"] == "MASTERED" {
++					t.Fatal("one answer was treated as mastery")
++				}
++			}
++			progress, err := e.store.GetProgress(student, concept)
++			if err != nil || progress.Status != "MASTERED" || progress.Attempts != mastery.MasteryEvidenceFloor {
++				t.Fatalf("native progress = %+v, error=%v", progress, err)
++			}
++			t.Logf("%s: %d distinct submitted answers, status %s", concept, progress.Attempts, progress.Status)
++			if concept == literalID {
++				e.request(t, "GET", "/api/lessons/"+constID+"/practice", token, nil, 403)
++			}
++		}
++	}) {
++		return
++	}
++
++	var correctQuestion, correctAnswer, correctResponse string
++	var correctSubmission map[string]any
++	if !t.Run("wrong_answer_then_fresh_variant_and_valid_inference", func(t *testing.T) {
++		q := e.question(t, token, constID)
++		wrong := strings.Replace(solve(t, constID, q), "const ", "let ", 1)
++		res, _ := e.request(t, "POST", "/api/study/answer", token, submission(constID, q, wrong, "const-miss"), 200)
++		if res["correct"] != false || !strings.Contains(res["feedback"].(string), "const") || res["explanation"] == "" {
++			t.Fatalf("missing specific correction: %+v", res)
++		}
++		t.Logf("miss: %s | answer: %s | feedback: %v", q, wrong, res["feedback"])
++		correctQuestion = e.question(t, token, constID, q)
++		if correctQuestion == q {
++			t.Fatal("miss re-served the identical question")
++		}
++		correctAnswer = solve(t, constID, correctQuestion)
++		correctSubmission = submission(constID, correctQuestion, correctAnswer, "const-correct")
++		res, correctResponse = e.request(t, "POST", "/api/study/answer", token, correctSubmission, 200)
++		if res["correct"] != true || res["ungraded"] == true {
++			t.Fatal(correctResponse)
++		}
++		t.Logf("fresh: %s | answer: %s | feedback: %v", correctQuestion, correctAnswer, res["feedback"])
++	}) {
++		return
++	}
++
++	if !t.Run("retry_is_idempotent_and_changed_payload_conflicts", func(t *testing.T) {
++		before, err := e.store.GetAllAttempts()
++		if err != nil {
++			t.Fatal(err)
++		}
++		_, again := e.request(t, "POST", "/api/study/answer", token, correctSubmission, 200)
++		if again != correctResponse {
++			t.Fatal("retry did not replay the original response")
++		}
++		changed := submission(constID, correctQuestion, "let amount = 1;", "const-correct")
++		e.request(t, "POST", "/api/study/answer", token, changed, 409)
++		after, err := e.store.GetAllAttempts()
++		if err != nil || !reflect.DeepEqual(before, after) {
++			t.Fatal("retry or conflicting payload changed attempts")
++		}
++	}) {
++		return
++	}
++
++	var reportID int64
++	const resolution = "Revisado: a anotação number é opcional neste exercício. A resposta sem anotação é válida."
++	if !t.Run("feedback_replay_resolution_and_private_history", func(t *testing.T) {
++		before, err := e.store.GetAllProgress(student)
++		if err != nil {
++			t.Fatal(err)
++		}
++		attemptsBefore, _ := e.store.GetAllAttempts()
++		expected := strings.Replace(correctAnswer, " = ", ": number = ", 1)
++		payload := map[string]any{"concept_id": constID, "kind": "question", "source": "practice", "reason": "unclear",
++			"question": correctQuestion, "expected": expected, "answer_given": correctAnswer, "answer_input_mode": "text",
++			"detail": "Preciso escrever number mesmo quando o enunciado diz que é opcional?"}
++		created, _ := e.request(t, "POST", "/api/reports", token, payload, 200)
++		reportID = int64(created["id"].(float64))
++		stored, err := e.store.GetReport(reportID)
++		if err != nil || stored.Question != correctQuestion || stored.AnswerGiven != correctAnswer || stored.ReporterID != student || stored.Status != "open" {
++			t.Fatalf("report snapshot = %+v, error=%v", stored, err)
++		}
++		adminToken, adminUser, err := auth.New(e.store).Signup("Reviewer", "reviewer", "Review-test-159!")
++		if err != nil {
++			t.Fatal(err)
++		}
++		if err := e.store.SetStudentRole(adminUser.ID, storage.RoleOwner); err != nil {
++			t.Fatal(err)
++		}
++		route := fmt.Sprintf("/api/admin/reports/%d", reportID)
++		e.request(t, "POST", route+"/grade", token, map[string]any{}, 403)
++		replayed, raw := e.request(t, "POST", route+"/grade", adminToken, map[string]any{}, 200)
++		if replayed["correct"] != true || replayed["writes"] != false || replayed["unavailable"] != false {
++			t.Fatal(raw)
++		}
++		e.request(t, "PATCH", route, adminToken, map[string]any{"status": "resolved", "resolution": resolution}, 200)
++		mine, _ := e.request(t, "GET", "/api/reports/mine", token, nil, 200)
++		reports := mine["reports"].([]any)
++		if len(reports) != 1 || reports[0].(map[string]any)["resolution"] != resolution || mine["unread"] != float64(1) {
++			t.Fatalf("learner did not receive the resolution: %+v", mine)
++		}
++		other, _ := e.request(t, "POST", "/api/auth/guest", "", map[string]any{}, 200)
++		otherHistory, _ := e.request(t, "GET", "/api/reports/mine", other["token"].(string), nil, 200)
++		if len(otherHistory["reports"].([]any)) != 0 {
++			t.Fatal("report leaked to another learner")
++		}
++		after, err := e.store.GetAllProgress(student)
++		attemptsAfter, _ := e.store.GetAllAttempts()
++		if err != nil || !reflect.DeepEqual(before, after) || !reflect.DeepEqual(attemptsBefore, attemptsAfter) {
++			t.Fatal("reporting or replay changed learning evidence")
++		}
++		t.Logf("report %d: open -> resolved, grader replay correct, learner notified, attempts unchanged", reportID)
++	}) {
++		return
++	}
++
++	if !t.Run("database_and_unanswered_question_survive_restart", func(t *testing.T) {
++		pending := e.question(t, token, constID, correctQuestion)
++		before, err := e.store.GetAllAttempts()
++		if err != nil {
++			t.Fatal(err)
++		}
++		e.http.Close()
++		e.eng.Close()
++		if err := e.store.Close(); err != nil {
++			t.Fatal(err)
++		}
++		e = boot(t, db, check)
++		_, retry := e.request(t, "POST", "/api/study/answer", token, correctSubmission, 200)
++		after, err := e.store.GetAllAttempts()
++		if err != nil || !reflect.DeepEqual(before, after) || retry != correctResponse {
++			t.Fatal("persisted retry wrote evidence or changed response")
++		}
++		stored, err := e.store.GetReport(reportID)
++		if err != nil || stored.Status != "resolved" || stored.Resolution != resolution {
++			t.Fatalf("report lost after restart: %+v, %v", stored, err)
++		}
++		res, raw := e.request(t, "POST", "/api/study/answer", token, submission(constID, pending, solve(t, constID, pending), "after-restart"), 200)
++		if res["correct"] != true {
++			t.Fatalf("server anchor lost after restart: %s", raw)
++		}
++	}) {
++		return
++	}
++
++	t.Run("compiler_failure_is_ungraded_without_penalty_and_can_retry", func(t *testing.T) {
++		q := e.question(t, token, constID)
++		body := submission(constID, q, solve(t, constID, q), "temporary-outage")
++		before, err := e.store.GetAllAttempts()
++		if err != nil {
++			t.Fatal(err)
++		}
++		progressBefore, _ := e.store.GetAllProgress(student)
++		node := check.node
++		check.node = filepath.Join(t.TempDir(), "missing-node")
++		defer func() { check.node = node }()
++		res, raw := e.request(t, "POST", "/api/study/answer", token, body, 200)
++		check.node = node
++		if res["ungraded"] != true {
++			t.Errorf("HTTP response must distinguish infrastructure failure from an incorrect answer: %s", raw)
++		}
++		after, err := e.store.GetAllAttempts()
++		progressAfter, _ := e.store.GetAllProgress(student)
++		if err != nil || !reflect.DeepEqual(before, after) || !reflect.DeepEqual(progressBefore, progressAfter) {
++			t.Fatal("compiler outage penalized the learner")
++		}
++		res, raw = e.request(t, "POST", "/api/study/answer", token, body, 200)
++		if res["correct"] != true || res["ungraded"] == true {
++			t.Fatalf("retry after recovery failed: %s", raw)
++		}
++	})
++}
++
++func TestNativeRepairOfHistoricalFalseNegative(t *testing.T) {
++	e := boot(t, filepath.Join(t.TempDir(), "repair.db"), testChecker(t))
++	t.Cleanup(func() { e.http.Close(); e.eng.Close(); e.store.Close() })
++	_, student, err := auth.New(e.store).Signup("Fixture", "fixture", "Repair-test-159!")
++	if err != nil {
++		t.Fatal(err)
++	}
++	session, err := e.store.CreateSession(student.ID)
++	if err != nil {
++		t.Fatal(err)
++	}
++	// This fixture simulates a historical overly strict grader. The pilot itself
++	// never rejects the omitted annotation when the prompt makes it optional.
++	_, err = e.store.RecordAttempt(storage.AttemptEntry{SessionID: session.ID, StudentID: student.ID, ConceptID: constID,
++		Answer: "const amount = 15000;", Expected: "const amount: number = 15000;", Correct: false,
++		Question:       "Declare somente uma constante chamada amount, inicializada com o literal numérico 15000. A anotação number é opcional.",
++		ElapsedSeconds: 30, Timestamp: time.Now().UTC(), Source: "practice"})
++	if err != nil {
++		t.Fatal(err)
++	}
++	before, _ := e.store.GetAllAttempts()
++	dry, err := repair.Run(e.eng, e.store, e.eng.GetDAG(), true, io.Discard)
++	if err != nil || dry.Repaired != 1 || dry.ProgressWrites != 0 {
++		t.Fatalf("repair preview: %+v, %v", dry, err)
++	}
++	afterPreview, _ := e.store.GetAllAttempts()
++	if !reflect.DeepEqual(before, afterPreview) {
++		t.Fatal("dry run changed attempts")
++	}
++	applied, err := repair.Run(e.eng, e.store, e.eng.GetDAG(), false, io.Discard)
++	after, _ := e.store.GetAllAttempts()
++	updatedStudent, _ := e.store.GetStudent(student.ID)
++	if err != nil || applied.Repaired != 1 || applied.ProgressWrites != 1 || !after[0].Correct || updatedStudent.XPTotal != student.XPTotal {
++		t.Fatalf("native repair: %+v, error=%v, attempts=%+v", applied, err, after)
++	}
++	progress, err := e.store.GetProgress(student.ID, constID)
++	if err != nil || progress.Attempts != 1 || progress.Status == "MASTERED" {
++		t.Fatalf("repair invented mastery: %+v, %v", progress, err)
++	}
++}
+diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
+new file mode 100644
+index 0000000..10f8e98
+--- /dev/null
++++ b/cmd/typescript-pilot/package-lock.json
+@@ -0,0 +1,28 @@
++{
++  "name": "mathua-typescript-pilot",
++  "version": "0.1.0",
++  "lockfileVersion": 3,
++  "requires": true,
++  "packages": {
++    "": {
++      "name": "mathua-typescript-pilot",
++      "version": "0.1.0",
++      "dependencies": {
++        "typescript": "5.9.3"
++      }
++    },
++    "node_modules/typescript": {
++      "version": "5.9.3",
++      "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
++      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
++      "license": "Apache-2.0",
++      "bin": {
++        "tsc": "bin/tsc",
++        "tsserver": "bin/tsserver"
++      },
++      "engines": {
++        "node": ">=14.17"
++      }
++    }
++  }
++}
+diff --git a/cmd/typescript-pilot/package.json b/cmd/typescript-pilot/package.json
+new file mode 100644
+index 0000000..78f0837
+--- /dev/null
++++ b/cmd/typescript-pilot/package.json
+@@ -0,0 +1,8 @@
++{
++  "name": "mathua-typescript-pilot",
++  "private": true,
++  "version": "0.1.0",
++  "dependencies": {
++    "typescript": "5.9.3"
++  }
++}
+diff --git a/internal/server/server.go b/internal/server/server.go
+index f19517a..c8b6f98 100644
+--- a/internal/server/server.go
++++ b/internal/server/server.go
+@@ -3370,6 +3370,7 @@ func (s *Server) handleStudyAnswer(w http.ResponseWriter, r *http.Request) {
+ 		"xp_source":       res.XPSource,
+ 		"expected_answer": res.ExpectedAnswer,
+ 		"halted":          res.Halted,
++		"ungraded":        res.Ungraded,
+ 		"scaffold_active": res.ScaffoldActive,
+ 		"scaffold_step":   res.ScaffoldStep,
+ 		"scaffold_total":  res.ScaffoldTotal,

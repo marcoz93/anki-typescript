@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "test": "real_process_restart",
+  "first_process_started": true,
+  "second_process_started": true,
+  "old_bearer_token_accepted": true,
+  "pre_restart_question_graded": true,
+  "retry_body_identical": true,
+  "persisted_attempts": 1,
+  "question": "Complete somente a anotação de tipo: const refundAmount: ___ = 6830. Qual palavra TypeScript designa o tipo numérico?",
+  "answer": "number",
+  "feedback": "Correto. number nomeia o tipo numérico.",
+  "scope": "Dois processos independentes, API HTTP real e SQLite. Nenhum navegador ou implantação externa."
+}
