@@ -42,9 +42,9 @@ Só arquivos do piloto, em `cmd/typescript-pilot/`:
 
 O teste de navegador, em `scripts/browser-smoke.mjs`, ganhou um passo para o degrau 4.
 
-Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e entraram as funções `pilotExclude`, `pilotAdmit` e `pilotUsable` em `web/next-app/lib/pilot.ts`, com o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 203 linhas adicionadas e 122 removidas. A interface foi recompilada.
+Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e entraram as funções `pilotExclude`, `pilotAdmit` e `pilotUsable` em `web/next-app/lib/pilot.ts`, com o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 209 linhas adicionadas e 123 removidas. A interface foi recompilada.
 
-O patch atual tem 23 arquivos, 2965 linhas adicionadas e 122 removidas. Resumo SHA-256: `0eea9e2d58522f4767b38672911d9bf08979d995735d319827a14711492422a3`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`; `719c4fd3…` no commit `61bdca9`; `c68ecf00…` no commit `5600fb0`.
+O patch atual tem 23 arquivos, 3014 linhas adicionadas e 123 removidas. Resumo SHA-256: `33816d5aa244870669006facf7a6424131b0d9980afed73c78eb5a2355ae4898`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`; `719c4fd3…` no commit `61bdca9`; `c68ecf00…` no commit `5600fb0`; `0eea9e2d…` nos commits `865c82d` e `d4317d9`.
 
 ## 3. O que os corretores novos aceitam
 
@@ -76,11 +76,11 @@ go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1
 
 | Evidência | Código | Aprovados | Falhas |
 | --- | --- | --- | --- |
-| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 467 casos finais | 0 |
+| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 475 casos finais | 0 |
 | [mathua-native-http.jsonl](evidencias/bloco-2-d04-d05/mathua-native-http.jsonl) | 0 | 26 casos finais | 0 |
 | [mathua-native-engine.jsonl](evidencias/bloco-2-d04-d05/mathua-native-engine.jsonl) | 0 | 154 casos finais | 0 |
 
-As evidências desta pasta são da execução final, depois das correções das seis passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 467 casos do piloto, por função de teste:
+As evidências desta pasta são da execução final, depois das correções das sete passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 475 casos do piloto, por função de teste:
 
 | Função | Casos | O que confere |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ As evidências desta pasta são da execução final, depois das correções das 
 | `TestCriteriaOfStagesFourAndFive` | 170 | Respostas aceitas e recusadas de F015 a F025, com a mensagem em parte dos casos |
 | `TestCriteriaHoldInEveryCaseOfStagesFourAndFive` | 204 | As equivalências do contrato aplicadas aos 6 casos de cada família, cada um com o próprio contexto |
 | `TestWholeLadderThroughTheAPI` | 1 | Um visitante novo domina os 23 conceitos pela API real, em ordem, com 6 perguntas distintas por conceito |
-| `TestFindingsOfTheIndependentReview` | 32 | Os achados do falseador, cada um com a resposta que ele relatou |
+| `TestFindingsOfTheIndependentReview` | 40 | Os achados do falseador, cada um com a resposta que ele relatou |
 | `TestPilotHTTP` | 7 | Pré-requisitos, domínio, variante após erro, repetição, relato, reinício e falha do corretor |
 | Outras quatro funções | 4 | Conteúdo servido, seções por família, alternativas por letra e reparo de histórico |
 
@@ -110,7 +110,7 @@ Interface, em `web/next-app`, com Node `24.22.3`, depois das correções da seç
 
 O arquivo de teste novo, `test/pilot.test.ts`, tem 12 testes.
 
-A suíte da interface rodou três vezes depois das correções da segunda passada duas vezes depois das correções da terceira, uma vez depois das correções da quarta, uma vez depois das correções da quinta e uma vez depois das correções da sexta. As cinco últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
+A suíte da interface rodou três vezes depois das correções da segunda passada duas vezes depois das correções da terceira, uma vez depois das correções da quarta, uma vez depois das correções da quinta, uma vez depois das correções da sexta e uma vez depois das correções da sétima. As seis últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
 
 ## 5. O que foi observado pela tela no degrau 4
 
@@ -220,9 +220,19 @@ O falseador rodou 120 comandos. O relatório está em [falseador-codex-6a-passad
 
 O ensaio do próprio falseador foi rodado contra a correção. Saída, em [ensaio-409-depois-da-correcao.txt](evidencias/bloco-2-d04-d05/ensaio-409-depois-da-correcao.txt): depois do envio recusado de F002-V1, a tela buscou de novo e mostrou F002-V2 "com registro true".
 
-### Sétima passada
+### Sétima passada, sobre o commit `d4317d9`
 
-Preenchida depois da revisão do Codex sobre o commit da correção da sexta passada.
+O falseador rodou 111 comandos. O relatório está em [falseador-codex-7a-passada.md](evidencias/bloco-2-d04-d05/falseador-codex-7a-passada.md). Ele rodou de novo o ensaio da sexta passada e obteve a mesma saída gravada: a substituta com registro. Ele testou 250 respostas dos casos V2 e V3, sem divergência de veredito. Ele relatou um achado médio e dois baixos.
+
+| Achado da sétima passada | Severidade | O que foi feito |
+| --- | --- | --- |
+| 1. Nas famílias de nome ou símbolo (F005, F006, F007, F012), a resposta certa seguida de um comentário, como `number /* tipo */`, era recusada. A comparação era por texto | Média | O corretor compara os símbolos como o analisador léxico do TypeScript os lê. Espaços e comentários não contam. `number string` e `Number` continuam recusados |
+| 2. Uma busca enviada antes da recuperação podia chegar depois e repor na fila uma pergunta sem registro | Baixa | A tela conta as recuperações e ignora a resposta de uma busca enviada antes da última recuperação |
+| 3. F021 e F023 chamavam `satisfies` de asserção de tipo | Baixa | A mensagem cita o que a resposta usa: asserção de tipo, o operador `satisfies` ou o operador `!` |
+
+### Oitava passada
+
+Preenchida depois da revisão do Codex sobre o commit das correções da sétima passada.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 
@@ -242,12 +252,14 @@ Nenhum destes casos tem teste que force a aceitação ou a recusa como regra do 
 
 A linha acima nasceu de uma discordância entre os dois revisores: o teste do segundo agente exigia a recusa de `let` em F023, e o falseador relatou a recusa como defeito.
 
+| `satisfies` em F021 e F023, como em `[9000, 3000, 6000] satisfies number[]` | Recusa, com a mensagem "Escreva o array diretamente, sem o operador satisfies." | Manter: a tarefa pede o valor escrito diretamente | Aceitar: `satisfies` confere o tipo e não o altera |
+
 Um problema no próprio conteúdo, que não foi alterado: o campo `counterexample` de F019 em `exercicios.json` está quebrado. Ele tem `answer: "isSigned "` e `reason: "| hasPages|A disjunção…"`. Parece um `||` cortado na separação de colunas do arquivo de origem.
 
 ## 9. Limites desta verificação
 
 - **Só macOS e só Chromium `151.0.7922.34`.**
-- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 12 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
+- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 13 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
 - **Suíte geral.** `go test ./...` e o pacote `internal/server` inteiro não foram repetidos, porque nenhum arquivo de `internal/` mudou neste bloco.
 - **Conceitos percorridos pela tela.** O navegador percorreu 9 dos 23 conceitos. Os 23 foram dominados pela API real no teste `TestWholeLadderThroughTheAPI`.
 - **Tempo de partida.** Medido uma vez: 14,3 segundos com 23 conceitos. O Mathua confere cada gerador em um processo separado. Com 46 conceitos, a partida fica mais lenta.

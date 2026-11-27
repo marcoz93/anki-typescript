@@ -43,10 +43,10 @@ Not implemented: Window's scrollTo() method
 Not implemented: Window's scrollTo() method
 Not implemented: Window's scrollTo() method
 Not implemented: Window's scrollTo() method
-Not implemented: navigation to another Document
-Not implemented: navigation to another Document
 Not implemented: Window's scrollTo() method
 Not implemented: Window's scrollTo() method
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
 Not implemented: Window's scrollTo() method
 Not implemented: Window's scrollTo() method
 Not implemented: Window's scrollTo() method
@@ -55,6 +55,6 @@ Not implemented: navigation to another Document
 
  Test Files  199 passed (199)
       Tests  1897 passed (1897)
-   Start at  04:24:55
-   Duration  35.21s (transform 12.14s, setup 22.04s, import 66.18s, tests 87.75s, environment 108.42s)
+   Start at  04:45:30
+   Duration  35.04s (transform 11.50s, setup 22.21s, import 65.17s, tests 86.52s, environment 110.04s)
 
