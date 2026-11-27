@@ -1,21 +1,4 @@
-node:fs:440
-    return binding.readFileUtf8(path, stringToFlags(options.flag));
-                   ^
-
-Error: ENOENT: no such file or directory, open 'pilotos/mathua/evidencias/bloco-2-d04-d05/falseador-codex-5a-passada.md'
-    at Object.readFileSync (node:fs:440:20)
-    at [eval]:2:17
-    at runScriptInThisContext (node:internal/vm:219:10)
-    at node:internal/process/execution:451:12
-    at [eval]-wrapper:6:24
-    at runScriptInContext (node:internal/process/execution:449:60)
-    at evalFunction (node:internal/process/execution:283:30)
-    at evalTypeScript (node:internal/process/execution:295:3)
-    at node:internal/main/eval_string:71:3 {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: 'pilotos/mathua/evidencias/bloco-2-d04-d05/falseador-codex-5a-passada.md'
-}
-
-Node.js v24.14.1
+{"excluidas":["F002-V0","F002-V1","F002-V2"],"servidor":["F002-V3","F002-V4","F002-V5"]}
+envio F002-V1 409
+{"excluidas":["F002-V1","F002-V0"],"servidor":["F002-V2","F002-V3","F002-V4"]}
+substituta F002-V2 com registro true
