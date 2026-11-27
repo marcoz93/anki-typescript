@@ -1,9 +1,9 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 0000000..51181a4
+index 00000000..6510fe7c
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,142 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
@@ -43,7 +43,7 @@ index 0000000..51181a4
 +```sh
 +npm ci --prefix cmd/typescript-pilot --ignore-scripts
 +npm ci --prefix web/next-app
-+NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build --prefix web/next-app
++NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build --prefix web/next-app
 +go test ./cmd/typescript-pilot -count=1 -v
 +go build -o pilot-bin ./cmd/typescript-pilot
 +./pilot-bin
@@ -52,10 +52,20 @@ index 0000000..51181a4
 +Open `http://127.0.0.1:8081` in a browser.
 +The root redirects to the first concept in the existing `/learn` page.
 +The exported frontend uses the API on the same origin.
-+Select `Next` to start and use `Practice again` to continue a concept.
++Select `Próximo` to start and use `Praticar novamente` to continue a concept.
 +The native section completion card and the engine's mastery state have different criteria.
 +Use the next-concept link to continue after the engine marks a concept as mastered.
-+The controls keep the original interface language.
++
++`NEXT_PUBLIC_TS_PILOT=1` is a build-time switch read by `web/next-app/lib/pilot.ts`.
++Without it, the interface builds exactly as the original Mathua interface.
++With it, the build changes three things for this pilot:
++
++- The answer field does not render the mathematical symbol palette.
++- The study path uses Portuguese text: answer field, grading, continue, practise again, prerequisites and problem reports.
++- Navigation omits the concept graph, the glossary, the resources group and the footer, which show the bundled mathematics catalog.
++
++The learner's own problem reports are on `/my-reports`, which the pilot opens for the guest identity.
++Other pages keep the original interface language.
 +
 +The command prints its local study and API addresses.
 +Use `-addr` to set the listen address.
@@ -138,7 +148,7 @@ index 0000000..51181a4
 +These checks do not measure a deployed installation or long-term retention.
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 0000000..2faecb0
+index 00000000..2faecb00
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
 @@ -0,0 +1,88 @@
@@ -232,28 +242,28 @@ index 0000000..2faecb0
 +module.exports = {grade};
 diff --git a/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json b/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json
 new file mode 100644
-index 0000000..a153a3c
+index 00000000..a153a3c7
 --- /dev/null
 +++ b/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json
 @@ -0,0 +1 @@
 +[{"label": "Declaração const com valor numérico", "section": "Declaração const com valor numérico", "subgoals": []}]
 diff --git a/cmd/typescript-pilot/lessons/kp/ts.type.number.json b/cmd/typescript-pilot/lessons/kp/ts.type.number.json
 new file mode 100644
-index 0000000..0f5bbde
+index 00000000..0f5bbde6
 --- /dev/null
 +++ b/cmd/typescript-pilot/lessons/kp/ts.type.number.json
 @@ -0,0 +1 @@
 +[{"label": "Tipo number", "section": "Tipo number", "subgoals": []}]
 diff --git a/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json b/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json
 new file mode 100644
-index 0000000..5541d01
+index 00000000..5541d016
 --- /dev/null
 +++ b/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json
 @@ -0,0 +1 @@
 +[{"label": "Valor e literal numérico", "section": "Valor e literal numérico", "subgoals": []}]
 diff --git a/cmd/typescript-pilot/lessons/lessons.json b/cmd/typescript-pilot/lessons/lessons.json
 new file mode 100644
-index 0000000..a6d9d6f
+index 00000000..a6d9d6f3
 --- /dev/null
 +++ b/cmd/typescript-pilot/lessons/lessons.json
 @@ -0,0 +1,5 @@
@@ -264,7 +274,7 @@ index 0000000..a6d9d6f
 +]
 diff --git a/cmd/typescript-pilot/lessons/typescript.md b/cmd/typescript-pilot/lessons/typescript.md
 new file mode 100644
-index 0000000..766fd3e
+index 00000000..766fd3e7
 --- /dev/null
 +++ b/cmd/typescript-pilot/lessons/typescript.md
 @@ -0,0 +1,32 @@
@@ -302,7 +312,7 @@ index 0000000..766fd3e
 +Use exatamente o nome e o valor pedidos. Escreva uma única declaração, inicializada com um literal numérico.
 diff --git a/cmd/typescript-pilot/main.go b/cmd/typescript-pilot/main.go
 new file mode 100644
-index 0000000..549811a
+index 00000000..1c669ed6
 --- /dev/null
 +++ b/cmd/typescript-pilot/main.go
 @@ -0,0 +1,189 @@
@@ -489,7 +499,7 @@ index 0000000..549811a
 +		mux.Handle("/", studyFrontend(*web))
 +		log.Printf("Study interface: http://%s", *addr)
 +	} else {
-+		log.Print("Study interface not built. Run NEXT_PUBLIC_SAME_ORIGIN_API=1 npm run build in web/next-app.")
++		log.Print("Study interface not built. Run NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1 npm run build in web/next-app.")
 +	}
 +	log.Printf("TypeScript pilot API: http://%s", *addr)
 +	srv := &http.Server{Addr: *addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
@@ -497,7 +507,7 @@ index 0000000..549811a
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 0000000..4934113
+index 00000000..49341130
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
 @@ -0,0 +1,434 @@
@@ -937,7 +947,7 @@ index 0000000..4934113
 +}
 diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
 new file mode 100644
-index 0000000..10f8e98
+index 00000000..10f8e984
 --- /dev/null
 +++ b/cmd/typescript-pilot/package-lock.json
 @@ -0,0 +1,28 @@
@@ -971,7 +981,7 @@ index 0000000..10f8e98
 +}
 diff --git a/cmd/typescript-pilot/package.json b/cmd/typescript-pilot/package.json
 new file mode 100644
-index 0000000..78f0837
+index 00000000..78f08371
 --- /dev/null
 +++ b/cmd/typescript-pilot/package.json
 @@ -0,0 +1,8 @@
@@ -984,7 +994,7 @@ index 0000000..78f0837
 +  }
 +}
 diff --git a/internal/server/server.go b/internal/server/server.go
-index f19517a..c8b6f98 100644
+index f19517a5..c8b6f985 100644
 --- a/internal/server/server.go
 +++ b/internal/server/server.go
 @@ -3370,6 +3370,7 @@ func (s *Server) handleStudyAnswer(w http.ResponseWriter, r *http.Request) {
@@ -995,11 +1005,412 @@ index f19517a..c8b6f98 100644
  		"scaffold_active": res.ScaffoldActive,
  		"scaffold_step":   res.ScaffoldStep,
  		"scaffold_total":  res.ScaffoldTotal,
+diff --git a/web/next-app/app/learn/page.tsx b/web/next-app/app/learn/page.tsx
+index 15c88b04..e820c83f 100644
+--- a/web/next-app/app/learn/page.tsx
++++ b/web/next-app/app/learn/page.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pt } from '@/lib/pilot'
+ import { Suspense, useEffect, useState } from 'react'
+ import { useSearchParams } from 'next/navigation'
+ import Link from 'next/link'
+@@ -109,7 +110,7 @@ function LearnEntry() {
+         )}
+         <GoalContinueCard />
+         <NextUpCard shelf={shelf} />
+-        <Link href="/profile" className="mt-4 inline-block font-mono text-xs text-mathua-secondary hover:text-mathua-blue">← Profile</Link>
++        <Link href="/profile" className="mt-4 inline-block font-mono text-xs text-mathua-secondary hover:text-mathua-blue">{pt('← Profile')}</Link>
+       </div>
+     </div>
+   )
+@@ -145,7 +146,7 @@ function LearnContent() {
+   return (
+     <div className="mt-6 mb-16 px-4">
+       <div className="max-w-2xl mx-auto mb-4">
+-        <Link href="/profile" className="font-mono text-xs text-mathua-secondary hover:text-mathua-blue">← Profile</Link>
++        <Link href="/profile" className="font-mono text-xs text-mathua-secondary hover:text-mathua-blue">{pt('← Profile')}</Link>
+       </div>
+       {/* Key the stepper on the concept. A Continue link is a client-side
+           navigation from /learn?concept=A to /learn?concept=B, and without a
+diff --git a/web/next-app/app/my-reports/page.tsx b/web/next-app/app/my-reports/page.tsx
+index 8ee1b056..6ed9bab6 100644
+--- a/web/next-app/app/my-reports/page.tsx
++++ b/web/next-app/app/my-reports/page.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { TS_PILOT } from '@/lib/pilot'
+ import { useCallback, useEffect, useState } from 'react'
+ import Link from 'next/link'
+ import AppShell from '@/components/app-shell'
+@@ -48,7 +49,9 @@ function fmtDate(value?: string): string {
+ }
+ 
+ export default function MyReportsPage() {
+-  const { loggedIn, user } = useAuthState()
++  const { loggedIn: signedIn, user } = useAuthState()
++  // The pilot runs on a guest identity, and the API already returns a guest's own reports.
++  const loggedIn = signedIn || TS_PILOT
+   const [reports, setReports] = useState<QuestionReport[]>([])
+   const [announcements, setAnnouncements] = useState<Announcement[]>([])
+   const [notifications, setNotifications] = useState<AppNotification[]>([])
+diff --git a/web/next-app/components/BottomTabs.tsx b/web/next-app/components/BottomTabs.tsx
+index b74490d9..97f506a4 100644
+--- a/web/next-app/components/BottomTabs.tsx
++++ b/web/next-app/components/BottomTabs.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pilotShows } from '@/lib/pilot'
+ import Link from 'next/link'
+ import { usePathname } from 'next/navigation'
+ import { useState, useEffect, useRef } from 'react'
+@@ -77,7 +78,7 @@ export default function BottomTabs() {
+         marginRight: 'auto',
+       }}
+     >
+-      {TABS.map((t) => {
++      {TABS.filter((t) => pilotShows(t.href)).map((t) => {
+         const active = pathname === t.href || pathname.startsWith(t.href + '/')
+         const showAvatar = t.href === '/profile' && loggedIn && user
+         const Icon = t.icon
+diff --git a/web/next-app/components/ConceptReference.tsx b/web/next-app/components/ConceptReference.tsx
+index 0721c487..e3dc4312 100644
+--- a/web/next-app/components/ConceptReference.tsx
++++ b/web/next-app/components/ConceptReference.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pt } from '@/lib/pilot'
+ import { useEffect, useState, type ReactNode } from 'react'
+ import KatexContent from './KatexContent'
+ import LessonCredits from './LessonCredits'
+@@ -238,7 +239,7 @@ export default function ConceptReference({ conceptId, variant = 'panel', emptyAc
+   return (
+     <details className="mb-4 border border-mathua-border bg-mathua-surface">
+       <summary className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted px-4 py-3 cursor-pointer hover:text-mathua-blue">
+-        Reference, the full lesson
++        {pt('Reference, the full lesson')}
+       </summary>
+       {content}
+     </details>
+diff --git a/web/next-app/components/Footer.tsx b/web/next-app/components/Footer.tsx
+index 913a6102..6733c0ca 100644
+--- a/web/next-app/components/Footer.tsx
++++ b/web/next-app/components/Footer.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { TS_PILOT } from '@/lib/pilot'
+ import Link from 'next/link'
+ import { useEffect, useLayoutEffect, useState } from 'react'
+ import { DICEBEAR_VERSION } from '../lib/dicebear'
+@@ -173,6 +174,9 @@ export default function Footer({ className = '' }: FooterProps) {
+     }
+   }
+ 
++  // The footer links into the mathematics catalog and Mathua's own documentation.
++  if (TS_PILOT) return null
++
+   return (
+     <footer
+       // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae..d30c2a4 100644
+index 2f6abae4..c7907ae2 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
-@@ -967,6 +967,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { TS_PILOT, pt } from '@/lib/pilot'
+ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+ import Link from 'next/link'
+ import dynamic from 'next/dynamic'
+@@ -189,8 +190,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+     const answerControl =
+       active?.tagName === 'MATH-FIELD' ||
+       (active?.tagName === 'INPUT' &&
+-        (active.getAttribute('aria-label') === 'Your answer' ||
+-          active.getAttribute('placeholder') === 'Your answer'))
++        (active.getAttribute('aria-label') === pt('Your answer') ||
++          active.getAttribute('placeholder') === pt('Your answer')))
+     const interactiveInsideCard =
+       active !== null &&
+       active !== document.body &&
+@@ -471,7 +472,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+     try {
+       const res = await submitStudyAnswer(conceptId, entry.answer.trim(), elapsed, entry.q.question)
+       if (res.ungraded) {
+-        setEntry(key, { error: 'The grader is temporarily unavailable. Your answer is kept. Press Check to retry.' })
++        setEntry(key, { error: pt('The grader is temporarily unavailable. Your answer is kept. Press Check to retry.') })
+         return
+       }
+       setAnsweredCount(n => n + 1)
+@@ -576,7 +577,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+           if (practiceEpochRef.current !== epoch) return
+           if (fresh.length > 0) {
+             seenRef.current = [...seenRef.current, fresh[0].question].slice(-20)
+-            setEntry(key, { q: fresh[0], answer: '', servedAt: Date.now(), error: 'That question could not be graded. Here is a fresh one. Enter your answer and press Check.' })
++            setEntry(key, { q: fresh[0], answer: '', servedAt: Date.now(), error: pt('That question could not be graded. Here is a fresh one. Enter your answer and press Check.') })
+             setBuffer(prev => [...prev, ...fresh.slice(1)].slice(0, 6))
+             return
+           }
+@@ -588,12 +589,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+       }
+       const status = getErrorStatus(e)
+       const message = status === 401
+-        ? 'Your session ended. Sign in again to submit your answer.'
++        ? pt('Your session ended. Sign in again to submit your answer.')
+         : status === 429
+-          ? 'Too many requests. Wait a moment and press Check again. Your answer is kept.'
++          ? pt('Too many requests. Wait a moment and press Check again. Your answer is kept.')
+           : status !== undefined
+-            ? `The server could not grade this answer (HTTP ${status}). Your answer is kept. Press Check to retry.`
+-            : 'Could not reach the server to grade that answer. Check your connection and press Check to retry. Your answer is kept.'
++            ? `${pt('The server could not grade this answer')} (HTTP ${status}). ${pt('Your answer is kept. Press Check to retry.')}`
++            : pt('Could not reach the server to grade that answer. Check your connection and press Check to retry. Your answer is kept.')
+       setEntry(key, { error: message })
+     } finally {
+       setEntry(key, { checking: false })
+@@ -627,10 +628,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+         />
+         <div className="mt-4 flex flex-wrap gap-3">
+           <Link href="/domains" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue">
+-            ← Choose another topic
++            {pt('← Choose another topic')}
+           </Link>
+           <Link href="/profile" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue">
+-            Back to Profile
++            {pt('Back to Profile')}
+           </Link>
+         </div>
+       </div>
+@@ -663,15 +664,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+       .slice(0, 3).map(p => p.title).join(', ')
+     if (unmetPrereqs.length === 0 && unstartedPrereqs.length > 0) {
+       const unstarted = unstartedPrereqs.slice(0, 3).map(p => p.title).join(', ')
+-      return `These prerequisites are not started yet: ${unstarted}. Study them first or continue anyway.`
++      return `${pt('These prerequisites are not started yet:')} ${unstarted}. ${pt('Study them first or continue anyway.')}`
+     }
+     if (unmetPrereqs.length === 0 && dueReviewPrereqs.length > 0) {
+-      return `You have already learned ${names}, a short check is due or continue anyway.`
++      return `${pt('You have already learned')} ${names}${pt(', a short check is due or continue anyway.')}`
+     }
+     if (unmetPrereqs.length === 0) {
+-      return 'You have already learned what this builds on. You can revisit it any time.'
++      return pt('You have already learned what this builds on. You can revisit it any time.')
+     }
+-    return `This builds on ${names}. A quick study helps or continue anyway.`
++    return `${pt('This builds on')} ${names}. ${pt('A quick study helps or continue anyway.')}`
+   })()
+   const totalAnswered = answeredCount
+   const totalCorrect = correctCount
+@@ -686,8 +687,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+   return (
+     <div className="max-w-2xl mx-auto">
+       <div className="sticky top-0 z-10 bg-mathua-bg backdrop-blur py-2 mb-4 flex items-center gap-2 font-mono text-[11px] text-mathua-muted border-b border-mathua-border">
+-        <span>Section {Math.min(kpIndex + 1, Math.max(kps.length, 1))} of {Math.max(kps.length, 1)}</span>
+-        {totalAnswered > 0 && <span>· {totalCorrect}/{totalAnswered} correct</span>}
++        <span>{pt('Section')} {Math.min(kpIndex + 1, Math.max(kps.length, 1))} {pt('of')} {Math.max(kps.length, 1)}</span>
++        {totalAnswered > 0 && <span>· {totalCorrect}/{totalAnswered} {pt('correct')}</span>}
+         {totalXP !== 0 && <span className={totalXP > 0 ? 'text-yellow-400' : 'text-mathua-red'}>· {totalXP > 0 ? '+' : ''}{totalXP} XP</span>}
+         {band && (
+           <span title="How you're doing on this concept, from your recent answers. Progress only, mastery is decided separately.">
+@@ -700,7 +701,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+         <PrerequisitePanel
+           prerequisites={prerequisites}
+           returnStack={prereqStack}
+-          heading={`Prerequisites (${prerequisites.length})`}
++          heading={`${pt('Prerequisites')} (${prerequisites.length})`}
+           intro={prereqIntro}
+           onDismiss={() => setBannerDismissed(true)}
+         />
+@@ -712,9 +713,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+         <div className="border border-mathua-green-faint bg-mathua-surface p-5 mb-4">
+           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+             <div>
+-              <p className="font-mono text-xs text-green-400">✓ You have mastered this concept</p>
++              <p className="font-mono text-xs text-green-400">{pt('✓ You have mastered this concept')}</p>
+               <p className="mt-1 font-mono text-[11px] text-mathua-secondary">
+-                You can move on to the next recommended concept or practice this lesson again below.
++                {pt('You can move on to the next recommended concept or practice this lesson again below.')}
+               </p>
+             </div>
+             <div className="flex flex-wrap items-center gap-2 shrink-0">
+@@ -723,12 +724,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                   href={nextShelf.next.href}
+                   className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
+                 >
+-                  Continue to Next Concept ({nextShelf.next.title}) →
++                  {pt('Continue to Next Concept')} ({nextShelf.next.title}) →
+                 </Link>
+               )}
+               {nextLoading && (
+                 <span className="font-mono text-xs text-mathua-muted px-4 py-2 inline-flex items-center min-h-[40px]">
+-                  Finding next concept…
++                  {pt('Finding next concept…')}
+                 </span>
+               )}
+               {!nextLoading && nextSettled && !canContinue && (
+@@ -736,14 +737,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                   href="/learn"
+                   className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
+                 >
+-                  Continue to Next Concept →
++                  {pt('Continue to Next Concept →')}
+                 </Link>
+               )}
+               <Link
+                 href="/profile"
+                 className="border border-mathua-border px-4 py-2 font-mono text-xs text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center min-h-[40px]"
+               >
+-                Profile
++                {pt('Profile')}
+               </Link>
+             </div>
+           </div>
+@@ -805,7 +806,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                 <div className="mt-5 flex flex-wrap items-center gap-3">
+                   {!practiceStarted && (
+                     <button type="button" onClick={startPracticing} disabled={startingPractice} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 py-2.5 font-mono text-xs min-h-[44px] disabled:opacity-50">
+-                      {isMastered ? 'Practice again →' : 'Next →'}
++                      {isMastered ? pt('Practice again →') : pt('Next →')}
+                     </button>
+                   )}
+                   {isMastered && canContinue && nextShelf && (
+@@ -813,7 +814,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                       href={nextShelf.next.href}
+                       className="border border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue px-6 py-2.5 font-mono text-xs min-h-[44px] inline-flex items-center"
+                     >
+-                      Continue to Next Concept →
++                      {pt('Continue to Next Concept →')}
+                     </Link>
+                   )}
+                 </div>
+@@ -835,15 +836,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+           if (e.kind === 'halt') {
+             return (
+               <div key={e.key} className="border border-mathua-red-faint bg-mathua-surface p-5">
+-                <p className="font-mono text-xs text-red-400">Stepping down a level, easier question below.</p>
++                <p className="font-mono text-xs text-red-400">{pt('Stepping down a level, easier question below.')}</p>
+                 <div className="mt-3 flex flex-wrap gap-2">
+                   {/* A prerequisite is reference here too: study the material rather than being
+                       sent to a tutorial under the name of a check. Practising it is a separate,
+                       eligibility-gated step on that concept's own page. */}
+                   {prerequisites.slice(0, 2).map(p => (
+-                    <Link key={p.conceptId} href={withReturnStack(studyConceptPath(p.conceptId), prereqStack)} className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center">Study {p.title}</Link>
++                    <Link key={p.conceptId} href={withReturnStack(studyConceptPath(p.conceptId), prereqStack)} className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center">{pt('Study')} {p.title}</Link>
+                   ))}
+-                  <Link href="/profile" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center">Other task →</Link>
++                  <Link href="/profile" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center">{pt('Other task →')}</Link>
+                 </div>
+               </div>
+             )
+@@ -852,7 +853,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+             const upcoming: LockedSuccessor[] = upcomingLocked(catalogEntries(), shelfProgress, conceptId)
+             return (
+               <div key={e.key} className="border border-mathua-green-faint bg-mathua-surface p-6">
+-                <p className="font-mono text-xs text-green-400">✓ Complete, {totalCorrect}/{totalAnswered} correct · {band}</p>
++                <p className="font-mono text-xs text-green-400">✓ {pt('Complete,')} {totalCorrect}/{totalAnswered} {pt('correct')} · {band}</p>
+                 <XPTaskSummary
+                   answerXP={totalAnswerXP}
+                   adjustment={totalAdjustment}
+@@ -861,22 +862,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                   className="mt-4"
+                 />
+                 {e.note && <p role="status" className="mt-2 font-mono text-[11px] text-mathua-secondary">{e.note}</p>}
+-                <p className="mt-2 font-mono text-[11px] text-mathua-secondary">Scroll up to review anything. Reviews are scheduled automatically.</p>
++                <p className="mt-2 font-mono text-[11px] text-mathua-secondary">{pt('Scroll up to review anything. Reviews are scheduled automatically.')}</p>
+                 <div className="mt-4 flex flex-wrap gap-2">
+-                  {back && <Link href={back.href} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-5 py-2 font-mono text-xs inline-flex items-center min-h-[40px]">← Back to {returnToLabel}</Link>}
+-                  {nextLoading && <span className="font-mono text-xs text-mathua-muted inline-flex items-center min-h-[40px]">Finding what&apos;s next…</span>}
++                  {back && <Link href={back.href} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-5 py-2 font-mono text-xs inline-flex items-center min-h-[40px]">← {pt('Back to')} {returnToLabel}</Link>}
++                  {nextLoading && <span className="font-mono text-xs text-mathua-muted inline-flex items-center min-h-[40px]">{pt("Finding what's next…")}</span>}
+                   {canContinue && nextShelf && (
+                     <Link href={nextShelf.next.href} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-5 py-2 font-mono text-xs inline-flex items-center min-h-[40px]">{nextShelf.next.badge}: {nextShelf.next.title} →</Link>
+                   )}
+                   {!nextLoading && !nextShelf && (
+-                    <Link href="/profile" className="border border-mathua-border px-5 py-2 font-mono text-xs text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center min-h-[40px]">Back to Profile</Link>
++                    <Link href="/profile" className="border border-mathua-border px-5 py-2 font-mono text-xs text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center min-h-[40px]">{pt('Back to Profile')}</Link>
+                   )}
+-                  <button type="button" onClick={practiceAgain} className="border border-mathua-border px-5 py-2 font-mono text-xs text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center min-h-[40px]">Practice again</button>
++                  <button type="button" onClick={practiceAgain} className="border border-mathua-border px-5 py-2 font-mono text-xs text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue inline-flex items-center min-h-[40px]">{pt('Practice again')}</button>
+                 </div>
+                 {!nextLoading && nextShelf && nextShelf.alternatives.length > 0 && (
+                   <details className="mt-3 border border-mathua-border">
+                     <summary className="font-mono text-[11px] text-mathua-secondary cursor-pointer px-4 py-2.5">
+-                      Or pick something else ({nextShelf.alternatives.length})
++                      {pt('Or pick something else')} ({nextShelf.alternatives.length})
+                     </summary>
+                     <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                       {nextShelf.alternatives.map((it, i) => (
+@@ -895,7 +896,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                 {upcoming.length > 0 && (
+                   <div className="mt-3 border border-mathua-border">
+                     <p className="font-mono text-[11px] text-mathua-secondary px-4 py-2.5">
+-                      Coming up, unlocks once this concept is mastered
++                      {pt('Coming up, unlocks once this concept is mastered')}
+                     </p>
+                     <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                       {upcoming.map(u => (
+@@ -905,7 +906,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                           className="border border-mathua-border p-3 hover:border-mathua-blue transition-colors block min-w-0"
+                         >
+                           <div className="font-mono text-xs text-mathua-primary truncate">{u.label}</div>
+-                          <div className="mt-1 font-mono text-[11px] text-mathua-muted">Needs: {u.missing.join(', ')}</div>
++                          <div className="mt-1 font-mono text-[11px] text-mathua-muted">{pt('Needs:')} {u.missing.join(', ')}</div>
+                         </Link>
+                       ))}
+                     </div>
+@@ -923,7 +924,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+               <ChoiceOptions question={qe.q.question} value={qe.answer} onPick={v => setEntry(qe.key, { answer: v })} disabled={locked || blocked || qe.checking} />
+               {!locked && !blocked && (
+                 <form ref={qe.key === lastEntryKey ? answerFormRef : undefined} onSubmit={ev => { ev.preventDefault(); handleCheck(qe.key) }} className="clear-of-tabs mt-3 flex flex-col sm:flex-row gap-2">
+-                  <label htmlFor={`learn-answer-${qe.key}`} className="sr-only">Your answer</label>
++                  <label htmlFor={`learn-answer-${qe.key}`} className="sr-only">{pt('Your answer')}</label>
+                   <MathAnswerInput
+                     id={`learn-answer-${qe.key}`}
+                     focusRef={qe.key === lastEntryKey ? answerFocusRef : undefined}
+@@ -935,20 +936,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                     disabled={qe.checking}
+                     status={qe.feedback ? (qe.feedback.correct ? 'correct' : 'incorrect') : 'default'}
+                     inputMode={format.inputMode}
+-                  placeholder="Your answer"
++                    placeholder={pt('Your answer')}
++                    ariaLabel={pt('Your answer')}
++                    showPalette={!TS_PILOT}
+                     className="sm:flex-1"
+                   />
+-                  <button type="submit" disabled={qe.checking || !qe.answer.trim()} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 h-12 text-sm font-mono disabled:opacity-50 w-auto self-end sm:self-auto shrink-0">Check</button>
++                  <button type="submit" disabled={qe.checking || !qe.answer.trim()} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 h-12 text-sm font-mono disabled:opacity-50 w-auto self-end sm:self-auto shrink-0">{pt('Check')}</button>
+                 </form>
+               )}
+               {!locked && !blocked && <p className="mt-2 font-mono text-[11px] text-mathua-muted">{format.hint}</p>}
+               {!locked && qe.error && <p role="alert" className="mt-2 font-mono text-xs text-red-400">{qe.error}</p>}
+               {blocked && (
+                 <div>
+-                  <p className="mt-2 font-mono text-xs text-mathua-secondary">Your answer: {qe.answer}</p>
++                  <p className="mt-2 font-mono text-xs text-mathua-secondary">{pt('Your answer')}: {qe.answer}</p>
+                   <PrerequisitePanel
+-                    heading="Review prerequisites to continue"
+-                    intro="Study the prerequisites below, then use their practice action. Return here when you are ready."
++                    heading={pt('Review prerequisites to continue')}
++                    intro={pt('Study the prerequisites below, then use their practice action. Return here when you are ready.')}
+                     prerequisites={(qe.blockedPrerequisiteIds?.length ? qe.blockedPrerequisiteIds : prerequisites.flatMap(p => p.met ? [] : [p.conceptId])).map(id => ({
+                       conceptId: id,
+                       title: prerequisites.find(p => p.conceptId === id)?.title ?? concepts.find(c => c.id === id)?.label ?? id,
+@@ -957,7 +960,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                     }))}
+                     returnStack={prereqStack}
+                   />
+-                  <button type="button" onClick={practiceAgain} className="mt-3 border border-mathua-border px-4 py-2 font-mono text-xs text-mathua-secondary hover:text-mathua-blue">Restart lesson</button>
++                  <button type="button" onClick={practiceAgain} className="mt-3 border border-mathua-border px-4 py-2 font-mono text-xs text-mathua-secondary hover:text-mathua-blue">{pt('Restart lesson')}</button>
+                 </div>
+               )}
+               <div className="mt-2 flex justify-end">
+@@ -967,6 +970,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    kind="question"
                    question={qe.q.question}
                    source="practice"
@@ -1008,3 +1419,599 @@ index 2f6abae..d30c2a4 100644
                    answerGiven={qe.answer}
                    gradingType={conceptGradingType}
                    answerHint={format.hint}
+@@ -976,8 +981,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+               {locked && qe.feedback && (
+                 <div className="mt-3">
+                   <p className={`font-mono text-xs ${qe.feedback.correct ? 'text-green-400' : 'text-red-400'}`}>
+-                    {qe.feedback.correct ? `✓ ${qe.feedback.xp ? `+${qe.feedback.xp} XP` : 'Correct'}` : '✗ Not quite.'}{' '}
+-                    <span className="text-mathua-muted">you answered “{qe.answer}”</span>
++                    {qe.feedback.correct ? `✓ ${qe.feedback.xp ? `+${qe.feedback.xp} XP` : pt('Correct')}` : pt('✗ Not quite.')}{' '}
++                    <span className="text-mathua-muted">{pt('you answered')} “{qe.answer}”</span>
+                   </p>
+                   <XPAdjustmentNote
+                     adjustment={qe.feedback.xpAdjustment}
+@@ -986,7 +991,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                     className="mt-2"
+                   />
+                   <p className="mt-1.5 font-mono text-xs text-mathua-primary">
+-                    Answer: <KatexContent>{qe.feedback.expected}</KatexContent>
++                    {pt('Answer:')} <KatexContent>{qe.feedback.expected}</KatexContent>
+                   </p>
+                   {/* The explanation is the solution for *this* instance, shown
+                       on both verdicts: a correct answer still needs the
+@@ -1002,7 +1007,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                   {qe.feedback.text && (
+                     <div className="mt-1.5">
+                       <p className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted">
+-                        {qe.feedback.correct ? 'Why' : 'How'}
++                        {qe.feedback.correct ? pt('Why') : pt('How')}
+                       </p>
+                       <KatexContent className="mt-1 text-xs font-mono text-mathua-secondary whitespace-pre-wrap">{qe.feedback.text}</KatexContent>
+                     </div>
+diff --git a/web/next-app/components/NextUpCard.tsx b/web/next-app/components/NextUpCard.tsx
+index 214fb06a..e4842ba5 100644
+--- a/web/next-app/components/NextUpCard.tsx
++++ b/web/next-app/components/NextUpCard.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pt } from '@/lib/pilot'
+ import Link from 'next/link'
+ import type { Shelf } from '../lib/nextUp'
+ 
+@@ -12,9 +13,9 @@ import type { Shelf } from '../lib/nextUp'
+ export default function NextUpCard({ shelf }: { shelf: Shelf }) {
+   const { next, alternatives } = shelf
+   return (
+-    <section aria-label="Next up" className="mt-6 w-full max-w-full min-w-0 overflow-hidden">
++    <section aria-label={pt('Next up')} className="mt-6 w-full max-w-full min-w-0 overflow-hidden">
+       <h2 className="font-mono text-[11px] text-mathua-muted uppercase tracking-wider mb-3">
+-        Next up
++        {pt('Next up')}
+       </h2>
+       <Link
+         href={next.href}
+diff --git a/web/next-app/components/PrerequisitePanel.tsx b/web/next-app/components/PrerequisitePanel.tsx
+index c737188d..66f7ab3c 100644
+--- a/web/next-app/components/PrerequisitePanel.tsx
++++ b/web/next-app/components/PrerequisitePanel.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pt } from '@/lib/pilot'
+ import Link from 'next/link'
+ import type { EligibilityPrereq } from '../lib/api'
+ import { studyConceptPath, withReturnStack, type ReturnEntry } from '../lib/learnReturn'
+@@ -63,14 +64,14 @@ export default function PrerequisitePanel({
+   returnStack?: ReturnEntry[]
+   onDismiss?: () => void
+ }) {
+-  const title = heading ?? `Prerequisites (${prerequisites.length})`
++  const title = heading ?? `${pt('Prerequisites')} (${prerequisites.length})`
+   // The default copy is the "not ready yet" case: the panel is shown when a target is locked, or
+   // as an advisory on an eligible one (which passes its own `intro`). Either way it must say that
+   // the learner can *study* a prerequisite they cannot yet practise.
+-  const body = intro ?? "You're not ready to practise this topic yet. Study the prerequisites below, then return to check your readiness."
++  const body = intro ?? pt("You're not ready to practise this topic yet. Study the prerequisites below, then return to check your readiness.")
+   return (
+     <section
+-      aria-label="Prerequisites"
++      aria-label={pt('Prerequisites')}
+       role="note"
+       className="mt-4 border border-mathua-border bg-mathua-surface p-4 min-w-0"
+     >
+@@ -95,14 +96,14 @@ export default function PrerequisitePanel({
+                 {p.title}
+               </span>
+               <span className="block font-mono text-[10px] uppercase tracking-wider text-mathua-muted">
+-                {prereqStateWord(p)} · Required prerequisite
++                {pt(prereqStateWord(p))} · {pt('Required prerequisite')}
+               </span>
+             </span>
+             <Link
+               href={prereqHref(p, returnStack)}
+               className="w-full sm:w-auto shrink-0 border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-[11px] min-h-[36px] inline-flex items-center justify-center text-center whitespace-nowrap"
+             >
+-              {prereqCta(p)}
++              {pt(prereqCta(p))}
+             </Link>
+           </li>
+         ))}
+@@ -113,7 +114,7 @@ export default function PrerequisitePanel({
+           onClick={onDismiss}
+           className="mt-3 font-mono text-[10px] uppercase tracking-wider text-mathua-muted hover:text-mathua-blue"
+         >
+-          Close
++          {pt('Close')}
+         </button>
+       )}
+     </section>
+diff --git a/web/next-app/components/ReportButton.tsx b/web/next-app/components/ReportButton.tsx
+index 2202d32a..6be4bfce 100644
+--- a/web/next-app/components/ReportButton.tsx
++++ b/web/next-app/components/ReportButton.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pt } from '@/lib/pilot'
+ import { useState, useEffect } from 'react'
+ import { submitReport, type ReportKind, type ReportReason } from '../lib/api'
+ import { ChevronDown } from './icons'
+@@ -26,11 +27,11 @@ interface ReportButtonProps {
+ }
+ 
+ const REASONS: { value: ReportReason; label: string }[] = [
+-  { value: 'wrong_answer', label: 'Wrong answer' },
+-  { value: 'bad_explanation', label: 'Bad explanation' },
+-  { value: 'unclear', label: 'Unclear / confusing' },
+-  { value: 'formatting', label: 'Formatting / math rendering' },
+-  { value: 'other', label: 'Other' },
++  { value: 'wrong_answer', label: pt('Wrong answer') },
++  { value: 'bad_explanation', label: pt('Bad explanation') },
++  { value: 'unclear', label: pt('Unclear / confusing') },
++  { value: 'formatting', label: pt('Formatting / math rendering') },
++  { value: 'other', label: pt('Other') },
+ ]
+ 
+ export default function ReportButton(props: ReportButtonProps) {
+@@ -79,7 +80,7 @@ export default function ReportButton(props: ReportButtonProps) {
+       setSent(true)
+       setOpen(false)
+     } catch (e) {
+-      setError(e instanceof Error ? e.message : 'Could not send report')
++      setError(e instanceof Error ? e.message : pt('Could not send report'))
+     } finally {
+       setSending(false)
+     }
+@@ -90,10 +91,10 @@ export default function ReportButton(props: ReportButtonProps) {
+       <button
+         type="button"
+         onClick={() => setSent(false)}
+-        title="Dismiss confirmation"
++        title={pt('Dismiss confirmation')}
+         className="font-mono text-[10px] text-mathua-green hover:underline uppercase tracking-wider"
+       >
+-        ✓ Thanks, reported
++        {pt('✓ Thanks, reported')}
+       </button>
+     )
+   }
+@@ -103,10 +104,10 @@ export default function ReportButton(props: ReportButtonProps) {
+       <button
+         type="button"
+         onClick={() => setOpen(true)}
+-        title="Complain about this question or explanation"
++        title={pt('Complain about this question or explanation')}
+         className="font-mono text-[10px] text-mathua-muted hover:text-mathua-blue transition-colors uppercase tracking-wider"
+       >
+-        {props.label ?? 'Report a problem'}
++        {props.label ?? pt('Report a problem')}
+       </button>
+     )
+   }
+@@ -119,20 +120,20 @@ export default function ReportButton(props: ReportButtonProps) {
+     <div
+       role="dialog"
+       aria-modal="true"
+-      aria-label="Report a problem"
++      aria-label={pt('Report a problem')}
+       className="fixed inset-0 z-[3000] flex items-end sm:items-center justify-center bg-black/60 px-3 sm:p-4"
+     >
+     <div className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto border border-mathua-border bg-mathua-bg p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+       <div className="flex items-center justify-between mb-2">
+         <span className="font-mono text-[10px] text-mathua-secondary uppercase tracking-wider">
+-          What&apos;s wrong?
++          {pt("What's wrong?")}
+         </span>
+         <button
+           type="button"
+           onClick={() => setOpen(false)}
+           className="font-mono text-[10px] text-mathua-muted hover:text-mathua-primary"
+         >
+-          Cancel
++          {pt('Cancel')}
+         </button>
+       </div>
+       <div className="relative">
+@@ -154,7 +155,7 @@ export default function ReportButton(props: ReportButtonProps) {
+         autoFocus
+         value={detail}
+         onChange={e => setDetail(e.target.value)}
+-        placeholder="Optional details (what did you expect?)"
++        placeholder={pt('Optional details (what did you expect?)')}
+         rows={2}
+         maxLength={2000}
+         className="mt-2 w-full bg-mathua-surface border border-mathua-border px-2 py-2 text-xs font-mono text-mathua-primary placeholder:text-mathua-muted outline-none resize-y"
+@@ -168,7 +169,7 @@ export default function ReportButton(props: ReportButtonProps) {
+         disabled={sending}
+         className="mt-2 border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint transition-colors px-3 h-9 text-xs font-mono disabled:opacity-50"
+       >
+-        {sending ? 'Sending…' : 'Send report'}
++        {sending ? pt('Sending…') : pt('Send report')}
+       </button>
+     </div>
+     </div>
+diff --git a/web/next-app/components/XPTaskSummary.tsx b/web/next-app/components/XPTaskSummary.tsx
+index e2b9be07..a672e921 100644
+--- a/web/next-app/components/XPTaskSummary.tsx
++++ b/web/next-app/components/XPTaskSummary.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { pt } from '@/lib/pilot'
+ import XPAdjustmentNote from './XPAdjustmentNote'
+ 
+ type Props = {
+@@ -11,10 +12,10 @@ type Props = {
+ }
+ 
+ function adjustmentLabel(source?: string): string {
+-  if (source === 'performance') return 'Performance adjustment'
+-  if (source === 'effort') return 'Effort adjustment'
+-  if (source === 'legacy') return 'Fast-answer rule'
+-  return 'Task adjustment'
++  if (source === 'performance') return pt('Performance adjustment')
++  if (source === 'effort') return pt('Effort adjustment')
++  if (source === 'legacy') return pt('Fast-answer rule')
++  return pt('Task adjustment')
+ }
+ 
+ function signed(value: number): string {
+@@ -33,11 +34,11 @@ function tone(value: number): string {
+ export default function XPTaskSummary({ answerXP, adjustment, note, source, className = '' }: Props) {
+   const net = answerXP + adjustment
+   return (
+-    <div className={`border border-mathua-border bg-mathua-surface p-4 ${className}`} role="group" aria-label="Task XP summary">
+-      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-mathua-muted">Task XP summary</p>
++    <div className={`border border-mathua-border bg-mathua-surface p-4 ${className}`} role="group" aria-label={pt('Task XP summary')}>
++      <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-mathua-muted">{pt('Task XP summary')}</p>
+       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+         <div>
+-          <p className="font-mono text-[10px] uppercase tracking-wider text-mathua-muted">XP from answers</p>
++          <p className="font-mono text-[10px] uppercase tracking-wider text-mathua-muted">{pt('XP from answers')}</p>
+           <p className={`mt-1 font-mono text-sm ${tone(answerXP)}`}>{signed(answerXP)}</p>
+         </div>
+         <div>
+@@ -45,14 +46,14 @@ export default function XPTaskSummary({ answerXP, adjustment, note, source, clas
+           <p className={`mt-1 font-mono text-sm ${tone(adjustment)}`}>{signed(adjustment)}</p>
+         </div>
+         <div>
+-          <p className="font-mono text-[10px] uppercase tracking-wider text-mathua-muted">Net XP</p>
++          <p className="font-mono text-[10px] uppercase tracking-wider text-mathua-muted">{pt('Net XP')}</p>
+           <p className={`mt-1 font-mono text-sm ${tone(net)}`}>{signed(net)}</p>
+         </div>
+       </div>
+       {note ? (
+         <XPAdjustmentNote adjustment={adjustment} note={note} source={source} className="mt-3" />
+       ) : adjustment === 0 ? (
+-        <p className="mt-3 font-mono text-[11px] text-mathua-muted">No accountability adjustment on this task.</p>
++        <p className="mt-3 font-mono text-[11px] text-mathua-muted">{pt('No accountability adjustment on this task.')}</p>
+       ) : null}
+     </div>
+   )
+diff --git a/web/next-app/components/app-sidebar.tsx b/web/next-app/components/app-sidebar.tsx
+index d9f178f7..829bfd18 100644
+--- a/web/next-app/components/app-sidebar.tsx
++++ b/web/next-app/components/app-sidebar.tsx
+@@ -1,5 +1,6 @@
+ 'use client'
+ 
++import { TS_PILOT, pilotShows, pt } from '@/lib/pilot'
+ import Link from 'next/link'
+ import { usePathname, useRouter } from 'next/navigation'
+ import { useRef, useState } from 'react'
+@@ -214,12 +215,13 @@ export function AppSidebar({
+ 
+       <SidebarContent>
+         <SidebarGroup>
+-          <SidebarGroupLabel>Navigate</SidebarGroupLabel>
++          <SidebarGroupLabel>{pt('Navigate')}</SidebarGroupLabel>
+           <SidebarGroupContent>
+             <SidebarMenu>
+               {/* The admin console is not here. It lives in the profile photo menu so
+                   administration stays out of the daily learning destinations. */}
+               {NAV_ITEMS
++                .filter((item) => pilotShows(item.href))
+                 .filter((item) => showLeaderboards || item.href !== '/leaderboard')
+                 .filter((item) => showFriends || item.href !== '/friends')
+                 .map((item) => {
+@@ -227,16 +229,16 @@ export function AppSidebar({
+                   const Icon = item.icon
+                   return (
+                     <SidebarMenuItem key={item.href}>
+-                      <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
++                      <SidebarMenuButton asChild isActive={active} tooltip={pt(item.label)}>
+                         {item.href.startsWith('http') ? (
+                           <a href={item.href} target="_blank" rel="noreferrer">
+                             <Icon className="shrink-0" />
+-                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
++                            <span className="group-data-[collapsible=icon]:hidden">{pt(item.label)}</span>
+                           </a>
+                         ) : (
+                           <Link href={item.href}>
+                             <Icon className="shrink-0" />
+-                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
++                            <span className="group-data-[collapsible=icon]:hidden">{pt(item.label)}</span>
+                           </Link>
+                         )}
+                       </SidebarMenuButton>
+@@ -249,6 +251,7 @@ export function AppSidebar({
+             </SidebarMenu>
+           </SidebarGroupContent>
+         </SidebarGroup>
++        {!TS_PILOT && (
+         <SidebarGroup>
+           <SidebarGroupContent>
+             <SidebarMenu>
+@@ -319,6 +322,7 @@ export function AppSidebar({
+             </SidebarMenu>
+           </SidebarGroupContent>
+         </SidebarGroup>
++        )}
+         {/* Notifications sits below the reference library because it is a
+             mailbox, not a daily learning destination. It stays outside the
+             folded Resources disclosure so an unread report is always one
+@@ -330,11 +334,11 @@ export function AppSidebar({
+                 <SidebarMenuButton
+                   asChild
+                   isActive={pathname === '/my-reports'}
+-                  tooltip="Notifications"
++                  tooltip={pt('Notifications')}
+                 >
+                   <Link href="/my-reports">
+                     <Bell className="shrink-0" />
+-                    <span className="group-data-[collapsible=icon]:hidden">Notifications</span>
++                    <span className="group-data-[collapsible=icon]:hidden">{pt('Notifications')}</span>
+                     {notificationUnread > 0 && (
+                       <>
+                         <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-mathua-red" aria-hidden="true" />
+@@ -374,25 +378,25 @@ export function AppSidebar({
+                   rail and the tooltip is a description, so without this the icon-only button has
+                   no accessible name in the state most desktop users leave the sidebar in. */}
+               <SidebarMenuButton
+-                tooltip="Toggle theme"
++                tooltip={pt('Toggle theme')}
+                 aria-label="Toggle theme"
+                 onClick={handleThemeToggle}
+               >
+                 <SunMoon ref={sunMoonRef} size={16} isAnimated={false} aria-hidden="true" />
+-                <span className="group-data-[collapsible=icon]:hidden">Toggle theme</span>
++                <span className="group-data-[collapsible=icon]:hidden">{pt('Toggle theme')}</span>
+               </SidebarMenuButton>
+             </SidebarMenuItem>
+           )}
+           <SidebarMenuItem>
+             <SidebarMenuButton
+-              tooltip="Sign out"
++              tooltip={pt('Sign out')}
+               onClick={() => {
+                 signOut()
+                 router.push('/login')
+               }}
+             >
+               <LogOut aria-hidden="true" />
+-              <span className="group-data-[collapsible=icon]:hidden">Sign out</span>
++              <span className="group-data-[collapsible=icon]:hidden">{pt('Sign out')}</span>
+             </SidebarMenuButton>
+           </SidebarMenuItem>
+         </SidebarMenu>
+diff --git a/web/next-app/lib/nav.ts b/web/next-app/lib/nav.ts
+index 5bd3fb8f..18ec286b 100644
+--- a/web/next-app/lib/nav.ts
++++ b/web/next-app/lib/nav.ts
+@@ -1,3 +1,4 @@
++import { pilotShows } from '@/lib/pilot'
+ export interface NavLink {
+   label: string
+   href: string
+@@ -78,7 +79,7 @@ export function desktopLinks(loggedIn: boolean): NavLink[] {
+     ...(loggedIn ? REVIEW_LINKS : []),
+     ...DISPLAY_LINKS,
+     ...(loggedIn ? LOGGED_IN_LINKS : LOGGED_OUT_LINKS),
+-  ]
++  ].filter(l => pilotShows(l.href))
+ }
+ 
+ // Mobile compass overflow: destinations missing from the bottom tabs.
+diff --git a/web/next-app/lib/pilot.ts b/web/next-app/lib/pilot.ts
+new file mode 100644
+index 00000000..9db70bbd
+--- /dev/null
++++ b/web/next-app/lib/pilot.ts
+@@ -0,0 +1,153 @@
++// Switches for the TypeScript pilot served by cmd/typescript-pilot.
++//
++// Everything here is off unless the interface is built with NEXT_PUBLIC_TS_PILOT=1,
++// so a normal Mathua build renders exactly what it rendered before. The pilot reuses
++// the existing study page; this file only removes what does not apply to TypeScript
++// exercises and supplies Portuguese text for the study path.
++export const TS_PILOT = process.env.NEXT_PUBLIC_TS_PILOT === '1'
++
++// Destinations that show the bundled mathematics catalog instead of the pilot's concepts.
++const HIDDEN_HREFS: ReadonlySet<string> = new Set(['/graph', '/glossary'])
++
++/** Whether a navigation entry stays visible. Always true outside the pilot. */
++export function pilotShows(href: string): boolean {
++  return !TS_PILOT || !HIDDEN_HREFS.has(href)
++}
++
++/** The concept graph is the mathematics catalog; the pilot sends that link to the progress report. */
++export function pilotHref(href: string): string {
++  return TS_PILOT && (href === '/graph' || href.startsWith('/graph?')) ? '/reports' : href
++}
++
++const PT: Record<string, string> = {
++  // Answer field and grading.
++  'Your answer': 'Sua resposta',
++  Check: 'Verificar',
++  Correct: 'Correto',
++  '✗ Not quite.': '✗ Ainda não.',
++  'you answered': 'você respondeu',
++  'Answer:': 'Resposta:',
++  Why: 'Por quê',
++  How: 'Como',
++  correct: 'corretas',
++  Section: 'Seção',
++  of: 'de',
++  'The grader is temporarily unavailable. Your answer is kept. Press Check to retry.':
++    'O corretor está indisponível no momento. Sua resposta foi mantida. Aperte Verificar para tentar de novo.',
++  'That question could not be graded. Here is a fresh one. Enter your answer and press Check.':
++    'Não foi possível corrigir essa pergunta. Aqui está uma nova. Digite sua resposta e aperte Verificar.',
++  'Your session ended. Sign in again to submit your answer.':
++    'Sua sessão terminou. Entre de novo para enviar sua resposta.',
++  'Too many requests. Wait a moment and press Check again. Your answer is kept.':
++    'Muitos pedidos. Espere um momento e aperte Verificar de novo. Sua resposta foi mantida.',
++  'The server could not grade this answer': 'O servidor não conseguiu corrigir esta resposta',
++  'Your answer is kept. Press Check to retry.': 'Sua resposta foi mantida. Aperte Verificar para tentar de novo.',
++  'Could not reach the server to grade that answer. Check your connection and press Check to retry. Your answer is kept.':
++    'Não foi possível falar com o servidor para corrigir essa resposta. Confira sua conexão e aperte Verificar de novo. Sua resposta foi mantida.',
++  'Stepping down a level, easier question below.': 'Descendo um nível: pergunta mais fácil abaixo.',
++  'Restart lesson': 'Recomeçar a aula',
++  'Reference, the full lesson': 'Referência: a aula completa',
++
++  // Continue and practise again.
++  'Next →': 'Próximo →',
++  'Practice again →': 'Praticar novamente →',
++  'Practice again': 'Praticar novamente',
++  'Continue to Next Concept →': 'Continuar para o próximo conceito →',
++  'Continue to Next Concept': 'Continuar para o próximo conceito',
++  '✓ You have mastered this concept': '✓ Você dominou este conceito',
++  'You can move on to the next recommended concept or practice this lesson again below.':
++    'Você pode seguir para o próximo conceito recomendado ou praticar esta aula de novo abaixo.',
++  'Finding next concept…': 'Procurando o próximo conceito…',
++  "Finding what's next…": 'Procurando o que vem depois…',
++  'Complete,': 'Concluído,',
++  'Scroll up to review anything. Reviews are scheduled automatically.':
++    'Role para cima para rever qualquer parte. As revisões são agendadas automaticamente.',
++  'Or pick something else': 'Ou escolha outra coisa',
++  'Coming up, unlocks once this concept is mastered': 'A seguir: libera quando você dominar este conceito',
++  'Needs:': 'Precisa de:',
++  Study: 'Estudar',
++  'Other task →': 'Outra tarefa →',
++  Profile: 'Perfil',
++  '← Profile': '← Perfil',
++  'Back to Profile': 'Voltar ao perfil',
++  'Back to': 'Voltar para',
++  '← Choose another topic': '← Escolher outro tópico',
++  'Task XP summary': 'Resumo de XP da tarefa',
++  'XP from answers': 'XP das respostas',
++  'Task adjustment': 'Ajuste da tarefa',
++  'Performance adjustment': 'Ajuste por desempenho',
++  'Effort adjustment': 'Ajuste por esforço',
++  'Fast-answer rule': 'Regra de resposta rápida',
++  'Net XP': 'XP líquido',
++  'No accountability adjustment on this task.': 'Nenhum ajuste nesta tarefa.',
++
++  // Recommendations sent by the engine.
++  'Next up': 'A seguir',
++  New: 'Novo',
++  'Start →': 'Começar →',
++  'Ready to learn, everything it needs, you have done': 'Pronto para estudar: você já fez tudo o que ele exige',
++  'All learned': 'Tudo aprendido',
++  'Concept graph': 'Relatório de progresso',
++  'Nothing is due right now, the graph shows what builds on what you have':
++    'Nada pendente agora. O relatório mostra o que você já aprendeu.',
++  'See the graph →': 'Ver o relatório →',
++
++  // Prerequisites.
++  Prerequisites: 'Pré-requisitos',
++  "You're not ready to practise this topic yet. Study the prerequisites below, then return to check your readiness.":
++    'Você ainda não pode praticar este tópico. Estude os pré-requisitos abaixo e depois volte para conferir.',
++  'Study →': 'Estudar →',
++  Mastered: 'Dominado',
++  'Mastered · due a check': 'Dominado · revisão pendente',
++  'In progress': 'Em andamento',
++  'Not started': 'Não iniciado',
++  Locked: 'Bloqueado',
++  'Required prerequisite': 'Pré-requisito obrigatório',
++  Close: 'Fechar',
++  'Review prerequisites to continue': 'Reveja os pré-requisitos para continuar',
++  'Study the prerequisites below, then use their practice action. Return here when you are ready.':
++    'Estude os pré-requisitos abaixo e pratique cada um. Volte aqui quando estiver pronto.',
++  'These prerequisites are not started yet:': 'Estes pré-requisitos ainda não foram iniciados:',
++  'Study them first or continue anyway.': 'Estude-os primeiro ou continue mesmo assim.',
++  'You have already learned': 'Você já aprendeu',
++  ', a short check is due or continue anyway.': '; uma revisão curta está pendente, ou continue mesmo assim.',
++  'You have already learned what this builds on. You can revisit it any time.':
++    'Você já aprendeu a base deste conceito. Você pode rever quando quiser.',
++  'This builds on': 'Este conceito depende de',
++  'A quick study helps or continue anyway.': 'Um estudo rápido ajuda, ou continue mesmo assim.',
++
++  // Reporting a bad question.
++  'Report a problem': 'Relatar um problema',
++  'Complain about this question or explanation': 'Reclamar desta pergunta ou explicação',
++  "What's wrong?": 'O que está errado?',
++  Cancel: 'Cancelar',
++  'Wrong answer': 'Resposta errada',
++  'Bad explanation': 'Explicação ruim',
++  'Unclear / confusing': 'Pouco claro / confuso',
++  'Formatting / math rendering': 'Formatação',
++  Other: 'Outro',
++  'Optional details (what did you expect?)': 'Detalhes opcionais (o que você esperava?)',
++  'Sending…': 'Enviando…',
++  'Send report': 'Enviar relato',
++  '✓ Thanks, reported': '✓ Obrigado, relato enviado',
++  'Dismiss confirmation': 'Fechar confirmação',
++  'Could not send report': 'Não foi possível enviar o relato',
++
++  // Sidebar.
++  Navigate: 'Navegar',
++  Learn: 'Estudar',
++  Domains: 'Domínios',
++  Leaderboard: 'Ranking',
++  Friends: 'Amigos',
++  History: 'Histórico',
++  Reports: 'Relatório de progresso',
++  Settings: 'Configurações',
++  Notifications: 'Meus relatos e avisos',
++  'Toggle theme': 'Trocar tema',
++  'Sign out': 'Sair',
++}
++
++/** Portuguese text for the pilot's study path; the unchanged source text everywhere else. */
++export function pt(text: string): string {
++  return TS_PILOT ? (PT[text] ?? text) : text
++}
+diff --git a/web/next-app/lib/recommendations.ts b/web/next-app/lib/recommendations.ts
+index 225320f8..7498dcd4 100644
+--- a/web/next-app/lib/recommendations.ts
++++ b/web/next-app/lib/recommendations.ts
+@@ -1,3 +1,4 @@
++import { pilotHref, pt } from '@/lib/pilot'
+ import { getNext, type Recommendation, type RecommendationRes } from './api'
+ import type { Shelf, ShelfItem } from './nextUp'
+ 
+@@ -17,11 +18,11 @@ import type { Shelf, ShelfItem } from './nextUp'
+ export function recommendationToShelfItem(r: Recommendation): ShelfItem {
+   return {
+     kind: shelfKind(r),
+-    badge: r.badge,
+-    title: r.conceptTitle || r.id,
+-    detail: r.detail,
+-    href: r.action.href,
+-    cta: r.cta,
++    badge: pt(r.badge),
++    title: pt(r.conceptTitle || r.id),
++    detail: pt(r.detail),
++    href: pilotHref(r.action.href),
++    cta: pt(r.cta),
+     xp: r.xp ?? 0,
+   }
+ }
+@@ -49,11 +50,11 @@ export function recommendationResToShelf(res: RecommendationRes): Shelf {
+     ? recommendationToShelfItem(res.primary)
+     : {
+         kind: 'new' as const,
+-        badge: 'All learned',
+-        title: 'Concept graph',
+-        detail: 'Nothing is due right now, the graph shows what builds on what you have',
+-        href: '/graph',
+-        cta: 'See the graph →',
++        badge: pt('All learned'),
++        title: pt('Concept graph'),
++        detail: pt('Nothing is due right now, the graph shows what builds on what you have'),
++        href: pilotHref('/graph'),
++        cta: pt('See the graph →'),
+         xp: 0,
+       }
+   return {

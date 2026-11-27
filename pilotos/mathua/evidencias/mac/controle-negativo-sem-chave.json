@@ -1,0 +1,17 @@
+{
+  "descricao": "Controle negativo: interface compilada SEM NEXT_PUBLIC_TS_PILOT=1. O teste de navegador deve falhar.",
+  "comando_build": "NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build --prefix web/next-app",
+  "comando_teste": "node scripts/browser-smoke.mjs --mathua ./mathua",
+  "passed": false,
+  "platform": "darwin arm64",
+  "node": "v24.14.1",
+  "browser": "151.0.7922.34",
+  "checks_concluidos": [],
+  "erro": [
+    "locator.waitFor: Timeout 15000ms exceeded.",
+    "Call log:",
+    "  - waiting for getByRole('button', { name: 'Próximo →', exact: true }).first() to be visible",
+    "",
+    "    at <repositório>/pilotos/mathua/scripts/browser-smoke.mjs:150:78"
+  ]
+}

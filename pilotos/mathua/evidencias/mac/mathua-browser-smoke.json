@@ -1,0 +1,174 @@
+{
+  "passed": true,
+  "platform": "darwin arm64",
+  "node": "v24.14.1",
+  "browser": "151.0.7922.34",
+  "checks": [
+    {
+      "name": "home_opens_existing_learn_page_with_lesson",
+      "passed": true,
+      "observed": {
+        "status": 200,
+        "concept": "ts.value.numeric_literal"
+      }
+    },
+    {
+      "name": "navigation_fits_the_pilot",
+      "passed": true,
+      "observed": {
+        "hidden_absent": [
+          "/graph",
+          "/glossary",
+          "/docs",
+          "/docs/contributing",
+          "/how-it-works",
+          "/note",
+          "/announcements"
+        ],
+        "required_present": [
+          "/learn",
+          "/domains",
+          "/history",
+          "/reports",
+          "/my-reports"
+        ],
+        "sidebar": [
+          "λ Mathua",
+          "Estudar",
+          "Domínios",
+          "Ranking",
+          "Histórico",
+          "Relatório de progresso",
+          "Configurações",
+          "Meus relatos e avisos",
+          "G Guest",
+          "Trocar tema",
+          "Sair"
+        ]
+      }
+    },
+    {
+      "name": "ui_blocks_unmet_prerequisites",
+      "passed": true,
+      "observed": {
+        "answer_fields": 0,
+        "text": "Você ainda não pode praticar este tópico."
+      }
+    },
+    {
+      "name": "answer_field_has_no_math_palette",
+      "passed": true,
+      "observed": {
+        "palette_buttons": 0,
+        "placeholder": "Sua resposta",
+        "button": "Verificar"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.numeric_literal",
+      "passed": true,
+      "observed": {
+        "attempts": 6,
+        "new_status": "MASTERED",
+        "normal_ungraded_present": false
+      }
+    },
+    {
+      "name": "navigation_to_ts.type.number",
+      "passed": true,
+      "observed": {
+        "label": "Novo: Tipo number →",
+        "concept": "ts.type.number"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.number",
+      "passed": true,
+      "observed": {
+        "attempts": 6,
+        "new_status": "MASTERED",
+        "normal_ungraded_present": false
+      }
+    },
+    {
+      "name": "navigation_to_ts.binding.const_number",
+      "passed": true,
+      "observed": {
+        "label": "Novo: Declaração const com valor numérico →",
+        "concept": "ts.binding.const_number"
+      }
+    },
+    {
+      "name": "wrong_then_fresh_variant_then_correct",
+      "passed": true,
+      "observed": {
+        "wrong_question": "Declare somente uma constante chamada limit, inicializada com o literal numérico 4062. A anotação number é opcional.",
+        "wrong_answer": "let limit = 4062;",
+        "next_question": "Declare somente uma constante chamada reviewLimit, inicializada com o literal numérico 1937. A anotação number é opcional.",
+        "correct_answer": "const reviewLimit = 1937;",
+        "typed_with_key_presses": true,
+        "feedback": "Correto. A constante tem o nome e o valor solicitados. A anotação number é opcional neste exercício."
+      }
+    },
+    {
+      "name": "study_path_text_is_portuguese",
+      "passed": true,
+      "observed": {
+        "english_source_strings_checked": 21,
+        "screens": [
+          "lesson",
+          "locked concept",
+          "question",
+          "section end",
+          "wrong answer",
+          "report dialog"
+        ]
+      }
+    },
+    {
+      "name": "feedback_keeps_question_expected_and_given_answer",
+      "passed": true,
+      "observed": {
+        "report_id": 1,
+        "status": "open",
+        "expected": "const reviewLimit: number = 1937;",
+        "answer_given": "const reviewLimit = 1937;"
+      }
+    },
+    {
+      "name": "learner_reads_own_report_on_my_reports_page",
+      "passed": true,
+      "observed": {
+        "reports_listed": 1,
+        "report_id": 1
+      }
+    },
+    {
+      "name": "reload_preserves_identity_and_prerequisite_progress",
+      "passed": true,
+      "observed": {
+        "eligible": true
+      }
+    },
+    {
+      "name": "server_restart_preserves_progress_and_reports",
+      "passed": true,
+      "observed": {
+        "processes_started": 2,
+        "eligible": true,
+        "reports": 1
+      }
+    }
+  ],
+  "screenshots": [
+    "01-aula.png",
+    "02-pre-requisitos.png",
+    "03-pergunta.png",
+    "04-fim-da-secao.png",
+    "05-correcao-de-erro.png",
+    "06-relato.png",
+    "07-meus-relatos.png"
+  ],
+  "page_errors": [],
+  "api_errors": []
+}

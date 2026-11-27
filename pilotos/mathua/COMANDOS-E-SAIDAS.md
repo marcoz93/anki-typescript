@@ -1,4 +1,6 @@
-# Interface do piloto: comandos e saídas
+# Interface do piloto: comandos e saídas em Linux
+
+> Este registro é da rodada em Linux de 26/11/2026 e usa o patch anterior (sha256 `c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83`). Os rótulos em inglês e os comandos de compilação abaixo são dessa rodada. A rodada em macOS, com o patch atual, está em [COMANDOS-E-SAIDAS-MAC.md](COMANDOS-E-SAIDAS-MAC.md).
 
 Data de referência da rodada: 26/11/2026, America/Sao_Paulo.
 

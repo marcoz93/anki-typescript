@@ -1,0 +1,99 @@
+
+> mathua-web@0.1.0 prebuild
+> node scripts/copy-mathlive-fonts.mjs && node scripts/build-graph.mjs && node scripts/build-flow-layout.mjs
+
+mathlive fonts: 0.111.0 already in public/fonts
+(node:33659) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repositório>/pilotos/mathua/mathua/web/next-app/scripts/layoutDAG3D.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repositório>/pilotos/mathua/mathua/web/next-app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+graph:build 3015 nodes / 4043 edges in 21ms (layout), 3015 positions -> public/data/ + data/graph.meta.json
+flow:build 3015 positions in 30196ms -> data/flow.positions.json
+
+> mathua-web@0.1.0 build
+> next build
+
+▲ Next.js 16.4.6 (Turbopack)
+- Environments: .env.production
+✓ Running next.config.js took 14ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1091ms
+  Running TypeScript ...
+  Finished TypeScript in 2.5s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/60) ...
+  Generating static pages using 9 workers (15/60) 
+  Generating static pages using 9 workers (30/60) 
+  Generating static pages using 9 workers (45/60) 
+✓ Generating static pages using 9 workers (60/60) in 1239ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/announcements
+├ ○ /admin/audience
+├ ○ /admin/audit
+├ ○ /admin/content
+├ ○ /admin/contributors
+├ ○ /admin/invitations
+├ ○ /admin/lab
+├ ○ /admin/lab/play
+├ ○ /admin/leagues
+├ ○ /admin/notifications
+├ ○ /admin/reports
+├ ○ /admin/users
+├ ○ /admin/users/detail
+├ ○ /announcements
+├ ○ /concept
+├ ○ /contact
+├ ○ /diagnose
+├ ○ /docs
+├ ○ /docs/administration
+├ ○ /docs/architecture
+├ ○ /docs/contributing
+├ ○ /docs/efficacy
+├ ○ /docs/math-input
+├ ○ /docs/system-design
+├ ○ /domains
+├ ○ /friends
+├ ○ /friends/view
+├ ○ /glossary
+├ ○ /goals
+├ ○ /graph
+├ ○ /history
+├ ○ /how-it-works
+├ ○ /leaderboard
+├ ○ /learn
+├ ○ /licenses
+├ ○ /login
+├ ○ /my-reports
+├ ○ /note
+├ ○ /notifications
+├ ○ /notifications/unsubscribe
+├ ○ /onboard
+├ ○ /plan
+├ ○ /privacy
+├ ○ /profile
+├ ○ /proto3d
+├ ○ /reports
+├ ○ /review
+├ ○ /robots.txt
+├ ○ /session
+├ ○ /settings
+├ ○ /share
+├ ○ /sitemap.xml
+├ ○ /study
+├ ○ /timed-quiz
+└ ○ /verify-email
+
+
+○  (Static)  prerendered as static content
+
+
+> mathua-web@0.1.0 postbuild
+> node scripts/stamp-sw.mjs
+
+stamp-sw: out/sw.js -> v2-20261127T033636Z

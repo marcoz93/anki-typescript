@@ -6,17 +6,21 @@ Material e experimentos para aprender TypeScript por conceitos, com variação d
 
 O piloto integra três conceitos ao motor existente do Mathua: literal numérico, tipo `number` e declaração `const` com valor numérico.
 
-**Estado validado em 26/11/2026:** a interface existente do Mathua funciona com o piloto. O teste em Chromium percorreu os três conceitos, os links de continuação, a liberação por pré-requisitos, o ciclo errar → variante → acertar e o envio de feedback. Os 29 cenários do piloto passaram novamente e o programa de reinício real está incluído.
+**Estado validado em 27/11/2026, em macOS:** a tela existente do Mathua está ajustada para estudar TypeScript. O campo de resposta não mostra o teclado de símbolos matemáticos. O percurso de estudo e o menu lateral estão em português. Os menus do catálogo de matemática estão ocultos. O teste em Chromium passou com 14 verificações: ler a explicação, responder, receber a correção, receber uma variante após errar, avançar após os pré-requisitos, relatar uma pergunta, consultar o relato, recarregar a página e reiniciar o servidor sem perder o progresso. Os 29 cenários do piloto e os 1885 testes unitários da interface passaram.
 
-**Ressalva da suíte geral:** `go test -json ./... -count=1` terminou com 59 pacotes aprovados, um reprovado e cinco sem testes. A falha de `TestWave23QuestionVariety` também apareceu no commit-base sem o patch, em uma repetição de 500 execuções. Os comandos, as saídas e os limites estão registrados abaixo.
+**Linux e Mac são execuções separadas.** As execuções em Linux são de 26/11/2026 e usaram o patch anterior. Os ajustes da tela desta rodada foram validados só em macOS.
+
+**Ressalva da suíte geral, medida em Linux:** `go test -json ./... -count=1` terminou com 59 pacotes aprovados, um reprovado e cinco sem testes. A falha de `TestWave23QuestionVariety` também apareceu no commit-base sem o patch, em uma repetição de 500 execuções. No Mac, o mesmo teste falhou 5 vezes em 500 execuções no commit-base. A suíte geral não foi repetida com o patch atual. Os comandos, as saídas e os limites estão registrados abaixo.
 
 | Material | Conteúdo |
 | --- | --- |
 | [Relatório e reprodução](pilotos/mathua/LEIA-ME.md) | Caso concreto, critérios, resultados, limites e comandos para reproduzir |
-| [Comandos e saídas desta rodada](pilotos/mathua/COMANDOS-E-SAIDAS.md) | Ambiente medido, teste no navegador, reinício, contrato `ungraded` e falha da suíte geral |
-| [Patch completo](pilotos/mathua/mathua-typescript-pilot.patch) | Piloto, aulas, servidor da interface existente, uma linha na API e duas propriedades no botão de feedback |
+| [Comandos e saídas em macOS](pilotos/mathua/COMANDOS-E-SAIDAS-MAC.md) | Rodada de 27/11/2026 com o patch atual: versões testadas e exigidas, testes, controle negativo e capturas de tela |
+| [Comandos e saídas em Linux](pilotos/mathua/COMANDOS-E-SAIDAS.md) | Rodada de 26/11/2026 com o patch anterior: ambiente, navegador, reinício, contrato `ungraded` e falha da suíte geral |
+| [Patch completo](pilotos/mathua/mathua-typescript-pilot.patch) | Piloto, aulas, servidor da interface existente, uma linha na API e os ajustes da tela ligados pela chave `NEXT_PUBLIC_TS_PILOT=1` |
 | [Resultados estruturados](pilotos/mathua/resultados.json) | Versões, contagens, comandos e escopo dos testes |
-| [Evidências](pilotos/mathua/evidencias/) | Registros das execuções, falha anterior à correção e teste de reinício do executável |
+| [Evidências em Linux](pilotos/mathua/evidencias/) | Registros das execuções, falha anterior à correção e teste de reinício do executável |
+| [Evidências em macOS](pilotos/mathua/evidencias/mac/) | Registros das execuções no Mac e sete capturas de tela |
 | [Programas de verificação](pilotos/mathua/scripts/) | Reinício de processos e fluxo no navegador, ambos contra a API real |
 | [Licença do Mathua](pilotos/mathua/LICENSE-Mathua.txt) | Licença do projeto usado como base |
 
@@ -24,9 +28,11 @@ O piloto integra três conceitos ao motor existente do Mathua: literal numérico
 
 Leia o [relatório](pilotos/mathua/LEIA-ME.md) e siga a seção de reprodução a partir de `pilotos/mathua/`. O patch contém o código completo da adaptação e deve ser aplicado ao commit-base indicado do Mathua. O piloto depende desse projeto para compilar e executar.
 
-A instalação compila a interface e o executável. Depois de iniciá-lo, abra `http://127.0.0.1:8081`. O ambiente testado foi Linux x86_64 com Node `24.22.3`, Go `1.26.6` e Chromium `158.0.8127.0`. A exigência de Node da interface vem do `package.json` do Mathua. As versões `24.14.1` e `26.7.0` não satisfazem essa exigência.
+A instalação compila a interface e o executável. Depois de iniciá-lo, abra `http://127.0.0.1:8081`.
 
-Há três conceitos introdutórios, uma família por conceito. A geração automática de novas famílias a partir do feedback continua pendente. Hoje, o feedback permite registrar, revisar e resolver problemas com participação humana. A calibração pedagógica com alunos reais e a instalação no computador do usuário não foram verificadas.
+Versão exigida: a compilação da interface exige Node `^22.23.4 || ^24.22.1 || ^26.12.1`, conforme o campo `engines.node` de `web/next-app/package.json` do Mathua. Versões testadas: em Linux x86_64, Node `24.22.3`, Go `1.26.6` e Chromium `158.0.8127.0`; em macOS arm64, Node `24.22.3` na compilação da interface, Node `24.14.1` na execução, Go `1.26.6` e Chromium `151.0.7922.34`. A versão testada não é a versão mínima.
+
+Há três conceitos introdutórios, uma família por conceito. A geração automática de novas famílias a partir do feedback continua pendente. Hoje, o feedback permite registrar, revisar e resolver problemas com participação humana. A calibração pedagógica com alunos reais não foi verificada. As páginas fora do percurso de estudo continuam em inglês.
 
 ## Origem
 

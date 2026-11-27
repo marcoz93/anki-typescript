@@ -8,7 +8,7 @@
     "go": "1.26.6",
     "node": "24.22.3",
     "typescript": "5.9.3",
-    "origem": "Ambiente Linux do assistente. Não é a máquina do usuário.",
+    "origem": "Ambiente Linux do assistente da rodada anterior. Não é a máquina do usuário. O ambiente do Mac está em testes_macos.ambiente.",
     "system": "Linux",
     "release": "6.18.57",
     "machine": "x86_64",
@@ -27,10 +27,60 @@
   "mudancas": {
     "arquivos_existentes": {
       "internal/server/server.go": {
-        "linhas_adicionadas": 1
+        "linhas_adicionadas": 1,
+        "linhas_removidas": 0
+      },
+      "web/next-app/app/learn/page.tsx": {
+        "linhas_adicionadas": 3,
+        "linhas_removidas": 2
+      },
+      "web/next-app/app/my-reports/page.tsx": {
+        "linhas_adicionadas": 4,
+        "linhas_removidas": 1
+      },
+      "web/next-app/components/BottomTabs.tsx": {
+        "linhas_adicionadas": 2,
+        "linhas_removidas": 1
+      },
+      "web/next-app/components/ConceptReference.tsx": {
+        "linhas_adicionadas": 2,
+        "linhas_removidas": 1
+      },
+      "web/next-app/components/Footer.tsx": {
+        "linhas_adicionadas": 4,
+        "linhas_removidas": 0
       },
       "web/next-app/components/LearnStepper.tsx": {
-        "linhas_adicionadas": 2
+        "linhas_adicionadas": 53,
+        "linhas_removidas": 48
+      },
+      "web/next-app/components/NextUpCard.tsx": {
+        "linhas_adicionadas": 3,
+        "linhas_removidas": 2
+      },
+      "web/next-app/components/PrerequisitePanel.tsx": {
+        "linhas_adicionadas": 7,
+        "linhas_removidas": 6
+      },
+      "web/next-app/components/ReportButton.tsx": {
+        "linhas_adicionadas": 16,
+        "linhas_removidas": 15
+      },
+      "web/next-app/components/XPTaskSummary.tsx": {
+        "linhas_adicionadas": 10,
+        "linhas_removidas": 9
+      },
+      "web/next-app/components/app-sidebar.tsx": {
+        "linhas_adicionadas": 14,
+        "linhas_removidas": 10
+      },
+      "web/next-app/lib/nav.ts": {
+        "linhas_adicionadas": 2,
+        "linhas_removidas": 1
+      },
+      "web/next-app/lib/recommendations.ts": {
+        "linhas_adicionadas": 11,
+        "linhas_removidas": 10
       }
     },
     "arquivos_novos": [
@@ -44,14 +94,25 @@
       "cmd/typescript-pilot/main.go",
       "cmd/typescript-pilot/main_test.go",
       "cmd/typescript-pilot/package-lock.json",
-      "cmd/typescript-pilot/package.json"
+      "cmd/typescript-pilot/package.json",
+      "web/next-app/lib/pilot.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83",
+    "patch_sha256": "c8fdb64907c33400244abcfb6cc0b5aae111ebf00db9791a5f2c4f0b9f6685d3",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
-    "conteudo": "Três conceitos, uma família por conceito, com explicações em português."
+    "conteudo": "Três conceitos, uma família por conceito, com explicações em português.",
+    "patch_sha256_anterior": "c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83",
+    "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
+    "ajustes_da_tela": [
+      "Campo de resposta sem a paleta de símbolos matemáticos.",
+      "Textos do percurso de estudo em português: campo de resposta, correção, continuar, praticar novamente, pré-requisitos e relato de problema.",
+      "Menus sem o grafo de conceitos, o glossário, o grupo Resources e o rodapé.",
+      "Página /my-reports aberta para o visitante do piloto."
+    ]
   },
-  "testes_atuais": {
+  "testes_linux_patch_anterior": {
+    "observacao": "Execuções em Linux da rodada de 26/11/2026, feitas com o patch anterior (sha256 c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83) e com a versão anterior de scripts/browser-smoke.mjs. Não foram repetidas com o patch atual.",
+    "patch_sha256": "c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83",
     "mathua-pilot-ui.jsonl": {
       "pass_folhas": 29,
       "fail": 0,
@@ -86,6 +147,89 @@
       "test_events": {
         "pass": 499,
         "fail": 1
+      }
+    }
+  },
+  "testes_macos": {
+    "observacao": "Execuções no Mac do usuário em 27/11/2026, com o patch atual. Registro completo em COMANDOS-E-SAIDAS-MAC.md.",
+    "patch_sha256": "c8fdb64907c33400244abcfb6cc0b5aae111ebf00db9791a5f2c4f0b9f6685d3",
+    "ambiente": {
+      "sistema": "macOS 26.4.1",
+      "machine": "arm64",
+      "go": "1.26.6",
+      "node_compilacao_da_interface_testado": "24.22.3",
+      "node_execucao_testado": "24.14.1",
+      "npm_compilacao": "11.19.1",
+      "typescript": "5.9.3",
+      "playwright": "1.62.1",
+      "chromium": "151.0.7922.34"
+    },
+    "requisitos_declarados": {
+      "interface_engines_node": "^22.23.4 || ^24.22.1 || ^26.12.1",
+      "fonte": "web/next-app/package.json (engines.node) com engine-strict=true em web/next-app/.npmrc",
+      "corretor_engines_node": null,
+      "fonte_corretor": "cmd/typescript-pilot/package.json não declara engines",
+      "versao_testada_nao_e_versao_minima": true
+    },
+    "evidencias/mac/ui-build.log": {
+      "exit_code": 0,
+      "chave": "NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1"
+    },
+    "evidencias/mac/lint.log": {
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 7
+    },
+    "tsc --noEmit": {
+      "exit_code": 0
+    },
+    "evidencias/mac/vitest.log": {
+      "exit_code": 0,
+      "test_files_passed": 198,
+      "tests_passed": 1885,
+      "chave_do_piloto": "desligada"
+    },
+    "evidencias/mac/mathua-pilot.jsonl": {
+      "pass_folhas": 29,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidencias/mac/mathua-native-http.jsonl": {
+      "pass_folhas": 26,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidencias/mac/mathua-native-engine.jsonl": {
+      "pass_folhas": 154,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidencias/mac/mathua-process-script.json": {
+      "passed": true,
+      "processes_started": 2,
+      "persisted_attempts": 1
+    },
+    "evidencias/mac/mathua-browser-smoke.json": {
+      "passed": true,
+      "checks": 14,
+      "browser": "151.0.7922.34",
+      "node": "24.14.1",
+      "api_simulada": false,
+      "progresso_inserido_diretamente_no_banco": false,
+      "capturas": 7
+    },
+    "evidencias/mac/controle-negativo-sem-chave.json": {
+      "passed": false,
+      "esperado": "falha",
+      "motivo": "interface compilada sem NEXT_PUBLIC_TS_PILOT=1"
+    },
+    "suite_geral_go": {
+      "repetida_com_o_patch_atual": false,
+      "teste_intermitente_no_commit_base": {
+        "teste": "TestWave23QuestionVariety",
+        "execucoes": 500,
+        "pass": 495,
+        "fail": 5
       }
     }
   },
@@ -134,19 +278,23 @@
     },
     "observacao": "Evidências anteriores preservadas. O teste de processo novo tem programa salvo e resultado separado."
   },
-  "comandos_e_saidas": "COMANDOS-E-SAIDAS.md",
+  "comandos_e_saidas": {
+    "linux": "COMANDOS-E-SAIDAS.md",
+    "macos": "COMANDOS-E-SAIDAS-MAC.md"
+  },
   "scripts": [
     "scripts/process-smoke.py",
     "scripts/browser-smoke.mjs"
   ],
   "limites": [
     "A suíte geral desta rodada terminou com falha em um teste de variedade. O mesmo teste falhou também no commit-base limpo. Não se declara aprovação integral da suíte.",
-    "Teste da interface /learn em Chromium, com API e SQLite reais. Não valida todos os menus, outros navegadores, dispositivos móveis ou instalação no Mac do usuário.",
-    "Controles e demais páginas mantêm a interface original do Mathua. Enunciados e aulas dos três conceitos estão em português.",
+    "Teste da interface /learn em Chromium, com API e SQLite reais. Não valida outros navegadores nem dispositivos móveis. As alterações da tela desta rodada foram validadas só em macOS.",
+    "O percurso de estudo e o menu lateral estão em português. As páginas /my-reports, /history, /reports, /domains, /profile e /settings mantêm o texto original em inglês. O menu Ranking e o botão do assistente continuam visíveis.",
     "Três famílias, uma por conceito. Variação de parâmetros não é criação de uma nova família.",
     "Geração automática de famílias a partir do feedback não foi iniciada. Conteúdo e corretor ainda exigem revisão humana.",
     "Reparo histórico foi exercitado em dados simulados. Não recalcula XP.",
     "Configuração original de domínio e política de diagnóstico não foram substituídas.",
     "Os testes não medem aprendizagem, retenção ou calibração pedagógica com alunos reais."
-  ]
+  ],
+  "data_local_macos": "2026-11-27"
 }
