@@ -42,9 +42,9 @@ Só arquivos do piloto, em `cmd/typescript-pilot/`:
 
 O teste de navegador, em `scripts/browser-smoke.mjs`, ganhou um passo para o degrau 4.
 
-Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e entraram as funções `pilotExclude`, `pilotAdmit` e `pilotUsable` em `web/next-app/lib/pilot.ts`, com o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 186 linhas adicionadas e 116 removidas. A interface foi recompilada.
+Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e entraram as funções `pilotExclude`, `pilotAdmit` e `pilotUsable` em `web/next-app/lib/pilot.ts`, com o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 200 linhas adicionadas e 122 removidas. A interface foi recompilada.
 
-O patch atual tem 23 arquivos, 2944 linhas adicionadas e 116 removidas. Resumo SHA-256: `719c4fd39a8b79fc3f2b5b49c0c8d376fb2b2cb0a04041a54b42661b48952b69`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`.
+O patch atual tem 23 arquivos, 2962 linhas adicionadas e 122 removidas. Resumo SHA-256: `c68ecf008a7b23cf5c6a07b12110f3b2af7b5e91cbff47572acf8289f9f9ae81`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`; `719c4fd3…` no commit `61bdca9`.
 
 ## 3. O que os corretores novos aceitam
 
@@ -76,11 +76,11 @@ go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1
 
 | Evidência | Código | Aprovados | Falhas |
 | --- | --- | --- | --- |
-| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 466 casos finais | 0 |
+| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 467 casos finais | 0 |
 | [mathua-native-http.jsonl](evidencias/bloco-2-d04-d05/mathua-native-http.jsonl) | 0 | 26 casos finais | 0 |
 | [mathua-native-engine.jsonl](evidencias/bloco-2-d04-d05/mathua-native-engine.jsonl) | 0 | 154 casos finais | 0 |
 
-As evidências desta pasta são da execução final, depois das correções das quatro passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 466 casos do piloto, por função de teste:
+As evidências desta pasta são da execução final, depois das correções das cinco passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 467 casos do piloto, por função de teste:
 
 | Função | Casos | O que confere |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ As evidências desta pasta são da execução final, depois das correções das 
 | `TestCriteriaOfStagesFourAndFive` | 170 | Respostas aceitas e recusadas de F015 a F025, com a mensagem em parte dos casos |
 | `TestCriteriaHoldInEveryCaseOfStagesFourAndFive` | 204 | As equivalências do contrato aplicadas aos 6 casos de cada família, cada um com o próprio contexto |
 | `TestWholeLadderThroughTheAPI` | 1 | Um visitante novo domina os 23 conceitos pela API real, em ordem, com 6 perguntas distintas por conceito |
-| `TestFindingsOfTheIndependentReview` | 31 | Os achados do falseador, cada um com a resposta que ele relatou |
+| `TestFindingsOfTheIndependentReview` | 32 | Os achados do falseador, cada um com a resposta que ele relatou |
 | `TestPilotHTTP` | 7 | Pré-requisitos, domínio, variante após erro, repetição, relato, reinício e falha do corretor |
 | Outras quatro funções | 4 | Conteúdo servido, seções por família, alternativas por letra e reparo de histórico |
 
@@ -110,7 +110,7 @@ Interface, em `web/next-app`, com Node `24.22.3`, depois das correções da seç
 
 O arquivo de teste novo, `test/pilot.test.ts`, tem 12 testes.
 
-A suíte da interface rodou três vezes depois das correções da segunda passada duas vezes depois das correções da terceira e uma vez depois das correções da quarta. As três últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
+A suíte da interface rodou três vezes depois das correções da segunda passada duas vezes depois das correções da terceira, uma vez depois das correções da quarta e uma vez depois das correções da quinta. As quatro últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
 
 ## 5. O que foi observado pela tela no degrau 4
 
@@ -142,7 +142,7 @@ Cada defeito tem um teste com nome próprio, por exemplo `f021_ts_ignore_does_no
 
 ## 7. Verificação por falseador
 
-O falseador foi o Codex, em modo somente leitura, sobre os commits `3d1fdc4` e `c7f3c85`. Ele rodou 94 comandos. O relatório dele, com cada comando e saída, está em [falseador-codex.md](evidencias/bloco-2-d04-d05/falseador-codex.md).
+O falseador foi o Codex, em modo somente leitura, sobre os commits `3d1fdc4` e `c7f3c85`. O registro da execução marca 94 comandos. O relatório dele está em [falseador-codex.md](evidencias/bloco-2-d04-d05/falseador-codex.md) e traz o comando e a saída de cada achado, em 9 blocos; ele não lista os 94 comandos. O mesmo vale para os relatórios das outras passadas.
 
 A primeira tentativa não rodou: o filtro de segurança do Codex recusou o pedido, que usava vocabulário de teste de invasão. O pedido foi reescrito como revisão de qualidade e rodou.
 
@@ -200,9 +200,19 @@ O falseador rodou 91 comandos. O relatório está em [falseador-codex-4a-passada
 | 2. F023 recusava `let amounts = [15000, 5000, 10000];`, com uma mensagem que exigia `const`. O critério e o enunciado de F023 não citam `const` | Média | F023 aceita `let`. Ver a decisão em aberto na seção 8, porque um teste da primeira revisão exigia a recusa |
 | 3. Um nome de tipo com erro de digitação, como `numbr`, recebia a mensagem "A anotação não é compatível com o valor" | Baixa | A mensagem agora é neutra: "O compilador TypeScript rejeitou a declaração:", seguida do texto do compilador |
 
-### Quinta passada
+### Quinta passada, sobre o commit `61bdca9`
 
-Preenchida depois da revisão do Codex sobre o commit das correções da quarta passada.
+O falseador rodou 106 comandos. O relatório está em [falseador-codex-5a-passada.md](evidencias/bloco-2-d04-d05/falseador-codex-5a-passada.md). Ele conferiu as três correções da quarta passada, e as três se sustentaram. Ele testou de novo 250 respostas, sem veredito divergente da rubrica. Sem a chave do piloto, a tela original e a atual renderizaram o mesmo conteúdo e enviaram as mesmas requisições no ensaio dele. Ele relatou um achado médio e dois baixos.
+
+| Achado da quinta passada | Severidade | O que foi feito |
+| --- | --- | --- |
+| 1. Quando o servidor responde que não tem registro de uma pergunta, a tela busca uma substituta. Com quatro perguntas na fila, a busca trazia uma pergunta que já estava na fila, o filtro a descartava, e a tela ficava sem substituta | Média | No piloto, a substituta vem da mesma função que serve a próxima pergunta: da fila atual, ou de uma busca quando a fila está vazia. O caminho paralelo deixou de existir no piloto |
+| 2. F023 dizia "Inicialize a constante com um array" para `let totals = 18000;` | Baixa | A mensagem agora é "O valor inicial deve ser um array, entre colchetes, com os elementos pedidos." |
+| 3. Este documento dizia que o relatório da primeira passada continha cada comando e saída. Ele contém os 9 blocos de comando dos achados | Baixa | A frase foi corrigida |
+
+### Sexta passada
+
+Preenchida depois da revisão do Codex sobre o commit das correções da quinta passada.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 
@@ -227,7 +237,7 @@ Um problema no próprio conteúdo, que não foi alterado: o campo `counterexampl
 ## 9. Limites desta verificação
 
 - **Só macOS e só Chromium `151.0.7922.34`.**
-- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 10 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
+- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 11 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
 - **Suíte geral.** `go test ./...` e o pacote `internal/server` inteiro não foram repetidos, porque nenhum arquivo de `internal/` mudou neste bloco.
 - **Conceitos percorridos pela tela.** O navegador percorreu 9 dos 23 conceitos. Os 23 foram dominados pela API real no teste `TestWholeLadderThroughTheAPI`.
 - **Tempo de partida.** Medido uma vez: 14,3 segundos com 23 conceitos. O Mathua confere cada gerador em um processo separado. Com 46 conceitos, a partida fica mais lenta.
