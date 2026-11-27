@@ -1,0 +1,141 @@
+# Revisão de TypeScript pelo mesmo princípio em outro contexto
+
+## 1. Mapa Macro das decisões
+
+O objeto de estudo é o reencontro do aluno com algo que aprendeu ou errou no piloto de TypeScript. Há dois momentos distintos. Logo após um erro, refazer a mesma pergunta pode ser útil. Dias depois, interessa saber se o aluno consegue aplicar o princípio quando a situação já não lhe permite reconhecer o exercício de memória.
+
+| ID | Objeto focal | Pergunta sobre o produto | Estado |
+| --- | --- | --- | --- |
+| P | Finalidade da revisão | O que se quer descobrir ao voltar a um conteúdo? | **Decidida neste recorte.** Queremos observar a aplicação do mesmo princípio em outro contexto ao longo do tempo. A repetição imediata após erro é admissível. |
+| Q1 | Equivalência de duas tarefas | O que precisa permanecer igual para que dois exercícios contem como revisão do mesmo aprendizado? | **Aberta. Em deliberação.** |
+| Q2 | Retomada logo após um erro | Que oportunidade de refazer a tentativa o aplicativo deve garantir ao aluno naquele momento? | Aberta |
+| Q3 | Novidade do contexto | Que diferença o aluno precisa encontrar para que a revisão exija uma nova aplicação do princípio? | Aberta |
+| Q4 | Significado de um acerto | O que um acerto permite afirmar depois de uma correção imediata e o que permite afirmar numa revisão em outro contexto? | Aberta |
+| Q5 | Compromisso na revisão posterior | O que o aluno pode esperar na data de revisão, inclusive se não houver um contexto suficientemente diferente e adequado? | Aberta |
+| Q6 | Regra de equivalência por objetivo | Se o invariante depender do objetivo da tarefa, como delimitar o que precisa ficar fixo em cada objetivo? | Aberta, condicional |
+| Q7 | Aceite do comportamento do aplicativo | Que observações justificam aceitar que o aplicativo cumpriu a promessa de revisão e que limites têm essas observações? | Aberta |
+
+A fronteira inclui o conteúdo de TypeScript, a tentativa após erro, a revisão posterior e a interpretação do desempenho. O agendamento existente e as referências do ecossistema Anki são dados de partida. A autoria por agente é uma possibilidade solicitada para investigação. O momento em que o aluno vê uma pergunta e o momento em que alguém a escreve podem ser diferentes.
+
+## 2. Única decisão em deliberação · Q1
+
+**Quando o contexto muda, o resultado correto do exercício também pode mudar?** A questão é de nível **Macro**. O objeto focal é o par formado pela tarefa original e pela tarefa de revisão. A resposta deve produzir um critério que permita aceitar ou rejeitar esse par. P já estabeleceu a finalidade. Q1 pode ser resolvida sem decidir quem cria as perguntas, com que frequência o aluno as vê ou como seu progresso é calculado.
+
+**Um caso que separa as alternativas.** Imagine que a primeira pergunta seja “Uma mala pode pesar até 12 kg sem taxa. Uma mala de exatamente 12 kg paga taxa?”. A resposta é **não**. Em outra sessão, o aplicativo pergunta “Um tanque de 50 litros transborda quando recebe mais que sua capacidade. Com 51 litros, ele transborda?”. A resposta é **sim**. Nas duas situações o aluno decide se um valor ultrapassou um limite. Só a primeira exige que ele resolva o caso de **igualdade**. Se a dificuldade original era justamente o que acontece na igualdade, acertar a segunda pergunta ainda deixa essa dúvida em aberto.
+
+| Alternativa para Q1 | Critério favorecido e custo | Consequência e questão que fica para depois |
+| --- | --- | --- |
+| **A · Conservar a tarefa e a resposta correta.** Só conta como revisão equivalente uma situação que peça a mesma ação e preserve a resposta esperada em significado. Formulações de código equivalentes continuam possíveis. | Facilita reencontrar uma resposta específica. Uma resposta constante também pode virar uma pista. | O tanque com 51 litros ficaria fora desse par. Um tanque com 49 e um com exatamente 50 produziriam a mesma resposta “não”, mas só o de 50 verificaria a igualdade. Em Q3 caberia decidir que mudança de contexto preserva essa distinção. |
+| **B · Conservar a tarefa e a regra de solução.** O resultado concreto pode variar quando o aluno aplica a mesma operação a outros dados. | Permite observar se o aluno recalcula a resposta e reduz a utilidade de decorar um resultado. Um exemplo escolhido longe do limite pode deixar um erro específico invisível. | Se o alvo é aplicar a comparação estrita em geral, o tanque com 51 litros pode servir. Em Q4 caberia definir o que esse acerto permite afirmar sobre a dificuldade na igualdade. |
+| **C · Fixar o invariante conforme o objetivo de aprendizagem.** Em alguns objetivos o resultado ou o caso de fronteira integra o alvo. Em outros, o aluno deve obter resultados diferentes aplicando a mesma regra. | Distingue uma dificuldade pontual do uso geral do conceito. Exige um objetivo preciso o bastante para dois avaliadores concordarem sobre o mesmo par. | O tanque com 51 litros seria admissível para o objetivo geral e insuficiente para verificar o erro na igualdade. Essa escolha abriria Q6. |
+
+**Restrições comuns.** A variação conserva o princípio e permite que alguém que o compreenda deduza a resposta a partir da nova situação. Alternar entre escrever código e interpretar código muda a ação exigida do aluno. Esse é outro contraste a controlar ao julgar um par. No exemplo, valeu a mesma ação nas duas perguntas.
+
+**Evidência para ponderar a escolha.** No currículo atual, F016 pede ao aluno que **construa** uma comparação estrita. F017 pede que ele **calcule** seu resultado. As duas famílias pertencem ao mesmo conceito. Em F017 há gabaritos `true` e `false`. Em F016, duas expressões diferentes, como `peso > 12` e `12 < peso`, podem satisfazer a mesma exigência. Esses fatos mostram por que “mesma resposta” admite mais de uma leitura. A regra editorial atual é um precedente para a decisão de produto. [Famílias F016 e F017](../conteudo/typescript-v1/EXERCICIOS.md#c016--f016--construtivo) · [Contrato dos exercícios](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md)
+
+**Escolha em aberto.** Entre A, B e C, qual expressa o que o aluno deve reencontrar? Também cabe formular outro critério usando o exemplo da mala e do tanque.
+
+## 3. Parte–todo e níveis de descrição
+
+### Partes do aplicativo no recorte
+
+Na árvore, cada recuo significa `decomposes_into`, lido do todo para uma de suas partes. A decomposição termina onde já é possível localizar as decisões desta rodada.
+
+- **Aplicativo de estudo de TypeScript**
+  - **Material de estudo** — contém objetivos e exercícios, entre eles as situações comparadas em Q1 e Q3.
+  - **Percurso do aluno**
+    - **Sessão de aprendizagem** — inclui o episódio de resposta, correção e retomada de Q2.
+    - **Sessão de revisão** — inclui o reencontro posterior de Q5.
+  - **Acompanhamento do aprendizado** — reúne o histórico de desempenho e a agenda de revisão. Q4 trata do significado que se pode atribuir a esse desempenho.
+
+Q7 avalia o comportamento do conjunto. A autoria de exercícios, humana ou assistida, pode ocorrer fora da sessão. Sua posição dentro ou fora da fronteira operacional continua em aberto.
+
+### Abstração, mantendo o objeto focal
+
+| Objeto | Macro · finalidade ou compromisso observável | Meso · explicação lógica disponível hoje | Micro · realização encontrada |
+| --- | --- | --- | --- |
+| Aplicativo no recorte | Reencontrar o princípio e verificar se ele pode ser aplicado em outro contexto (P). | O motor seleciona um conceito devido. O piloto fornece uma instância. | `NextReviewQuestion` e `exercise.Generate` (E3). |
+| Material de estudo | Dizer o que dois exercícios permitem demonstrar (Q1). | Um conceito pode reunir tarefas diferentes. Uma família reúne instâncias com um critério de correção. | O currículo liga `ts.expression.greater_than` a F016 e F017. O banco guarda os seis casos de cada uma (E1 e E2). |
+| Retomada de uma tentativa | Esclarecer o que o aluno pode refazer após um erro (Q2). | A prática distingue tentativa incorreta de falha de avaliação e pode voltar à mesma família. | O contrato prevê `ungraded`. Há registro de navegador da sequência F042-V0 incorreta → F042-V1 correta (E4). |
+| Revisão posterior | Definir o que o aluno reencontra e o que seu desempenho demonstra (Q4 e Q5). | O motor busca um conceito devido. Um conceito com várias famílias admite tarefas distintas. | A revisão chama o gerador sem indicar a seção. Nessa condição, o gerador percorre os casos de todas as famílias daquele conceito (E3). |
+
+As colunas Meso e Micro descrevem o piloto observado. Por exemplo, o tamanho atual do banco explica por que pode haver repetição. Fazer desse tamanho uma restrição do produto exigiria uma justificativa independente.
+
+## 4. Grafo das decisões
+
+A tabela é a lista de arestas que fundamenta a DSM. Em cada linha, a **decisão dependente** `requires_decision_of` a **antecedente**. Para ler a ordem de resolução, percorra a aresta da antecedente para a dependente. A justificativa especifica o dado que a primeira produz e o uso que a segunda faz dele.
+
+| Dependente | Antecedente | Vigência | Informação necessária e razão |
+| --- | --- | --- | --- |
+| Q1 | P | Sempre | A finalidade de testar o mesmo aprendizado determina para que se precisa comparar duas tarefas. |
+| Q2 | P | Sempre | A autorização para repetir após erro delimita a retomada imediata. Ainda resta decidir que oportunidade é garantida ao aluno. |
+| Q3 | Q1 | Sempre | É preciso conhecer o que deve permanecer fixo para decidir quais mudanças de contexto podem qualificar uma pergunta como nova. |
+| Q6 | Q1 | Só com C | A política por objetivo cria a necessidade de especificar qual parte da resposta cada objetivo preserva. |
+| Q3 | Q6 | Só com C | Para aplicar o critério de novidade a um objetivo específico, é preciso saber quais mudanças preservam a tarefa naquele objetivo. |
+| Q4 | Q1 | Sempre | A unidade de equivalência determina a que aprendizado o acerto pode ser atribuído. |
+| Q4 | Q2 | Sempre | A oportunidade de retomar define em que condições ocorreu o acerto imediato, inclusive se a mesma pergunta pôde ser refeita. Esse contexto limita sua interpretação. |
+| Q4 | Q3 | Sempre | Para atribuir um acerto à aplicação em um cenário novo, é preciso saber qual diferença de contexto satisfaz essa qualificação. |
+| Q5 | Q3 | Sempre | Para prometer uma experiência quando faltam casos adequados, é preciso definir em quais circunstâncias um caso conta como novo. |
+| Q7 | Q4 | Sempre | O significado permitido de um acerto define que evidência de desempenho seria pertinente no aceite. |
+| Q7 | Q5 | Sempre | O compromisso com o aluno define que comportamento observar na revisão, inclusive quando a novidade prometida está indisponível. |
+
+**Outras relações tipadas.** Estas relações ligam objetos, alternativas, compromissos ou realizações. Só a necessidade de informação entre decisões gera uma célula de precedência na DSM.
+
+| Relação | Instância e justificativa |
+| --- | --- |
+| `decomposes_into` | Percurso do aluno → sessão de aprendizagem e sessão de revisão. São partes em que o estudante vive momentos distintos do percurso. |
+| `triggers` | Q1.C → Q6. O resultado C ativa uma pergunta que as políticas universais A e B dispensam. |
+| `constrains` | P → alternativas de Q3. Uma simples troca de identificador ainda pode deixar o enunciado reconhecível de memória. A finalidade exige considerar essa possibilidade ao definir novidade. |
+| `incompatible_with` | Q1.A ↔ Q1.B, quando propostas como regra universal para a mesma população de tarefas. Para um par com a mesma operação e resultados diferentes, A exige rejeição por esse motivo e B permite aceitação. C muda o alcance da regra ao especificar o objetivo. |
+| `realizes` | O ramo de `exercise.Generate` que recebe a seção → seleção de uma instância da família indicada. Esse mecanismo lógico realiza a capacidade de reencontrar a tarefa com outro exemplo. O episódio F042 evidencia o uso dessa capacidade na retomada imediata. A reaplicação independente dias depois continua sem demonstração empírica (E3 e E4). |
+
+## 5. DSM e ordem de resolução
+
+Leia **a linha como consumidora e a coluna como fornecedora** da informação. `●` indica dependência direta em todos os ramos. `C` indica dependência direta ativada por Q1.C. `·` indica ausência de aresta direta e `—` a diagonal. A matriz inclui a finalidade já decidida para tornar visível por que Q1 e Q2 estão prontas. As colunas estão em uma ordem que também permite ler o ramo C.
+
+| Recebe de → | P | Q1 | Q2 | Q6 | Q3 | Q4 | Q5 | Q7 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P  | — | · | · | · | · | · | · | · |
+| Q1 | ● | — | · | · | · | · | · | · |
+| Q2 | ● | · | — | · | · | · | · | · |
+| Q6 | · | C | · | — | · | · | · | · |
+| Q3 | · | ● | · | C | — | · | · | · |
+| Q4 | · | ● | ● | · | ● | — | · | · |
+| Q5 | · | · | · | · | ● | · | — | · |
+| Q7 | · | · | · | · | · | ● | ● | — |
+
+**Fronteira atual.** P está decidida. Q1 e Q2 têm zero antecedentes pendentes e podem ser resolvidas independentemente. Abre-se Q1 primeiro porque sua resposta muda quais pares de perguntas pertencem ao mesmo aprendizado e pode ativar Q6. Essa escolha de condução não cria precedência entre Q1 e Q2.
+
+**Camadas topológicas.** As chaves agrupam decisões que podem tramitar em paralelo. Cada decisão fica disponível assim que seus próprios antecedentes forem satisfeitos.
+
+- **A ou B** admite a sequência P → {Q1, Q2} → Q3 → {Q4, Q5} → Q7. Q6 fica inativa.
+- **C** admite a sequência P → {Q1, Q2} → Q6 → Q3 → {Q4, Q5} → Q7.
+
+Nos três ramos desenhados, todas as arestas de precedência ficam abaixo da diagonal. Não há grupo mutuamente acoplado com mais de uma decisão. Q4 e Q5 compartilham uma entrada, mas nenhuma precisa do resultado da outra. Se uma escolha futura revelar dependência recíproca, as decisões do ciclo serão tratadas em conjunto antes de recalcular a ordem entre os grupos.
+
+## 6. Estado empírico e rastreabilidade
+
+Inspeção do repositório em `26c784b98965`, com o patch distribuído para o Mathua em `2bd4a4e0e160`. Os registros de execução citados pertencem ao projeto. Esta análise consultou conteúdo, código e evidências existentes.
+
+| ID | O que se pode sustentar hoje | Alcance para a decisão |
+| --- | --- | --- |
+| E1 | O pacote contém 46 conceitos, 74 famílias e 444 casos em 15 degraus. A autoria dos seis casos por família antecede a sessão de estudo. [Pacote editorial](../conteudo/typescript-v1/LEIA-ME.md) | Há exemplos concretos para Q1, Q3 e Q5. A quantidade por família é uma propriedade da entrega atual. |
+| E2 | F016 conserva a formulação “estritamente maior” nos seis casos. F017 inclui igualdade, valores acima e abaixo do limite. As duas famílias pedem ações diferentes. [Instâncias](../conteudo/typescript-v1/exercicios.json) · [Critérios das famílias](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md) | Q1 e Q6 têm casos que distinguem tarefa, princípio e resultado. Para Q3, o banco também exemplifica uma pista verbal que sobrevive à troca de valores. |
+| E3 | A revisão escolhe um conceito devido e passa seu identificador ao gerador. Na revisão geral, pode sair outra família do mesmo conceito. O gerador do piloto seleciona casos do banco finito. [Motor na revisão-base](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L969-L1005) · [Gerador no patch distribuído](https://github.com/marcoz93/anki-typescript/blob/26c784b98965bae668e45959e87f4f52c4ae3e97/pilotos/mathua/mathua-typescript-pilot.patch#L510-L539) | Retomar um conceito já é possível. Garantir que uma revisão posterior retome a tarefa específica que originou o erro é uma propriedade adicional a decidir em Q1, Q4 e Q5. |
+| E4 | O navegador registrou um erro seguido de outra instância da mesma família e de um acerto. A correção distingue resposta errada de falha técnica. [Ensaio de integração](../pilotos/mathua/BLOCO-4-D09-D15.md) · [Contrato de correção](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md#explicação-variante-e-falha-técnica) | Há evidência do comportamento imediato relevante para Q2. O estudante desse ensaio era simulado. |
+| E5 | O projeto registra como não verificada a calibração pedagógica com alunos reais. [Limites da entrega](../README.md#como-retomar) | **Insuficientemente conhecido** se as variantes atuais permitem distinguir, dias depois, lembrança do enunciado e aplicação independente. Essa lacuna informa Q3, Q4 e Q7. |
+
+Dois precedentes do Anki esclarecem a fronteira. Randomized Basic conserva um cartão e permite apresentar vários enunciados preparados. AnkiTutor mantém o conceito e dá ao tutor a tarefa de formular um cenário novo. Ambos tornam a distinção entre objeto revisto e pergunta apresentada plausível. A equivalência pedagógica dos exercícios de TypeScript continua sendo uma questão do piloto. [Randomized Basic](https://github.com/Vilhelm-Ian/Interactive_And_Randomize_Anki_Note_Types#randomized-basic--randomized-cloze) · [Contrato de aprendizagem do AnkiTutor](https://github.com/MarionLiew/anki-tutor/blob/a3a1d1200b415136cfbad20c0f9719c14bef96f0/docs/learning-contract.md)
+
+## 7. Continuidade da análise
+
+Após a resposta a Q1, o registro deve guardar a alternativa ou formulação acordada, sua justificativa e um par de exemplos que discrimine o que ficou dentro e fora do critério. Atualizam-se primeiro a vigência das arestas, depois a DSM, os grupos acoplados e a fronteira de decisões prontas. Uma resposta fora de A/B/C pede revisão do mapa antes de ativar um ramo.
+
+Ao abrir uma questão, registram-se seu objeto, nível, pergunta, opções admissíveis, restrições, critérios e estado. Para cada opção, acrescentam-se as consequências, as questões suscitadas e a evidência disponível. Para cada antecedente, registra-se a informação recebida. As demais questões seguem identificadas no mapa. Uma deliberação Meso só ganha conteúdo quando houver um compromisso Macro a explicar. Uma deliberação Micro requer um contrato lógico a realizar ou uma restrição concreta demonstrada. Isso vale também para a redação do prompt e a atribuição de responsabilidades a um agente.
+
+**Referenciais aplicados**
+
+- Rasmussen distingue a escala parte–todo da escala meios–fins. Aqui Macro, Meso e Micro são os três níveis pedidos para este projeto. O mesmo objeto pode ser descrito nos três. [Rasmussen, *Information Processing and Human-Machine Interaction*, cap. 4](https://iihm.imag.fr/blanch/ens/2006-2007/RICM3/IHM/documents/rasmussen-book.pdf)
+- Zimmermann et al. distinguem questão, alternativa e resultado e modelam as relações entre eles. Aqui isso permite que uma escolha ative outra pergunta sem confundir o ramo com uma decisão tomada. [Zimmermann et al., 2009](https://doi.org/10.1016/j.jss.2009.01.039)
+- MacLean et al. relacionam perguntas, opções e critérios. A ficha de Q1 mostra qual critério favorece cada opção e qual limitação ela introduz no mesmo exemplo. [MacLean et al., *Questions, Options, and Criteria*, 1991](https://doi.org/10.1080/07370024.1991.9667168)
+- A DSM de Steward permite ordenar decisões pela informação que trocam e identificar dependências circulares. A DSM acima projeta as arestas da seção 4, preservando as condições de ativação. [Steward, 1981](https://doi.org/10.1109/TEM.1981.6448589)
