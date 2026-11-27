@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "node": "v24.22.3",
+  "browser": "158.0.8127.0",
+  "checks": [
+    {
+      "name": "home_opens_existing_learn_page_with_lesson",
+      "passed": true,
+      "observed": {
+        "status": 200,
+        "concept": "ts.value.numeric_literal"
+      }
+    },
+    {
+      "name": "ui_blocks_unmet_prerequisites",
+      "passed": true,
+      "observed": {
+        "answer_fields": 0
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.numeric_literal",
+      "passed": true,
+      "observed": {
+        "attempts": 6,
+        "new_status": "MASTERED",
+        "normal_ungraded_present": false
+      }
+    },
+    {
+      "name": "navigation_to_ts.type.number",
+      "passed": true,
+      "observed": {
+        "label": "New: Tipo number →",
+        "concept": "ts.type.number"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.number",
+      "passed": true,
+      "observed": {
+        "attempts": 6,
+        "new_status": "MASTERED",
+        "normal_ungraded_present": false
+      }
+    },
+    {
+      "name": "navigation_to_ts.binding.const_number",
+      "passed": true,
+      "observed": {
+        "label": "New: Declaração const com valor numérico →",
+        "concept": "ts.binding.const_number"
+      }
+    },
+    {
+      "name": "wrong_then_fresh_variant_then_correct",
+      "passed": true,
+      "observed": {
+        "wrong_question": "Declare somente uma constante chamada limit, inicializada com o literal numérico 14011. A anotação number é opcional.",
+        "wrong_answer": "let limit = 14011;",
+        "next_question": "Declare somente uma constante chamada amount, inicializada com o literal numérico 5517. A anotação number é opcional.",
+        "correct_answer": "const amount = 5517;",
+        "feedback": "Correto. A constante tem o nome e o valor solicitados. A anotação number é opcional neste exercício."
+      }
+    },
+    {
+      "name": "feedback_keeps_question_expected_and_given_answer",
+      "passed": true,
+      "observed": {
+        "report_id": 1,
+        "status": "open",
+        "expected": "const amount: number = 5517;",
+        "answer_given": "const amount = 5517;"
+      }
+    },
+    {
+      "name": "reload_preserves_identity_and_prerequisite_progress",
+      "passed": true,
+      "observed": {
+        "eligible": true
+      }
+    }
+  ],
+  "page_errors": [],
+  "api_errors": []
+}

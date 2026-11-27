@@ -1,14 +1,15 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 0000000..36b89af
+index 0000000..51181a4
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,132 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
 +It uses the existing engine, HTTP routes, SQLite store, prerequisite rules, mastery model and report workflow.
-+It provides an API and an integration test. It does not include a new web interface.
++It serves Mathua's existing study interface beside the API.
++The three pilot concepts have short explanations in Portuguese.
 +
 +The TypeScript content and grader are a separate adaptation.
 +They are not Math Academy content or an official Mathua curriculum.
@@ -36,20 +37,35 @@ index 0000000..36b89af
 +## Install and test
 +
 +Use the Go version declared in the repository's `go.mod`.
-+Install Node.js and npm.
++Use a Node version that satisfies `web/next-app/package.json` and install npm.
 +Run these commands from the repository root:
 +
 +```sh
 +npm ci --prefix cmd/typescript-pilot --ignore-scripts
++npm ci --prefix web/next-app
++NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build --prefix web/next-app
 +go test ./cmd/typescript-pilot -count=1 -v
-+go run ./cmd/typescript-pilot
++go build -o pilot-bin ./cmd/typescript-pilot
++./pilot-bin
 +```
 +
-+The command prints its local API address.
++Open `http://127.0.0.1:8081` in a browser.
++The root redirects to the first concept in the existing `/learn` page.
++The exported frontend uses the API on the same origin.
++Select `Next` to start and use `Practice again` to continue a concept.
++The native section completion card and the engine's mastery state have different criteria.
++Use the next-concept link to continue after the engine marks a concept as mastered.
++The controls keep the original interface language.
++
++The command prints its local study and API addresses.
 +Use `-addr` to set the listen address.
 +Use `-db` to set the SQLite database path.
 +Keep the adjacent `.jwt` file with the database to preserve login tokens across process restarts.
 +Use `-node` or `-grader` to set non-default executable and script paths.
++The lesson directory sits beside `grade.cjs`.
++Use `-web` to set the static export directory.
++Run the binary from the repository root with the default paths.
++Without a frontend build, the API still starts and the command prints the build instruction.
 +
 +## Existing routes used by the test
 +
@@ -87,11 +103,25 @@ index 0000000..36b89af
 +It checks TypeScript syntax and types without executing or emitting learner code.
 +Compiler file reads are restricted to the virtual answer and TypeScript's standard library declarations.
 +Compiler failure returns an unavailable result instead of a learner error.
-+The existing study response needs the added `ungraded` field to transmit that distinction.
++The added `ungraded` field transmits that distinction on an unavailable result.
++
++### Optional `ungraded` field
++
++Treat `ungraded === true` as "the grader failed, no answer was evaluated".
++For a successful HTTP response, an absent field or `false` means the answer was evaluated.
++Use `correct` to distinguish a correct answer from an incorrect one.
++Handle HTTP failures before interpreting these fields.
++
++With `submission_id`, the engine stores normal answer JSON in `ResponseJSON`.
++That JSON omits `ungraded` and the server returns it before the fallback response map.
++Retries return the same saved body.
++The existing `LearnStepper` already checks `if (res.ungraded)`.
++This pilot preserves that optional-field contract and documents it instead of changing stored JSON.
 +
 +## Feedback and limits
 +
 +A report stores the concrete exercise and answer.
++The study page passes the expected answer and explanation to its existing report button after grading.
 +A reviewer can replay it with the same grader, record a resolution and return that resolution to the learner.
 +Reporting and replay do not write learning evidence.
 +The native `repair.Run` operation can correct historical false negatives after a grader change.
@@ -103,7 +133,9 @@ index 0000000..36b89af
 +The prerequisite test covers practice and study submission without diagnostic placement.
 +The original diagnostic placement policy remains available in Mathua.
 +The API test restarts the server and reopens SQLite within the test process.
-+It does not test a browser flow, a deployed installation or long-term retention.
++The companion `anki-typescript` repository supplies `process-smoke.py` for real process restarts
++and `browser-smoke.mjs` for the existing interface against the real API.
++These checks do not measure a deployed installation or long-term retention.
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
 index 0000000..2faecb0
@@ -198,12 +230,82 @@ index 0000000..2faecb0
 +}
 +
 +module.exports = {grade};
+diff --git a/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json b/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json
+new file mode 100644
+index 0000000..a153a3c
+--- /dev/null
++++ b/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json
+@@ -0,0 +1 @@
++[{"label": "Declaração const com valor numérico", "section": "Declaração const com valor numérico", "subgoals": []}]
+diff --git a/cmd/typescript-pilot/lessons/kp/ts.type.number.json b/cmd/typescript-pilot/lessons/kp/ts.type.number.json
+new file mode 100644
+index 0000000..0f5bbde
+--- /dev/null
++++ b/cmd/typescript-pilot/lessons/kp/ts.type.number.json
+@@ -0,0 +1 @@
++[{"label": "Tipo number", "section": "Tipo number", "subgoals": []}]
+diff --git a/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json b/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json
+new file mode 100644
+index 0000000..5541d01
+--- /dev/null
++++ b/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json
+@@ -0,0 +1 @@
++[{"label": "Valor e literal numérico", "section": "Valor e literal numérico", "subgoals": []}]
+diff --git a/cmd/typescript-pilot/lessons/lessons.json b/cmd/typescript-pilot/lessons/lessons.json
+new file mode 100644
+index 0000000..a6d9d6f
+--- /dev/null
++++ b/cmd/typescript-pilot/lessons/lessons.json
+@@ -0,0 +1,5 @@
++[
++  {"concept_id": "ts.value.numeric_literal", "source": "typescript.md"},
++  {"concept_id": "ts.type.number", "source": "typescript.md"},
++  {"concept_id": "ts.binding.const_number", "source": "typescript.md"}
++]
+diff --git a/cmd/typescript-pilot/lessons/typescript.md b/cmd/typescript-pilot/lessons/typescript.md
+new file mode 100644
+index 0000000..766fd3e
+--- /dev/null
++++ b/cmd/typescript-pilot/lessons/typescript.md
+@@ -0,0 +1,32 @@
++# Fundamentos iniciais de TypeScript
++
++## Valor e literal numérico
++
++Um literal numérico é uma expressão que representa diretamente um valor numérico no código.
++
++Exemplo: para representar um reembolso de quinze mil unidades, escreva `15000`.
++`15_000` representa o mesmo valor. O sublinhado é um separador para facilitar a leitura.
++
++Contraste: `"15000"` é um literal de texto. `10000 + 5000` é uma operação cujo resultado tem o mesmo valor, mas não é um único literal.
++
++No exercício, escreva somente o literal que representa o valor pedido.
++
++## Tipo number
++
++Na anotação de tipo, `number` nomeia o tipo numérico do TypeScript.
++
++Exemplo: em `const amount: number = 15000;`, `amount` é o nome declarado, `number` é o nome do tipo na anotação e `15000` é o literal que fornece o valor inicial.
++
++Contraste: preencher a anotação com `15000` não responde à pergunta sobre o nome do tipo numérico geral. `string` nomeia o tipo de texto.
++
++No exercício, complete somente o espaço da anotação. A resposta pedida é `number`.
++
++## Declaração const com valor numérico
++
++Uma declaração `const` cria um vínculo entre um nome e seu valor inicial. Esse nome não pode receber uma reatribuição após a inicialização.
++
++Exemplo: `const reviewLimit: number = 10000;` declara o limite de revisão com valor dez mil. Neste exercício, a anotação é opcional: `const reviewLimit = 10000;` também atende ao pedido.
++
++Contraste: `let reviewLimit = 10000;` permite reatribuição e não atende a uma tarefa que exige `const`.
++
++Use exatamente o nome e o valor pedidos. Escreva uma única declaração, inicializada com um literal numérico.
 diff --git a/cmd/typescript-pilot/main.go b/cmd/typescript-pilot/main.go
 new file mode 100644
-index 0000000..a8f5a1d
+index 0000000..549811a
 --- /dev/null
 +++ b/cmd/typescript-pilot/main.go
-@@ -0,0 +1,155 @@
+@@ -0,0 +1,189 @@
 +// This pilot composes Mathua's existing engine and HTTP API with TypeScript exercises.
 +package main
 +
@@ -216,8 +318,11 @@ index 0000000..a8f5a1d
 +	"log"
 +	"math/rand"
 +	"net/http"
++	"os"
 +	"os/exec"
++	"path"
 +	"path/filepath"
++	"strings"
 +	"sync/atomic"
 +	"time"
 +
@@ -226,6 +331,7 @@ index 0000000..a8f5a1d
 +	"github.com/chuma-beep/mathua/internal/engine"
 +	"github.com/chuma-beep/mathua/internal/generator"
 +	"github.com/chuma-beep/mathua/internal/grader"
++	"github.com/chuma-beep/mathua/internal/lessons"
 +	"github.com/chuma-beep/mathua/internal/server"
 +	"github.com/chuma-beep/mathua/internal/storage"
 +)
@@ -325,10 +431,33 @@ index 0000000..a8f5a1d
 +			return nil, nil, err
 +		}
 +	}
-+	eng := engine.New(repo, dag, reg, nil, nil)
++	ll, err := lessons.Load(filepath.Join(filepath.Dir(check.script), "lessons"))
++	if err != nil {
++		return nil, nil, err
++	}
++	eng := engine.New(repo, dag, reg, ll, nil)
 +	mux := http.NewServeMux()
 +	server.New(eng, repo, auth.New(repo)).Register(mux)
 +	return mux, eng, nil
++}
++
++// Serve the existing Next.js export beside the API. Its client uses the same origin.
++func studyFrontend(root string) http.Handler {
++	files := http.FileServer(http.Dir(root))
++	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		if r.URL.Path == "/" {
++			http.Redirect(w, r, "/learn?concept="+literalID, http.StatusFound)
++			return
++		}
++		clean := path.Clean(r.URL.Path)
++		if path.Ext(clean) == "" {
++			htmlPath := strings.TrimSuffix(clean, "/") + ".html"
++			if info, err := os.Stat(filepath.Join(root, filepath.FromSlash(htmlPath))); err == nil && !info.IsDir() {
++				r.URL.Path = htmlPath
++			}
++		}
++		files.ServeHTTP(w, r)
++	})
 +}
 +
 +func main() {
@@ -336,6 +465,7 @@ index 0000000..a8f5a1d
 +	db := flag.String("db", "typescript-pilot.db", "SQLite database path")
 +	node := flag.String("node", "node", "Node executable")
 +	script := flag.String("grader", "cmd/typescript-pilot/grade.cjs", "TypeScript grader path")
++	web := flag.String("web", "web/next-app/out", "Existing Next.js static export directory")
 +	flag.Parse()
 +	resolvedNode, err := exec.LookPath(*node)
 +	if err != nil {
@@ -354,6 +484,12 @@ index 0000000..a8f5a1d
 +	mux, _, err := newPilot(repo, &checker{node: resolvedNode, script: resolvedScript})
 +	if err != nil {
 +		log.Fatal(err)
++	}
++	if info, err := os.Stat(filepath.Join(*web, "learn.html")); err == nil && !info.IsDir() {
++		mux.Handle("/", studyFrontend(*web))
++		log.Printf("Study interface: http://%s", *addr)
++	} else {
++		log.Print("Study interface not built. Run NEXT_PUBLIC_SAME_ORIGIN_API=1 npm run build in web/next-app.")
 +	}
 +	log.Printf("TypeScript pilot API: http://%s", *addr)
 +	srv := &http.Server{Addr: *addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
@@ -859,3 +995,16 @@ index f19517a..c8b6f98 100644
  		"scaffold_active": res.ScaffoldActive,
  		"scaffold_step":   res.ScaffoldStep,
  		"scaffold_total":  res.ScaffoldTotal,
+diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
+index 2f6abae..d30c2a4 100644
+--- a/web/next-app/components/LearnStepper.tsx
++++ b/web/next-app/components/LearnStepper.tsx
+@@ -967,6 +967,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+                   kind="question"
+                   question={qe.q.question}
+                   source="practice"
++                  expected={qe.feedback?.expected}
++                  explanation={qe.feedback?.text}
+                   answerGiven={qe.answer}
+                   gradingType={conceptGradingType}
+                   answerHint={format.hint}

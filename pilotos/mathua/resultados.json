@@ -3,72 +3,150 @@
   "fuso": "America/Sao_Paulo",
   "repositorio": "https://github.com/chuma-beep/mathua",
   "commit_base": "2bd4a4e0e160653e274521f6de3df2e61e29c7f7",
+  "pacote_anterior": "1d5c7f8ab063dcfe75686e9c2d6147b923ec165f",
   "runtime": {
     "go": "1.26.6",
     "node": "24.22.3",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "origem": "Ambiente Linux do assistente. Não é a máquina do usuário.",
+    "system": "Linux",
+    "release": "6.18.57",
+    "machine": "x86_64",
+    "python": "3.12.14",
+    "npm": "11.19.1",
+    "chromium": "158.0.8127.0",
+    "playwright": "1.62.1",
+    "next": "16.4.6",
+    "frontend_engines_node": "^22.23.4 || ^24.22.1 || ^26.12.1",
+    "frontend_engines_node_verificado": {
+      "24.22.3": true,
+      "24.14.1": false,
+      "26.7.0": false
+    }
   },
   "mudancas": {
-    "arquivo_existente": "internal/server/server.go",
-    "linhas_adicionadas_em_codigo_existente": 1,
+    "arquivos_existentes": {
+      "internal/server/server.go": {
+        "linhas_adicionadas": 1
+      },
+      "web/next-app/components/LearnStepper.tsx": {
+        "linhas_adicionadas": 2
+      }
+    },
     "arquivos_novos": [
       "cmd/typescript-pilot/README.md",
       "cmd/typescript-pilot/grade.cjs",
+      "cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json",
+      "cmd/typescript-pilot/lessons/kp/ts.type.number.json",
+      "cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json",
+      "cmd/typescript-pilot/lessons/lessons.json",
+      "cmd/typescript-pilot/lessons/typescript.md",
       "cmd/typescript-pilot/main.go",
       "cmd/typescript-pilot/main_test.go",
       "cmd/typescript-pilot/package-lock.json",
       "cmd/typescript-pilot/package.json"
     ],
-    "patch_aplicavel_ao_commit_base": true
+    "patch_aplicavel_ao_commit_base": true,
+    "patch_sha256": "c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83",
+    "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
+    "conteudo": "Três conceitos, uma família por conceito, com explicações em português."
   },
-  "contagem": "Casos finais da árvore de testes. Suítes-pai não são contadas novamente.",
-  "testes": {
-    "mathua-pilot-final.jsonl": {
-      "pass": 29,
+  "testes_atuais": {
+    "mathua-pilot-ui.jsonl": {
+      "pass_folhas": 29,
       "fail": 0,
       "skip": 0
     },
-    "mathua-native-http.jsonl": {
-      "pass": 26,
-      "fail": 0,
-      "skip": 0
+    "mathua-browser-smoke.json": {
+      "passed": true,
+      "checks": 9,
+      "browser": "158.0.8127.0",
+      "api_simulada": false,
+      "progresso_inserido_diretamente_no_banco": false
     },
-    "mathua-native-engine.jsonl": {
-      "pass": 154,
-      "fail": 0,
-      "skip": 0
+    "mathua-process-script.json": {
+      "passed": true,
+      "processes_started": 2,
+      "persisted_attempts": 1,
+      "retry_body_identical": true
+    },
+    "mathua-full-go-summary.json": {
+      "exit_code": 1,
+      "packages": {
+        "pass": 59,
+        "fail": 1,
+        "skip": 5
+      },
+      "failed_test": "TestWave23QuestionVariety"
+    },
+    "mathua-base-variety-500-summary.json": {
+      "commit_base_limpo": "2bd4a4e0e160653e274521f6de3df2e61e29c7f7",
+      "git_status_porcelain": "",
+      "exit_code": 1,
+      "test_events": {
+        "pass": 499,
+        "fail": 1
+      }
     }
   },
-  "piloto_aprovados": 29,
-  "existentes_selecionados_aprovados": 180,
-  "teste_de_processo": {
-    "passed": true,
-    "test": "real_process_restart",
-    "first_process_started": true,
-    "second_process_started": true,
-    "old_bearer_token_accepted": true,
-    "pre_restart_question_graded": true,
-    "retry_body_identical": true,
-    "persisted_attempts": 1,
-    "question": "Complete somente a anotação de tipo: const refundAmount: ___ = 6830. Qual palavra TypeScript designa o tipo numérico?",
-    "answer": "number",
-    "feedback": "Correto. number nomeia o tipo numérico.",
-    "scope": "Dois processos independentes, API HTTP real e SQLite. Nenhum navegador ou implantação externa."
+  "contrato_ungraded": {
+    "http_bem_sucedido": {
+      "true": "Corretor indisponível, resposta não avaliada.",
+      "false_ou_ausente": "Resposta avaliada; consultar correct."
+    },
+    "normal_response_key_present": false,
+    "resposta_normal_gravada_alterada": false
   },
-  "falha_confirmada_antes_da_correcao": "O motor devolvia Ungraded=true, mas o mapa JSON de handleStudyAnswer omitia ungraded. O histórico já ficava intacto. A linha adicionada preserva essa distinção na API.",
-  "comandos": [
-    "go test -json ./cmd/typescript-pilot -count=1",
-    "go test -json ./internal/server -run 'Test(Practice_|StudyAnswer_|MyReports|AdminReport|Report)' -count=1",
-    "go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1",
-    "go build ./cmd/typescript-pilot",
-    "git diff --check"
+  "historico_api_inicial": {
+    "commit_do_pacote": "1d5c7f8ab063dcfe75686e9c2d6147b923ec165f",
+    "testes": {
+      "mathua-pilot-final.jsonl": {
+        "pass": 29,
+        "fail": 0,
+        "skip": 0
+      },
+      "mathua-native-http.jsonl": {
+        "pass": 26,
+        "fail": 0,
+        "skip": 0
+      },
+      "mathua-native-engine.jsonl": {
+        "pass": 154,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "piloto_aprovados": 29,
+    "existentes_selecionados_aprovados": 180,
+    "teste_de_processo": {
+      "passed": true,
+      "test": "real_process_restart",
+      "first_process_started": true,
+      "second_process_started": true,
+      "old_bearer_token_accepted": true,
+      "pre_restart_question_graded": true,
+      "retry_body_identical": true,
+      "persisted_attempts": 1,
+      "question": "Complete somente a anotação de tipo: const refundAmount: ___ = 6830. Qual palavra TypeScript designa o tipo numérico?",
+      "answer": "number",
+      "feedback": "Correto. number nomeia o tipo numérico.",
+      "scope": "Dois processos independentes, API HTTP real e SQLite. Nenhum navegador ou implantação externa."
+    },
+    "observacao": "Evidências anteriores preservadas. O teste de processo novo tem programa salvo e resultado separado."
+  },
+  "comandos_e_saidas": "COMANDOS-E-SAIDAS.md",
+  "scripts": [
+    "scripts/process-smoke.py",
+    "scripts/browser-smoke.mjs"
   ],
   "limites": [
-    "Piloto de API, sem integração visual ou implantação externa.",
+    "A suíte geral desta rodada terminou com falha em um teste de variedade. O mesmo teste falhou também no commit-base limpo. Não se declara aprovação integral da suíte.",
+    "Teste da interface /learn em Chromium, com API e SQLite reais. Não valida todos os menus, outros navegadores, dispositivos móveis ou instalação no Mac do usuário.",
+    "Controles e demais páginas mantêm a interface original do Mathua. Enunciados e aulas dos três conceitos estão em português.",
     "Três famílias, uma por conceito. Variação de parâmetros não é criação de uma nova família.",
-    "Feedback exige revisão humana para modificar conteúdo ou corretor.",
+    "Geração automática de famílias a partir do feedback não foi iniciada. Conteúdo e corretor ainda exigem revisão humana.",
     "Reparo histórico foi exercitado em dados simulados. Não recalcula XP.",
-    "A configuração original de domínio e a política de diagnóstico não foram substituídas.",
+    "Configuração original de domínio e política de diagnóstico não foram substituídas.",
     "Os testes não medem aprendizagem, retenção ou calibração pedagógica com alunos reais."
   ]
 }

@@ -1,0 +1,28 @@
+{
+  "command": "/workspace/scratch/66d296bb0a09/runtime-go/go/bin/go test -json ./internal/generator/abstract -run '^TestWave23QuestionVariety$' -count=20",
+  "exit_code": 0,
+  "raw_log_sha256": "0ff40e2d9a3570f90c53fed5d99a2f3ee93638256cf2125674778cab2cb02323",
+  "raw_log_bytes": 16418,
+  "scope": "Resumo extraído do JSON de go test. Registra todos os resultados de pacote e a saída dos testes que falharam. Não é o log bruto completo.",
+  "package_counts": {
+    "pass": 1
+  },
+  "test_event_counts_including_parent_suites": {
+    "pass": 20
+  },
+  "package_results": [
+    {
+      "Time": "2026-11-26T23:52:22.791519884-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Elapsed": 0.029
+    }
+  ],
+  "failed_tests_output": [],
+  "skipped_tests": [],
+  "summary_output": [
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/abstract\t0.029s"
+  ],
+  "base_commit": "2bd4a4e0e160653e274521f6de3df2e61e29c7f7",
+  "base_git_status_porcelain": ""
+}

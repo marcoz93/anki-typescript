@@ -1,0 +1,767 @@
+{
+  "command": "/workspace/scratch/66d296bb0a09/runtime-go/go/bin/go test -json ./... -count=1",
+  "exit_code": 1,
+  "raw_log_sha256": "6cc3a289a9d0acb25fa13e01189d95c646f6caa10a2a82bb32ba4ca787197c5b",
+  "raw_log_bytes": 6512341,
+  "scope": "Resumo extraído do JSON de go test. Registra todos os resultados de pacote e a saída dos testes que falharam. Não é o log bruto completo.",
+  "package_counts": {
+    "pass": 59,
+    "fail": 1,
+    "skip": 5
+  },
+  "test_event_counts_including_parent_suites": {
+    "pass": 6016,
+    "skip": 36,
+    "fail": 1
+  },
+  "package_results": [
+    {
+      "Time": "2026-11-26T23:51:13.840388318-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/cmd/latexdump",
+      "Elapsed": 0.009
+    },
+    {
+      "Time": "2026-11-26T23:51:13.921550848-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/cmd/latexfix",
+      "Elapsed": 0.015
+    },
+    {
+      "Time": "2026-11-26T23:51:14.785059126-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/cmd/masteryunits",
+      "Elapsed": 0.863
+    },
+    {
+      "Time": "2026-11-26T23:51:15.621066568-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/cmd/mathua",
+      "Elapsed": 0.034
+    },
+    {
+      "Time": "2026-11-26T23:51:15.795048977-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/admin",
+      "Elapsed": 0.016
+    },
+    {
+      "Time": "2026-11-26T23:51:15.925823424-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/ai",
+      "Elapsed": 0.131
+    },
+    {
+      "Time": "2026-11-26T23:51:16.749471368-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/fire",
+      "Elapsed": 0.01
+    },
+    {
+      "Time": "2026-11-26T23:51:16.766540306-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/fsrs",
+      "Elapsed": 0.017
+    },
+    {
+      "Time": "2026-11-26T23:51:16.774386578-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/cmd/validate-mastery-units",
+      "Elapsed": 1.107
+    },
+    {
+      "Time": "2026-11-26T23:51:17.983041812-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/diagnostic",
+      "Elapsed": 1.863
+    },
+    {
+      "Time": "2026-11-26T23:51:19.50960571-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/concepts",
+      "Elapsed": 3.408
+    },
+    {
+      "Time": "2026-11-26T23:51:21.536124132-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/auth",
+      "Elapsed": 5.44
+    },
+    {
+      "Time": "2026-11-26T23:51:22.654715736-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/combinatorics",
+      "Elapsed": 0.022
+    },
+    {
+      "Time": "2026-11-26T23:51:22.680976383-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/engine",
+      "Elapsed": 6.207
+    },
+    {
+      "Time": "2026-11-26T23:51:22.897100774-03:00",
+      "Action": "fail",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Elapsed": 2.867
+    },
+    {
+      "Time": "2026-11-26T23:51:23.079091661-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/arithmetic",
+      "Elapsed": 2.212
+    },
+    {
+      "Time": "2026-11-26T23:51:24.08229395-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/fractions",
+      "Elapsed": 0.179
+    },
+    {
+      "Time": "2026-11-26T23:51:24.478377061-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/algebra",
+      "Elapsed": 4.257
+    },
+    {
+      "Time": "2026-11-26T23:51:24.775809188-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/complex",
+      "Elapsed": 2.121
+    },
+    {
+      "Time": "2026-11-26T23:51:24.922006517-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/discrete",
+      "Elapsed": 1.9569999999999999
+    },
+    {
+      "Time": "2026-11-26T23:51:25.658227758-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/geometry",
+      "Elapsed": 1.4849999999999999
+    },
+    {
+      "Time": "2026-11-26T23:51:26.835450125-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/calculus",
+      "Elapsed": 4.694
+    },
+    {
+      "Time": "2026-11-26T23:51:26.923570161-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/machinelearning",
+      "Elapsed": 1.2730000000000001
+    },
+    {
+      "Time": "2026-11-26T23:51:27.763001863-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/numtheory",
+      "Elapsed": 1.098
+    },
+    {
+      "Time": "2026-11-26T23:51:27.819914856-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/linalg",
+      "Elapsed": 2.306
+    },
+    {
+      "Time": "2026-11-26T23:51:28.035322322-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/graphtheory",
+      "Elapsed": 2.834
+    },
+    {
+      "Time": "2026-11-26T23:51:29.266154469-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/odes",
+      "Elapsed": 1.666
+    },
+    {
+      "Time": "2026-11-26T23:51:30.170474154-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/prealgebra",
+      "Elapsed": 1.3479999999999999
+    },
+    {
+      "Time": "2026-11-26T23:51:30.542226243-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/precalculus",
+      "Elapsed": 1.657
+    },
+    {
+      "Time": "2026-11-26T23:51:31.595297647-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/realanalysis",
+      "Elapsed": 1.504
+    },
+    {
+      "Time": "2026-11-26T23:51:31.769554499-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/probability",
+      "Elapsed": 2.88
+    },
+    {
+      "Time": "2026-11-26T23:51:32.099820894-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/topology",
+      "Elapsed": 0.735
+    },
+    {
+      "Time": "2026-11-26T23:51:32.589037804-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/numerical",
+      "Elapsed": 6.679
+    },
+    {
+      "Time": "2026-11-26T23:51:33.773777358-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/optimization",
+      "Elapsed": 6.018
+    },
+    {
+      "Time": "2026-11-26T23:51:33.802091614-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/leaderboard",
+      "Elapsed": 0.278
+    },
+    {
+      "Time": "2026-11-26T23:51:33.839253912-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/trigonometry",
+      "Elapsed": 1.456
+    },
+    {
+      "Time": "2026-11-26T23:51:34.212783505-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/levels",
+      "Elapsed": 0.003
+    },
+    {
+      "Time": "2026-11-26T23:51:34.435912493-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/mailer",
+      "Elapsed": 0.015
+    },
+    {
+      "Time": "2026-11-26T23:51:34.446495339-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/mastery",
+      "Elapsed": 0.01
+    },
+    {
+      "Time": "2026-11-26T23:51:34.633611953-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/mathutil",
+      "Elapsed": 0.035
+    },
+    {
+      "Time": "2026-11-26T23:51:35.96378526-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/planning",
+      "Elapsed": 0.39
+    },
+    {
+      "Time": "2026-11-26T23:51:35.988960105-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/notifications",
+      "Elapsed": 0.446
+    },
+    {
+      "Time": "2026-11-26T23:51:36.167131797-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/grader",
+      "Elapsed": 3.751
+    },
+    {
+      "Time": "2026-11-26T23:51:36.210623699-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/quiz",
+      "Elapsed": 0.003
+    },
+    {
+      "Time": "2026-11-26T23:51:36.77348203-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/repair",
+      "Elapsed": 0.119
+    },
+    {
+      "Time": "2026-11-26T23:51:36.777205022-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/repetition",
+      "Elapsed": 0.003
+    },
+    {
+      "Time": "2026-11-26T23:51:37.005106524-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/scheduler",
+      "Elapsed": 0.228
+    },
+    {
+      "Time": "2026-11-26T23:51:37.357115044-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/scoring",
+      "Elapsed": 0.145
+    },
+    {
+      "Time": "2026-11-26T23:51:37.754033112-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/latex",
+      "Elapsed": 5.068
+    },
+    {
+      "Time": "2026-11-26T23:51:37.95207046-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/solutions",
+      "Elapsed": 0.005
+    },
+    {
+      "Time": "2026-11-26T23:51:38.384043672-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/statistics",
+      "Elapsed": 7.266
+    },
+    {
+      "Time": "2026-11-26T23:51:40.064450826-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/timedquiz",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.064817048-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/scripts",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.064829817-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/scripts/merge_concepts",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.064839431-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/scripts/seed-questions",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.069614098-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/verify",
+      "Elapsed": 0.005
+    },
+    {
+      "Time": "2026-11-26T23:51:40.069783453-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/web/next-app/node_modules/flatted/golang/pkg/flatted",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.075499538-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/tools/fsrs-replay",
+      "Elapsed": 0.011
+    },
+    {
+      "Time": "2026-11-26T23:51:40.173380474-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/xp",
+      "Elapsed": 0.109
+    },
+    {
+      "Time": "2026-11-26T23:51:43.163595727-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/cmd/typescript-pilot",
+      "Elapsed": 27.542
+    },
+    {
+      "Time": "2026-11-26T23:51:43.574526423-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Elapsed": 3.51
+    },
+    {
+      "Time": "2026-11-26T23:51:52.153504116-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/lessons",
+      "Elapsed": 18.071
+    },
+    {
+      "Time": "2026-11-26T23:52:06.149258071-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/server",
+      "Elapsed": 28.215
+    },
+    {
+      "Time": "2026-11-26T23:52:10.424804219-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator",
+      "Elapsed": 51.278
+    },
+    {
+      "Time": "2026-11-26T23:52:33.884969877-03:00",
+      "Action": "pass",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/all",
+      "Elapsed": 73.596
+    }
+  ],
+  "failed_tests_output": [
+    {
+      "Time": "2026-11-26T23:51:22.88420307-03:00",
+      "Action": "run",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestWave23QuestionVariety"
+    },
+    {
+      "Time": "2026-11-26T23:51:22.884205344-03:00",
+      "Action": "output",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestWave23QuestionVariety",
+      "Output": "=== RUN   TestWave23QuestionVariety\n"
+    },
+    {
+      "Time": "2026-11-26T23:51:22.888780029-03:00",
+      "Action": "output",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestWave23QuestionVariety",
+      "Output": "    wave23_test.go:159: abstract.group.permutation_character kp3: only 4 distinct questions in 12 draws\n"
+    },
+    {
+      "Time": "2026-11-26T23:51:22.88878743-03:00",
+      "Action": "output",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestWave23QuestionVariety",
+      "Output": "--- FAIL: TestWave23QuestionVariety (0.00s)\n"
+    },
+    {
+      "Time": "2026-11-26T23:51:22.888790284-03:00",
+      "Action": "fail",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestWave23QuestionVariety",
+      "Elapsed": 0
+    }
+  ],
+  "skipped_tests": [
+    {
+      "Time": "2026-11-26T23:51:20.08736281-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/engine",
+      "Test": "TestFIRePerformance",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:20.569713283-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/algebra",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0.01
+    },
+    {
+      "Time": "2026-11-26T23:51:21.073071742-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/arithmetic",
+      "Test": "TestArithBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:21.247267958-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/engine",
+      "Test": "TestTimedQuizPerformance",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:22.454646056-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:22.777644036-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/abstract",
+      "Test": "TestFieldPoolsAreServed",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:23.12469527-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/complex",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:23.289901633-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/discrete",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0.01
+    },
+    {
+      "Time": "2026-11-26T23:51:23.390913177-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator",
+      "Test": "TestMultipleChoiceSymbolAnswersServeOptions",
+      "Elapsed": 0.27
+    },
+    {
+      "Time": "2026-11-26T23:51:23.957367019-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/algebra",
+      "Test": "TestRaiseMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:25.045611171-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/calculus",
+      "Test": "TestRaiseMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0.03
+    },
+    {
+      "Time": "2026-11-26T23:51:25.514058176-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/graphtheory",
+      "Test": "TestBatch2MultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:25.870276938-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/machinelearning",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0.01
+    },
+    {
+      "Time": "2026-11-26T23:51:26.250215326-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/linalg",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:26.637724155-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/graphtheory",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:26.951417995-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/numtheory",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:27.548837575-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/numerical",
+      "Test": "TestBatch2MultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:27.767074496-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/odes",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:28.727463954-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/numerical",
+      "Test": "TestNumaMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:28.936096508-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/prealgebra",
+      "Test": "TestPrealgBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:29.402217692-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/precalculus",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0.04
+    },
+    {
+      "Time": "2026-11-26T23:51:29.60614502-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/probability",
+      "Test": "TestBatch2MultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:30.385864454-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/probability",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:31.276479747-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/statistics",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:31.48659728-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/topology",
+      "Test": "TestBatchMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:33.511595378-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/grader",
+      "Test": "TestMathliveNumericCannotEvaluatePinnedForms/10^{6}",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:33.511702519-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/grader",
+      "Test": "TestMathliveNumericCannotEvaluatePinnedForms/10^{-3}",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:33.511769941-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/grader",
+      "Test": "TestMathliveNumericCannotEvaluatePinnedForms/3.14\\times_10^{-2}",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:33.511816591-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/grader",
+      "Test": "TestMathliveNumericCannotEvaluatePinnedForms/12\\times4",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:33.552031204-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/generator/trigonometry",
+      "Test": "TestRaiseMultipleChoiceRejectsEveryDistractor",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.13272467-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Test": "TestAdminMetricsTimestampBoundaries/postgres",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:40.132741104-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Test": "TestAdminMetricsParity",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:41.244871466-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Test": "TestPostgresResetAndDeleteTakeTheStudentCreditLock",
+      "Elapsed": 0.01
+    },
+    {
+      "Time": "2026-11-26T23:51:41.547673394-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Test": "TestPostgresConcurrentXPAdjustments",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:42.412439158-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Test": "TestParity_SQLiteVsPostgres",
+      "Elapsed": 0
+    },
+    {
+      "Time": "2026-11-26T23:51:42.542823085-03:00",
+      "Action": "skip",
+      "Package": "github.com/chuma-beep/mathua/internal/storage",
+      "Test": "TestPostgresReviewRunFinalization",
+      "Elapsed": 0
+    }
+  ],
+  "summary_output": [
+    "ok  \tgithub.com/chuma-beep/mathua/cmd/latexdump\t0.003s",
+    "ok  \tgithub.com/chuma-beep/mathua/cmd/latexfix\t0.015s",
+    "ok  \tgithub.com/chuma-beep/mathua/cmd/masteryunits\t0.863s",
+    "ok  \tgithub.com/chuma-beep/mathua/cmd/mathua\t0.034s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/admin\t0.016s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/ai\t0.131s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/fire\t0.010s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/fsrs\t0.017s",
+    "ok  \tgithub.com/chuma-beep/mathua/cmd/validate-mastery-units\t1.107s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/diagnostic\t1.857s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/concepts\t3.408s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/auth\t5.440s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/combinatorics\t0.022s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/engine\t6.207s",
+    "FAIL",
+    "FAIL\tgithub.com/chuma-beep/mathua/internal/generator/abstract\t2.867s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/arithmetic\t2.212s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/fractions\t0.179s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/algebra\t4.257s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/complex\t2.121s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/discrete\t1.957s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/geometry\t1.485s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/calculus\t4.691s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/machinelearning\t1.273s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/numtheory\t1.097s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/linalg\t2.306s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/graphtheory\t2.834s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/odes\t1.666s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/prealgebra\t1.348s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/precalculus\t1.657s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/realanalysis\t1.504s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/probability\t2.880s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/topology\t0.735s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/numerical\t6.678s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/optimization\t6.018s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/leaderboard\t0.278s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/trigonometry\t1.456s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/levels\t0.003s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/mailer\t0.015s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/mastery\t0.010s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/mathutil\t0.034s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/planning\t0.389s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/notifications\t0.446s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/grader\t3.750s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/quiz\t0.002s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/repair\t0.118s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/repetition\t0.003s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/scheduler\t0.228s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/scoring\t0.145s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/latex\t5.067s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/solutions\t0.004s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/statistics\t7.266s",
+    "?   \tgithub.com/chuma-beep/mathua/internal/timedquiz\t[no test files]",
+    "?   \tgithub.com/chuma-beep/mathua/scripts\t[no test files]",
+    "?   \tgithub.com/chuma-beep/mathua/scripts/merge_concepts\t[no test files]",
+    "?   \tgithub.com/chuma-beep/mathua/scripts/seed-questions\t[no test files]",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/verify\t0.005s",
+    "?   \tgithub.com/chuma-beep/mathua/web/next-app/node_modules/flatted/golang/pkg/flatted\t[no test files]",
+    "ok  \tgithub.com/chuma-beep/mathua/tools/fsrs-replay\t0.011s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/xp\t0.109s",
+    "ok  \tgithub.com/chuma-beep/mathua/cmd/typescript-pilot\t27.542s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/storage\t3.510s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/lessons\t18.071s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/server\t28.215s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator\t51.277s",
+    "ok  \tgithub.com/chuma-beep/mathua/internal/generator/all\t73.596s"
+  ]
+}
