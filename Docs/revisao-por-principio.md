@@ -2,16 +2,16 @@
 
 ## 1. Mapa Macro das decisões
 
-A mudança se limita às **revisões espaçadas de TypeScript**. O Mathua determina quando revisar e qual conceito está devido. Para esse conceito, o aluno quer reencontrar a pergunta original e também exercitar a mesma lógica em outro contexto. Reencontrar a original permite refazer a tentativa. Resolver uma variação permite verificar se o aprendizado se transfere. A preferência é aproveitar o motor existente e limitar a mudança ao conteúdo apresentado na revisão.
+**Análise encerrada.** O objetivo era poder rever o mesmo princípio em perguntas diferentes. O piloto já escolhe exercícios de um banco com seis casos por família, incluindo a pergunta-base. A decisão é usar o comportamento existente. O mapa, o grafo e a DSM preservam as alternativas examinadas. A eficácia dessas variações contra a memorização do enunciado permanece uma questão empírica (E5). [Banco de exercícios](../conteudo/typescript-v1/exercicios.json)
 
 | ID | Objeto focal | Pergunta sobre o produto | Estado |
 | --- | --- | --- | --- |
-| P | Finalidade | O que o aluno deve poder reencontrar na revisão? | **Decidida.** Voltar à pergunta original e rever o mesmo princípio em outros contextos que exijam aplicar a lógica novamente. |
+| P | Finalidade | O que o aluno deve poder reencontrar na revisão? | **Decidida.** Poder rever o mesmo princípio em enunciados diferentes. A pergunta original também participa do banco. |
 | Q1 | Equivalência | O que dois exercícios devem preservar? | **Decidida.** A estrutura de solução e, ao revisar um erro específico, a condição que torna esse erro visível. |
-| Q8 | Reencontro com o original | Em qual revisão do mesmo conceito a pergunta errada deve reaparecer? | **Aberta. Em deliberação.** Há preferência pelo retorno do enunciado original. |
-| Q6 | Alvo de uma variação | O que deve orientar a geração quando a resposta admite mais de uma explicação? | Aberta |
-| Q3 | Novidade | Que mudança de contexto é suficiente para evitar a memorização do enunciado? | Aberta |
-| Q7 | Aceite do exercício | Que evidências permitem aceitar uma variação como equivalente, nova e corrigível? | Aberta |
+| Q8 | Reencontro com o original | Em qual revisão do mesmo conceito a pergunta errada deve reaparecer? | **Decidida.** Manter a seleção atual, em que a original pode voltar. |
+| Q6 | Alvo de uma variação | O que deve orientar a geração quando a resposta admite mais de uma explicação? | Aberta, arquivada com a hipótese de geração adicional |
+| Q3 | Novidade | Que mudança de contexto é suficiente para evitar a memorização do enunciado? | Aberta, arquivada com a hipótese de geração adicional |
+| Q7 | Aceite do exercício | Que evidências permitem aceitar uma variação como equivalente, nova e corrigível? | Aberta, arquivada com a hipótese de geração adicional |
 
 **Decisão de fronteira.** Q2 (prática da aula e retomada imediata), Q4 (crédito do acerto para o progresso) e Q5 (data e ordem dos conceitos devidos) ficam sob as políticas existentes do Mathua e do piloto. Q8 trata de qual enunciado o aluno encontra quando o motor já escolheu o conceito. Os identificadores preservam o histórico. A decisão de produto aqui é conservar esse comportamento. Os detalhes de funcionamento abaixo vêm do código inspecionado.
 
@@ -28,7 +28,7 @@ A mudança se limita às **revisões espaçadas de TypeScript**. O Mathua determ
 
 O ensaio de navegador F042-V0 incorreta → F042-V1 correta documenta a prática da aula. A evidência sobre a revisão espaçada acima vem da leitura do caminho de revisão no código. [Ensaio de integração](../pilotos/mathua/BLOCO-4-D09-D15.md)
 
-## 2. Única decisão em deliberação · Q8
+## 2. Decisão de manter a seleção atual · Q8
 
 **Quando o conceito voltar após um erro, o aluno precisa reencontrar a pergunta original já na primeira revisão desse conceito?** A questão é Macro e trata do enunciado apresentado em uma revisão futura. P fornece a finalidade e Q5 delimita a ocasião. O motor continua a determinar as datas e a ordem dos conceitos. Para comparar as opções, considere um único erro e um aluno que continua revisando.
 
@@ -37,7 +37,7 @@ O ensaio de navegador F042-V0 incorreta → F042-V1 correta documenta a prática
 | **A · Original na primeira revisão do conceito.** O aluno reencontra a situação exata que errou. As variantes entram em revisões posteriores. | O retorno é previsível. Refazer o mesmo enunciado permite observar a correção da tentativa original. A aplicação em outro contexto será observada mais tarde. | Como reconhecer, no aceite, que o aluno viu o mesmo exercício que havia errado? |
 | **B · Original em uma revisão posterior do conceito.** Uma variante pode aparecer primeiro e a original ainda deve reaparecer. | Permite testar a lógica em outro contexto mais cedo. O compromisso de reencontro continua pendente até a exibição da original. | Como verificar que a original voltou ao longo das revisões? |
 
-A política atual de escolher entre os casos disponíveis oferece a **possibilidade** de retorno. Tanto A quanto B acrescentariam uma **garantia** sobre o enunciado. A preferência por pouca mudança no motor é um critério de escolha. A definição de como realizar essa garantia fica para depois desta decisão.
+**Resultado.** A seleção atual permite o retorno da original. As alternativas A e B foram examinadas porque acrescentariam uma garantia de ordem. Para o objetivo de ter variedade nas revisões, a seleção do banco foi considerada suficiente.
 
 ### Decisão registrada · Q1
 
@@ -120,7 +120,7 @@ A DSM cobre o conteúdo da revisão. As políticas herdadas Q2, Q4 e Q5 delimita
 | Q3 | · | ● | · | ? | — | · |
 | Q7 | · | ● | · | · | ● | — |
 
-P e Q1 estão decididas. Para cobrir tentativas ambíguas, as camadas restantes são {Q8, Q6} → Q3 → Q7. Para um erro identificável, Q3 também está disponível agora. Q8 e Q6 são independentes. A pergunta em deliberação é Q8 porque explicita a garantia de retorno que o comportamento atual deixa em aberto. O grafo continua acíclico.
+A fronteira de decisões ativas está vazia. P, Q1 e Q8 estão decididas. As relações entre Q6, Q3 e Q7 descrevem a hipótese arquivada de gerar conteúdo adicional. O grafo desse recorte é acíclico.
 
 ## 6. Estado empírico e rastreabilidade
 
@@ -136,9 +136,9 @@ Inspeção do repositório em `26c784b98965`, com o patch distribuído para o Ma
 
 Dois precedentes do Anki esclarecem a fronteira. Randomized Basic conserva um cartão e permite apresentar vários enunciados preparados. AnkiTutor mantém o conceito e dá ao tutor a tarefa de formular um cenário novo. Ambos tornam a distinção entre objeto revisto e pergunta apresentada plausível. A equivalência pedagógica dos exercícios de TypeScript continua sendo uma questão do piloto. [Randomized Basic](https://github.com/Vilhelm-Ian/Interactive_And_Randomize_Anki_Note_Types#randomized-basic--randomized-cloze) · [Contrato de aprendizagem do AnkiTutor](https://github.com/MarionLiew/anki-tutor/blob/a3a1d1200b415136cfbad20c0f9719c14bef96f0/docs/learning-contract.md)
 
-## 7. Continuidade da análise
+## 7. Encerramento da análise
 
-Após a resposta a Q8, registre o compromisso de retorno do enunciado original e o que o aluno deverá observar quando o mesmo conceito voltar para revisão. Atualize a vigência das arestas, a DSM e a fronteira de decisões prontas. Uma formulação diferente das alternativas apresentadas pode exigir a revisão do mapa.
+O banco atende ao requisito de variedade. Nenhuma alteração de produto foi requerida. Os critérios registrados podem servir para examinar um caso concreto se surgir evidência de que determinado conjunto de perguntas permite responder de memória.
 
 Ao abrir uma questão, registram-se seu objeto, nível, pergunta, opções admissíveis, restrições, critérios e estado. Para cada opção, acrescentam-se as consequências, as questões suscitadas e a evidência disponível. Para cada antecedente, registra-se a informação recebida. As demais questões seguem identificadas no mapa. Uma deliberação Meso só ganha conteúdo quando houver um compromisso Macro a explicar. Uma deliberação Micro requer um contrato lógico a realizar ou uma restrição concreta demonstrada. Isso vale também para a redação do prompt e a atribuição de responsabilidades a um agente.
 
