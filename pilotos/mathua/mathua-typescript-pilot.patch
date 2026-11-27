@@ -2627,7 +2627,7 @@ index 913a6102..6733c0ca 100644
      <footer
        // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae4..9a44f096 100644
+index 2f6abae4..1cb73485 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
 @@ -1,5 +1,6 @@
@@ -2764,7 +2764,7 @@ index 2f6abae4..9a44f096 100644
              xp: 0,
              xpAdjustment: res.xp_adjustment ?? 0,
              xpNote: res.xp_note,
-@@ -572,28 +611,40 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -572,28 +611,43 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        if (getErrorStatus(e) === 409) {
          try {
            const epoch = practiceEpochRef.current
@@ -2776,9 +2776,12 @@ index 2f6abae4..9a44f096 100644
 -            setBuffer(prev => [...prev, ...fresh.slice(1)].slice(0, 6))
 -            return
 +          if (TS_PILOT) {
-+            // The pilot replaces the question the way it serves the next one: from the buffer as it
-+            // is now, or from a fetch when the buffer is empty. A second path of its own could fetch
-+            // a question that was already waiting in the buffer and end up with nothing.
++            // A 409 means the server holds no record of this question. The questions waiting in the
++            // buffer were served with it, so they are dropped: serving again is what records a
++            // question on the server. takeNext then finds the buffer empty and fetches, with the
++            // same exclusion and admission rules as for any next question.
++            bufferRef.current = []
++            setBuffer([])
 +            const next = await takeNext(difficulty)
 +            if (practiceEpochRef.current !== epoch) return
 +            if (next) {
@@ -2817,7 +2820,7 @@ index 2f6abae4..9a44f096 100644
        setEntry(key, { error: message })
      } finally {
        setEntry(key, { checking: false })
-@@ -627,10 +678,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -627,10 +681,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          />
          <div className="mt-4 flex flex-wrap gap-3">
            <Link href="/domains" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue">
@@ -2830,7 +2833,7 @@ index 2f6abae4..9a44f096 100644
            </Link>
          </div>
        </div>
-@@ -663,15 +714,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -663,15 +717,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        .slice(0, 3).map(p => p.title).join(', ')
      if (unmetPrereqs.length === 0 && unstartedPrereqs.length > 0) {
        const unstarted = unstartedPrereqs.slice(0, 3).map(p => p.title).join(', ')
@@ -2850,7 +2853,7 @@ index 2f6abae4..9a44f096 100644
    })()
    const totalAnswered = answeredCount
    const totalCorrect = correctCount
-@@ -686,8 +737,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -686,8 +740,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
    return (
      <div className="max-w-2xl mx-auto">
        <div className="sticky top-0 z-10 bg-mathua-bg backdrop-blur py-2 mb-4 flex items-center gap-2 font-mono text-[11px] text-mathua-muted border-b border-mathua-border">
@@ -2861,7 +2864,7 @@ index 2f6abae4..9a44f096 100644
          {totalXP !== 0 && <span className={totalXP > 0 ? 'text-yellow-400' : 'text-mathua-red'}>· {totalXP > 0 ? '+' : ''}{totalXP} XP</span>}
          {band && (
            <span title="How you're doing on this concept, from your recent answers. Progress only, mastery is decided separately.">
-@@ -700,7 +751,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -700,7 +754,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <PrerequisitePanel
            prerequisites={prerequisites}
            returnStack={prereqStack}
@@ -2870,7 +2873,7 @@ index 2f6abae4..9a44f096 100644
            intro={prereqIntro}
            onDismiss={() => setBannerDismissed(true)}
          />
-@@ -712,9 +763,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -712,9 +766,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <div className="border border-mathua-green-faint bg-mathua-surface p-5 mb-4">
            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
              <div>
@@ -2882,7 +2885,7 @@ index 2f6abae4..9a44f096 100644
                </p>
              </div>
              <div className="flex flex-wrap items-center gap-2 shrink-0">
-@@ -723,12 +774,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -723,12 +777,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href={nextShelf.next.href}
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -2897,7 +2900,7 @@ index 2f6abae4..9a44f096 100644
                  </span>
                )}
                {!nextLoading && nextSettled && !canContinue && (
-@@ -736,14 +787,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -736,14 +790,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href="/learn"
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -2914,7 +2917,7 @@ index 2f6abae4..9a44f096 100644
                </Link>
              </div>
            </div>
-@@ -805,7 +856,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -805,7 +859,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  <div className="mt-5 flex flex-wrap items-center gap-3">
                    {!practiceStarted && (
                      <button type="button" onClick={startPracticing} disabled={startingPractice} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 py-2.5 font-mono text-xs min-h-[44px] disabled:opacity-50">
@@ -2923,7 +2926,7 @@ index 2f6abae4..9a44f096 100644
                      </button>
                    )}
                    {isMastered && canContinue && nextShelf && (
-@@ -813,7 +864,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -813,7 +867,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                        href={nextShelf.next.href}
                        className="border border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue px-6 py-2.5 font-mono text-xs min-h-[44px] inline-flex items-center"
                      >
@@ -2932,7 +2935,7 @@ index 2f6abae4..9a44f096 100644
                      </Link>
                    )}
                  </div>
-@@ -835,15 +886,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -835,15 +889,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (e.kind === 'halt') {
              return (
                <div key={e.key} className="border border-mathua-red-faint bg-mathua-surface p-5">
@@ -2951,7 +2954,7 @@ index 2f6abae4..9a44f096 100644
                  </div>
                </div>
              )
-@@ -852,7 +903,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -852,7 +906,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              const upcoming: LockedSuccessor[] = upcomingLocked(catalogEntries(), shelfProgress, conceptId)
              return (
                <div key={e.key} className="border border-mathua-green-faint bg-mathua-surface p-6">
@@ -2960,7 +2963,7 @@ index 2f6abae4..9a44f096 100644
                  <XPTaskSummary
                    answerXP={totalAnswerXP}
                    adjustment={totalAdjustment}
-@@ -861,22 +912,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -861,22 +915,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    className="mt-4"
                  />
                  {e.note && <p role="status" className="mt-2 font-mono text-[11px] text-mathua-secondary">{e.note}</p>}
@@ -2989,7 +2992,7 @@ index 2f6abae4..9a44f096 100644
                      </summary>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {nextShelf.alternatives.map((it, i) => (
-@@ -895,7 +946,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -895,7 +949,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  {upcoming.length > 0 && (
                    <div className="mt-3 border border-mathua-border">
                      <p className="font-mono text-[11px] text-mathua-secondary px-4 py-2.5">
@@ -2998,7 +3001,7 @@ index 2f6abae4..9a44f096 100644
                      </p>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {upcoming.map(u => (
-@@ -905,7 +956,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -905,7 +959,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                            className="border border-mathua-border p-3 hover:border-mathua-blue transition-colors block min-w-0"
                          >
                            <div className="font-mono text-xs text-mathua-primary truncate">{u.label}</div>
@@ -3007,7 +3010,7 @@ index 2f6abae4..9a44f096 100644
                          </Link>
                        ))}
                      </div>
-@@ -923,7 +974,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -923,7 +977,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                <ChoiceOptions question={qe.q.question} value={qe.answer} onPick={v => setEntry(qe.key, { answer: v })} disabled={locked || blocked || qe.checking} />
                {!locked && !blocked && (
                  <form ref={qe.key === lastEntryKey ? answerFormRef : undefined} onSubmit={ev => { ev.preventDefault(); handleCheck(qe.key) }} className="clear-of-tabs mt-3 flex flex-col sm:flex-row gap-2">
@@ -3016,7 +3019,7 @@ index 2f6abae4..9a44f096 100644
                    <MathAnswerInput
                      id={`learn-answer-${qe.key}`}
                      focusRef={qe.key === lastEntryKey ? answerFocusRef : undefined}
-@@ -935,20 +986,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -935,20 +989,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      disabled={qe.checking}
                      status={qe.feedback ? (qe.feedback.correct ? 'correct' : 'incorrect') : 'default'}
                      inputMode={format.inputMode}
@@ -3044,7 +3047,7 @@ index 2f6abae4..9a44f096 100644
                      prerequisites={(qe.blockedPrerequisiteIds?.length ? qe.blockedPrerequisiteIds : prerequisites.flatMap(p => p.met ? [] : [p.conceptId])).map(id => ({
                        conceptId: id,
                        title: prerequisites.find(p => p.conceptId === id)?.title ?? concepts.find(c => c.id === id)?.label ?? id,
-@@ -957,7 +1010,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -957,7 +1013,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      }))}
                      returnStack={prereqStack}
                    />
@@ -3053,7 +3056,7 @@ index 2f6abae4..9a44f096 100644
                  </div>
                )}
                <div className="mt-2 flex justify-end">
-@@ -967,6 +1020,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -967,6 +1023,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    kind="question"
                    question={qe.q.question}
                    source="practice"
@@ -3062,7 +3065,7 @@ index 2f6abae4..9a44f096 100644
                    answerGiven={qe.answer}
                    gradingType={conceptGradingType}
                    answerHint={format.hint}
-@@ -976,8 +1031,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -976,8 +1034,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                {locked && qe.feedback && (
                  <div className="mt-3">
                    <p className={`font-mono text-xs ${qe.feedback.correct ? 'text-green-400' : 'text-red-400'}`}>
@@ -3073,7 +3076,7 @@ index 2f6abae4..9a44f096 100644
                    </p>
                    <XPAdjustmentNote
                      adjustment={qe.feedback.xpAdjustment}
-@@ -986,7 +1041,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -986,7 +1044,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      className="mt-2"
                    />
                    <p className="mt-1.5 font-mono text-xs text-mathua-primary">
@@ -3082,7 +3085,7 @@ index 2f6abae4..9a44f096 100644
                    </p>
                    {/* The explanation is the solution for *this* instance, shown
                        on both verdicts: a correct answer still needs the
-@@ -1002,7 +1057,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -1002,7 +1060,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    {qe.feedback.text && (
                      <div className="mt-1.5">
                        <p className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted">

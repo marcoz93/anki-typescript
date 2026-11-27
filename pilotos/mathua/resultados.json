@@ -51,7 +51,7 @@
         "linhas_removidas": 0
       },
       "web/next-app/components/LearnStepper.tsx": {
-        "linhas_adicionadas": 119,
+        "linhas_adicionadas": 122,
         "linhas_removidas": 64
       },
       "web/next-app/components/NextUpCard.tsx": {
@@ -95,10 +95,10 @@
       "web/next-app/test/pilot.test.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "c68ecf008a7b23cf5c6a07b12110f3b2af7b5e91cbff47572acf8289f9f9ae81",
+    "patch_sha256": "0eea9e2d58522f4767b38672911d9bf08979d995735d319827a14711492422a3",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
     "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos os degraus D01 a D05: 23 conceitos, 25 famílias, 150 casos.",
-    "patch_sha256_anterior": "719c4fd39a8b79fc3f2b5b49c0c8d376fb2b2cb0a04041a54b42661b48952b69",
+    "patch_sha256_anterior": "c68ecf008a7b23cf5c6a07b12110f3b2af7b5e91cbff47572acf8289f9f9ae81",
     "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
     "ajustes_da_tela": [
       "Campo de resposta sem a paleta de símbolos matemáticos.",
@@ -323,7 +323,7 @@
   },
   "bloco_2_d04_d05": {
     "observacao": "Integração dos degraus D04 e D05. Execuções no Mac do usuário em 27/11/2026. Registro em BLOCO-2-D04-D05.md.",
-    "patch_sha256": "c68ecf008a7b23cf5c6a07b12110f3b2af7b5e91cbff47572acf8289f9f9ae81",
+    "patch_sha256": "0eea9e2d58522f4767b38672911d9bf08979d995735d319827a14711492422a3",
     "conteudo": {
       "versao": "typescript-escada-v1",
       "degraus_servidos": [
@@ -378,7 +378,7 @@
       "conceitos_dominados": 23,
       "perguntas_distintas_por_conceito": 6
     },
-    "defeitos_corrigidos": 26,
+    "defeitos_corrigidos": 27,
     "decisoes_de_contrato_em_aberto": 8,
     "tempo_de_partida_segundos": 14.3,
     "nao_repetido_neste_bloco": [
@@ -390,7 +390,7 @@
       "exit_code": 0,
       "test_files_passed": 199,
       "tests_passed": 1897,
-      "intermitente": "test/reportsPage.test.tsx falhou em 2 de 11 execuções da suíte completa nesta sessão; registro da falha em vitest-execucao-com-falha-intermitente.log; não medido no commit-base"
+      "intermitente": "test/reportsPage.test.tsx falhou em 2 de 12 execuções da suíte completa nesta sessão; registro da falha em vitest-execucao-com-falha-intermitente.log; não medido no commit-base"
     },
     "evidencias/bloco-2-d04-d05/lint.log": {
       "exit_code": 0,
@@ -464,6 +464,18 @@
           "correcoes_anteriores_que_se_sustentaram": "3 de 3",
           "respostas_testadas": 250,
           "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex-5a-passada.md"
+        },
+        {
+          "commit": "5600fb0",
+          "comandos": 120,
+          "achados": 1,
+          "severidade": {
+            "media": 1
+          },
+          "viraram_correcao": 1,
+          "correcoes_anteriores_que_se_sustentaram": "3 de 3",
+          "respostas_testadas": 250,
+          "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex-6a-passada.md"
         }
       ]
     }
