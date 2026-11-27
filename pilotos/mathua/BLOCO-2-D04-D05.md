@@ -44,7 +44,7 @@ O teste de navegador, em `scripts/browser-smoke.mjs`, ganhou um passo para o deg
 
 Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e entraram as funções `pilotExclude`, `pilotAdmit` e `pilotUsable` em `web/next-app/lib/pilot.ts`, com o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 209 linhas adicionadas e 123 removidas. A interface foi recompilada.
 
-O patch atual tem 23 arquivos, 3014 linhas adicionadas e 123 removidas. Resumo SHA-256: `33816d5aa244870669006facf7a6424131b0d9980afed73c78eb5a2355ae4898`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`; `719c4fd3…` no commit `61bdca9`; `c68ecf00…` no commit `5600fb0`; `0eea9e2d…` nos commits `865c82d` e `d4317d9`.
+O patch atual tem 23 arquivos, 3025 linhas adicionadas e 123 removidas. Resumo SHA-256: `9bc6f4e573ef67e509561194c19ec4c493afdfe5a2e9eff32ee64799bce773ec`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`; `719c4fd3…` no commit `61bdca9`; `c68ecf00…` no commit `5600fb0`; `0eea9e2d…` nos commits `865c82d` e `d4317d9`; `33816d5a…` no commit `19ecf5f`.
 
 ## 3. O que os corretores novos aceitam
 
@@ -76,11 +76,11 @@ go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1
 
 | Evidência | Código | Aprovados | Falhas |
 | --- | --- | --- | --- |
-| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 475 casos finais | 0 |
+| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 478 casos finais | 0 |
 | [mathua-native-http.jsonl](evidencias/bloco-2-d04-d05/mathua-native-http.jsonl) | 0 | 26 casos finais | 0 |
 | [mathua-native-engine.jsonl](evidencias/bloco-2-d04-d05/mathua-native-engine.jsonl) | 0 | 154 casos finais | 0 |
 
-As evidências desta pasta são da execução final, depois das correções das sete passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 475 casos do piloto, por função de teste:
+As evidências desta pasta são da execução final, depois das correções das oito passadas do falseador, na seção 7. A correção da oitava passada mudou só `grade.cjs` e os testes Go; por isso os registros da interface, em `tsc.log`, `lint.log`, `vitest.log` e `ui-build.log`, são da execução anterior, feita depois da sétima passada. O registro de reinício não traz data, e o conteúdo dele é igual em todas as execuções. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 478 casos do piloto, por função de teste:
 
 | Função | Casos | O que confere |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ As evidências desta pasta são da execução final, depois das correções das 
 | `TestCriteriaOfStagesFourAndFive` | 170 | Respostas aceitas e recusadas de F015 a F025, com a mensagem em parte dos casos |
 | `TestCriteriaHoldInEveryCaseOfStagesFourAndFive` | 204 | As equivalências do contrato aplicadas aos 6 casos de cada família, cada um com o próprio contexto |
 | `TestWholeLadderThroughTheAPI` | 1 | Um visitante novo domina os 23 conceitos pela API real, em ordem, com 6 perguntas distintas por conceito |
-| `TestFindingsOfTheIndependentReview` | 40 | Os achados do falseador, cada um com a resposta que ele relatou |
+| `TestFindingsOfTheIndependentReview` | 43 | Os achados do falseador, cada um com a resposta que ele relatou |
 | `TestPilotHTTP` | 7 | Pré-requisitos, domínio, variante após erro, repetição, relato, reinício e falha do corretor |
 | Outras quatro funções | 4 | Conteúdo servido, seções por família, alternativas por letra e reparo de histórico |
 
@@ -230,13 +230,22 @@ O falseador rodou 111 comandos. O relatório está em [falseador-codex-7a-passad
 | 2. Uma busca enviada antes da recuperação podia chegar depois e repor na fila uma pergunta sem registro | Baixa | A tela conta as recuperações e ignora a resposta de uma busca enviada antes da última recuperação |
 | 3. F021 e F023 chamavam `satisfies` de asserção de tipo | Baixa | A mensagem cita o que a resposta usa: asserção de tipo, o operador `satisfies` ou o operador `!` |
 
-### Oitava passada
+### Oitava passada, sobre o commit `19ecf5f`
 
-Preenchida depois da revisão do Codex sobre o commit das correções da sétima passada.
+O falseador rodou 69 comandos. O relatório está em [falseador-codex-8a-passada.md](evidencias/bloco-2-d04-d05/falseador-codex-8a-passada.md). Ele conferiu as três correções da sétima passada, e as três se sustentaram. Ele testou 250 respostas dos casos V4 e V5. Sem a chave do piloto, a tela original e a atual produziram HTML idêntico em 14 estados. Ele relatou um achado médio e um baixo.
+
+| Achado da oitava passada | Severidade | O que foi feito |
+| --- | --- | --- |
+| 1. Nas famílias de nome ou símbolo, a resposta certa seguida de um comentário sem fechamento, como `number /* tipo`, era aceita. A correção da sétima passada lia os símbolos e ignorava o erro do analisador léxico | Média | Uma resposta em que o analisador léxico acusa erro é recusada, com a mensagem "A resposta contém um erro de sintaxe TypeScript." |
+| 2. A seção 8 dizia que três casos tinham teste da mensagem de recusa; com `satisfies`, são quatro | Baixa | A frase foi corrigida |
+
+### Nona passada
+
+Preenchida depois da revisão do Codex sobre o commit da correção da oitava passada.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 
-Nenhum destes casos tem teste que force a aceitação ou a recusa como regra do contrato. Três deles têm teste da mensagem de recusa atual: `as const`, a conta no lugar do valor e as comparações dentro do `&&`. O comportamento atual está indicado. A decisão é de quem escreve o conteúdo.
+Nenhum destes casos tem teste que force a aceitação ou a recusa como regra do contrato. Quatro deles têm teste da mensagem de recusa atual: `as const`, a conta no lugar do valor, as comparações dentro do `&&` e `satisfies`. O comportamento atual está indicado. A decisão é de quem escreve o conteúdo.
 
 | Caso | Comportamento atual | Leitura A | Leitura B |
 | --- | --- | --- | --- |

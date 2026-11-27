@@ -95,10 +95,10 @@
       "web/next-app/test/pilot.test.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "33816d5aa244870669006facf7a6424131b0d9980afed73c78eb5a2355ae4898",
+    "patch_sha256": "9bc6f4e573ef67e509561194c19ec4c493afdfe5a2e9eff32ee64799bce773ec",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
     "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos os degraus D01 a D05: 23 conceitos, 25 famílias, 150 casos.",
-    "patch_sha256_anterior": "0eea9e2d58522f4767b38672911d9bf08979d995735d319827a14711492422a3",
+    "patch_sha256_anterior": "33816d5aa244870669006facf7a6424131b0d9980afed73c78eb5a2355ae4898",
     "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
     "ajustes_da_tela": [
       "Campo de resposta sem a paleta de símbolos matemáticos.",
@@ -323,7 +323,7 @@
   },
   "bloco_2_d04_d05": {
     "observacao": "Integração dos degraus D04 e D05. Execuções no Mac do usuário em 27/11/2026. Registro em BLOCO-2-D04-D05.md.",
-    "patch_sha256": "33816d5aa244870669006facf7a6424131b0d9980afed73c78eb5a2355ae4898",
+    "patch_sha256": "9bc6f4e573ef67e509561194c19ec4c493afdfe5a2e9eff32ee64799bce773ec",
     "conteudo": {
       "versao": "typescript-escada-v1",
       "degraus_servidos": [
@@ -348,7 +348,7 @@
       "falseador": "Codex, somente leitura, depois do commit"
     },
     "evidencias/bloco-2-d04-d05/mathua-pilot.jsonl": {
-      "pass_folhas": 475,
+      "pass_folhas": 478,
       "fail": 0,
       "skip": 0
     },
@@ -378,7 +378,7 @@
       "conceitos_dominados": 23,
       "perguntas_distintas_por_conceito": 6
     },
-    "defeitos_corrigidos": 30,
+    "defeitos_corrigidos": 32,
     "decisoes_de_contrato_em_aberto": 9,
     "tempo_de_partida_segundos": 14.3,
     "nao_repetido_neste_bloco": [
@@ -489,6 +489,19 @@
           "correcoes_anteriores_que_se_sustentaram": "1 de 1",
           "respostas_testadas": 250,
           "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex-7a-passada.md"
+        },
+        {
+          "commit": "19ecf5f",
+          "comandos": 69,
+          "achados": 2,
+          "severidade": {
+            "media": 1,
+            "baixa": 1
+          },
+          "viraram_correcao": 2,
+          "correcoes_anteriores_que_se_sustentaram": "3 de 3",
+          "respostas_testadas": 250,
+          "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex-8a-passada.md"
         }
       ]
     }

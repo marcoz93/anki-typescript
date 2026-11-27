@@ -636,10 +636,10 @@ index 00000000..2747118e
 +}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..85268cfb
+index 00000000..7b94049f
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,500 @@
+@@ -0,0 +1,507 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
@@ -1077,18 +1077,25 @@ index 00000000..85268cfb
 +
 +// A token is a name, a type or a symbol of the language. Case is part of it.
 +// The tokens of a text as the compiler's scanner reads them: spaces and comments are not tokens.
++// `broken` is true when the scanner reports an error, such as a comment that is never closed.
 +function tokensOf(text) {
-+  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, text);
++  let broken = false;
++  const scanner = ts.createScanner(ts.ScriptTarget.ES2022, true, ts.LanguageVariant.Standard, text, () => { broken = true; });
 +  const found = [];
 +  for (let kind = scanner.scan(); kind !== ts.SyntaxKind.EndOfFileToken && found.length < 64; kind = scanner.scan()) {
++    if (kind === ts.SyntaxKind.Unknown) broken = true;
 +    found.push(scanner.getTokenText());
 +  }
-+  return found;
++  return {text: found.join(' '), broken};
 +}
 +
 +function token({expected, answer}) {
-+  const wanted = tokensOf(expected).join(' ');
-+  const given = tokensOf(answer).join(' ');
++  const reference = tokensOf(expected);
++  if (reference.broken || !reference.text) throw new Error('Invalid reference token');
++  const scanned = tokensOf(answer);
++  if (scanned.broken) return result(false, SYNTAX);
++  const wanted = reference.text;
++  const given = scanned.text;
 +  if (given === wanted) return result(true, 'Correto.');
 +  if (given.toLowerCase() === wanted.toLowerCase()) {
 +    return result(false, `Maiúsculas e minúsculas fazem diferença: ${given} não é o mesmo que ${wanted}.`);
@@ -1360,10 +1367,10 @@ index 00000000..f75ee4b0
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..ba4c8f36
+index 00000000..e79d851c
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,1124 @@
+@@ -0,0 +1,1128 @@
 +package main
 +
 +import (
@@ -2478,6 +2485,10 @@ index 00000000..ba4c8f36
 +		{"f005_two_names_are_not_one", "F005", "number", "number string", false, "não é o nome"},
 +		{"f005_name_in_capitals", "F005", "number", "Number // tipo", false, "Maiúsculas"},
 +		{"f007_only_a_comment", "F007", "boolean", "/* boolean */", false, "não é o nome"},
++		// Eighth pass: a comment that is never closed is a syntax error, not a comment to ignore.
++		{"f005_token_with_unclosed_comment", "F005", "number", "number /* tipo", false, "erro de sintaxe"},
++		{"f012_symbol_with_unclosed_comment", "F012", ":", ": /* tipo", false, "erro de sintaxe"},
++		{"f006_token_with_unclosed_text", "F006", "string", "string \"", false, "erro de sintaxe"},
 +	}
 +	for _, tc := range tokens {
 +		t.Run(tc.name, func(t *testing.T) {
