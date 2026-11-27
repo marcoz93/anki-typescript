@@ -20,7 +20,7 @@ Datas de referência: 26/11/2026 para as execuções em Linux e 27/11/2026 para 
 
 No código Go existente, o patch acrescenta **uma linha** em `internal/server/server.go` para transmitir `ungraded` quando o corretor falha. O motor já preservava o histórico na falha do corretor. O contrato do campo opcional está documentado abaixo.
 
-Na interface existente, o patch altera **13 arquivos** de `web/next-app` e acrescenta **um arquivo**, `web/next-app/lib/pilot.ts`. Esse arquivo lê a chave de compilação `NEXT_PUBLIC_TS_PILOT=1` e guarda os textos em português. Sem a chave, a interface compila como a original: os 1885 testes unitários existentes passam sem a chave. Com a chave, a tela muda em quatro pontos:
+Na interface existente, o patch altera **13 arquivos** de `web/next-app` e acrescenta **um arquivo**, `web/next-app/lib/pilot.ts`. Esse arquivo lê a chave de compilação `NEXT_PUBLIC_TS_PILOT=1` e guarda os textos em português. Sem a chave, a tela se comporta como a original: os testes unitários existentes passam sem a chave, e desde 27/11/2026 as duas propriedades do botão de relato também dependem da chave. As duas mudanças no servidor Go, o campo `ungraded` e a exclusão da pergunta inteira, não dependem da chave. Com a chave, a tela muda em quatro pontos:
 
 1. O campo de resposta deixa de mostrar o teclado de símbolos matemáticos. O componente original já tinha a opção `showPalette`; o patch só a desliga.
 2. Os textos do percurso de estudo aparecem em português: campo de resposta, correção, continuar, praticar novamente, pré-requisitos e relato de problema.

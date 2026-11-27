@@ -42,9 +42,9 @@ Só arquivos do piloto, em `cmd/typescript-pilot/`:
 
 O teste de navegador, em `scripts/browser-smoke.mjs`, ganhou um passo para o degrau 4.
 
-Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das duas passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e as funções `pilotExclude` e `pilotAdmit` em `web/next-app/lib/pilot.ts`, e entrou o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 170 linhas adicionadas e 113 removidas. A interface foi recompilada.
+Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e as funções `pilotExclude` e `pilotAdmit` em `web/next-app/lib/pilot.ts`, e entrou o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 177 linhas adicionadas e 113 removidas. A interface foi recompilada.
 
-O patch atual tem 23 arquivos, 2879 linhas adicionadas e 113 removidas. Resumo SHA-256: `68a012596f54872b56ab36a736762363fc1ad95298f418a5b55e798747999d34`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão, e `cd4f4889…` no commit `7f3d02e`, depois da primeira passada.
+O patch atual tem 23 arquivos, 2894 linhas adicionadas e 113 removidas. Resumo SHA-256: `22277907f88d7642212465500a908c5c5c62520596963d8b1508cce46c0cdee5`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`, depois da primeira passada; `68a01259…` no commit `7d3bc28`, depois da segunda.
 
 ## 3. O que os corretores novos aceitam
 
@@ -76,11 +76,11 @@ go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1
 
 | Evidência | Código | Aprovados | Falhas |
 | --- | --- | --- | --- |
-| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 459 casos finais | 0 |
+| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 462 casos finais | 0 |
 | [mathua-native-http.jsonl](evidencias/bloco-2-d04-d05/mathua-native-http.jsonl) | 0 | 26 casos finais | 0 |
 | [mathua-native-engine.jsonl](evidencias/bloco-2-d04-d05/mathua-native-engine.jsonl) | 0 | 154 casos finais | 0 |
 
-As evidências desta pasta são da execução final, depois das correções das duas passadas do falseador, na seção 7. Os três arquivos `.jsonl` foram gerados de novo nessa execução. Os 459 casos do piloto, por função de teste:
+As evidências desta pasta são da execução final, depois das correções das três passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 462 casos do piloto, por função de teste:
 
 | Função | Casos | O que confere |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ As evidências desta pasta são da execução final, depois das correções das 
 | `TestCriteriaOfStagesFourAndFive` | 170 | Respostas aceitas e recusadas de F015 a F025, com a mensagem em parte dos casos |
 | `TestCriteriaHoldInEveryCaseOfStagesFourAndFive` | 204 | As equivalências do contrato aplicadas aos 6 casos de cada família, cada um com o próprio contexto |
 | `TestWholeLadderThroughTheAPI` | 1 | Um visitante novo domina os 23 conceitos pela API real, em ordem, com 6 perguntas distintas por conceito |
-| `TestFindingsOfTheIndependentReview` | 24 | Os achados do falseador, cada um com a resposta que ele relatou |
+| `TestFindingsOfTheIndependentReview` | 27 | Os achados do falseador, cada um com a resposta que ele relatou |
 | `TestPilotHTTP` | 7 | Pré-requisitos, domínio, variante após erro, repetição, relato, reinício e falha do corretor |
 | Outras quatro funções | 4 | Conteúdo servido, seções por família, alternativas por letra e reparo de histórico |
 
@@ -103,14 +103,14 @@ Interface, em `web/next-app`, com Node `24.22.3`, depois das correções da seç
 
 | Comando | Código | Saída |
 | --- | --- | --- |
-| `npx tsc --noEmit -p .` | 0 | Nenhuma mensagem |
+| `npx tsc --noEmit -p .` | 0 | Nenhuma mensagem, em [tsc.log](evidencias/bloco-2-d04-d05/tsc.log) |
 | `npm run lint` | 0 | 0 erros, em [lint.log](evidencias/bloco-2-d04-d05/lint.log) |
 | `npm test` | 0 | `Test Files  199 passed (199)`, `Tests  1894 passed (1894)`, em [vitest.log](evidencias/bloco-2-d04-d05/vitest.log) |
 | `NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build` | 0 | [ui-build.log](evidencias/bloco-2-d04-d05/ui-build.log) |
 
 O arquivo de teste novo, `test/pilot.test.ts`, tem 9 testes.
 
-A suíte da interface rodou três vezes depois das correções da segunda passada. A primeira execução falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
+A suíte da interface rodou três vezes depois das correções da segunda passada e duas vezes depois das correções da terceira. As duas últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
 
 ## 5. O que foi observado pela tela no degrau 4
 
@@ -177,17 +177,30 @@ O falseador rodou de novo, com 78 comandos, sobre a entrega corrigida. O relató
 
 Uma regressão apareceu durante estas correções e foi pega por um teste já existente: a checagem nova da diretiva rodava antes da proteção contra respostas encaixadas demais. A checagem foi movida para dentro da proteção.
 
-### Terceira passada
+### Terceira passada, sobre o commit `7d3bc28`
 
-Preenchida depois da revisão do Codex sobre o commit das correções da segunda passada.
+O falseador rodou 107 comandos. O relatório está em [falseador-codex-3a-passada.md](evidencias/bloco-2-d04-d05/falseador-codex-3a-passada.md). Uma primeira tentativa desta passada foi interrompida pelo filtro de segurança do Codex depois de 34 comandos; o pedido foi reescrito e rodou até o fim.
+
+Ele conferiu as cinco correções da segunda passada: quatro se sustentaram e a quarta estava incompleta. Ele testou 250 respostas das famílias F001 a F025, com 150 aprovações e 100 recusas, todas de acordo com o critério. Ele relatou um achado médio e três baixos.
+
+| Achado da terceira passada | Severidade | O que foi feito |
+| --- | --- | --- |
+| 1. Uma busca atrasada que chegava antes de a tela anotar a pergunta como mostrada repunha essa pergunta na fila. A anotação acontecia num efeito, depois da troca de tela | Média | A tela anota a pergunta como mostrada no instante em que ela sai da fila, e também no efeito |
+| 2. Sem a chave do piloto, o botão de relato enviava o gabarito e a explicação, o que a tela original não fazia. A mudança vinha da rodada de 26/11 e contrariava a frase "sem a chave, a interface compila como a original" | Baixa | As duas propriedades do botão de relato agora só são enviadas com a chave do piloto |
+| 3. Duas mensagens imprecisas: `\|\|` "aceita apenas uma delas", e `{ id, total: 18000 }` "deve ter exatamente as propriedades id e total" | Baixa | As mensagens agora são "O operador \|\| já é verdadeiro quando só uma delas é verdadeira." e "Escreva o valor de id junto com o nome, como em id: valor." |
+| 4. A seção 8 dizia que nenhum caso tinha asserção nos testes e citava "o objeto" para F021 e F023 | Baixa | A seção 8 foi corrigida |
+
+### Quarta passada
+
+Preenchida depois da revisão do Codex sobre o commit das correções da terceira passada.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 
-Nenhum destes casos tem asserção nos testes. O comportamento atual está indicado. A decisão é de quem escreve o conteúdo.
+Nenhum destes casos tem teste que force a aceitação ou a recusa como regra do contrato. Três deles têm teste da mensagem de recusa atual: `as const`, a conta no lugar do valor e as comparações dentro do `&&`. O comportamento atual está indicado. A decisão é de quem escreve o conteúdo.
 
 | Caso | Comportamento atual | Leitura A | Leitura B |
 | --- | --- | --- | --- |
-| `as const` em F021 e F023 | Recusa, agora com a mensagem "Escreva o objeto diretamente, sem asserção de tipo." | Aceitar: a asserção acrescenta e não substitui a construção | Recusar com mensagem que cite a asserção |
+| `as const` em F021 e F023 | Recusa. A mensagem é "Escreva o objeto diretamente, sem asserção de tipo." em F021 e "Escreva o array diretamente, sem asserção de tipo." em F023 | Aceitar: a asserção acrescenta e não substitui a construção | Recusar com mensagem que cite a asserção |
 | Anotação `any` em F021 e F023 | Aceita. Em F010 e F011, uma anotação que resulta em `any` ou `unknown` é recusada | Aceitar: a tarefa não pede um tipo | Recusar: o contrato lista `any` como inaceitável |
 | `refund?.amount` em F022 | Recusa | Aceitar: o resultado é o mesmo | Recusar com mensagem que cite o `?.` |
 | Crase no lugar de aspas em um texto pedido, em F003 e F018 | Recusa. Em chave de propriedade, em F021 e F022, a crase passou a ser aceita | Manter: o contrato fala em aspas simples ou duplas | Aceitar: o texto é o mesmo |
@@ -200,7 +213,7 @@ Um problema no próprio conteúdo, que não foi alterado: o campo `counterexampl
 ## 9. Limites desta verificação
 
 - **Só macOS e só Chromium `151.0.7922.34`.**
-- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 7 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
+- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 9 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
 - **Suíte geral.** `go test ./...` e o pacote `internal/server` inteiro não foram repetidos, porque nenhum arquivo de `internal/` mudou neste bloco.
 - **Conceitos percorridos pela tela.** O navegador percorreu 9 dos 23 conceitos. Os 23 foram dominados pela API real no teste `TestWholeLadderThroughTheAPI`.
 - **Tempo de partida.** Medido uma vez: 14,3 segundos com 23 conceitos. O Mathua confere cada gerador em um processo separado. Com 46 conceitos, a partida fica mais lenta.
