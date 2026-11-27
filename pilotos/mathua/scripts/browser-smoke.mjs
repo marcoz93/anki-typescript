@@ -49,7 +49,7 @@ async function startServer() {
   const fd = openSync(logPath, 'a');
   server = spawn(binary, ['-addr', `127.0.0.1:${port}`, '-db', path.join(work, 'pilot.db'), '-content', contentDir], { cwd: root, stdio: ['ignore', fd, fd] });
   closeSync(fd);
-  const deadline = Date.now() + 60000;
+  const deadline = Date.now() + 120000;
   while (true) {
     assert(server.exitCode === null, `Pilot exited: ${readFileSync(logPath, 'utf8')}`);
     try { if ((await fetch(base + '/api/health')).ok) break; } catch { /* Wait for the listener. */ }
@@ -179,16 +179,25 @@ try {
   }
   // Answers the concept correctly until the engine reports MASTERED. Returns what was served.
   // fresh: the concept was not practised before in this run, so the rotation starts clean.
-  async function master(id, how, variant = answer => answer, fresh = true) {
+  async function master(id, how, variant = answer => answer, fresh = true, requiredFamilies = []) {
     const served = [];
     for (let attempt = 0; attempt < 14; attempt++) {
-      const { card, family, item } = await currentCase();
+      let { card, family, item } = await currentCase();
+      if (family.id === 'F042' && !served.some(a => a.family === family.id)) {
+        const missed = item.id;
+        const other = item.choices.find(option => option.id !== item.answer);
+        assert.equal((await submit(card, other.id, 'tap')).body.correct, false);
+        ({ card, family, item } = await currentCase());
+        assert.equal(family.id, 'F042');
+        assert.notEqual(item.id, missed);
+        check('stage_9_fourth_section_keeps_its_family_after_error', { missed, variant: item.id });
+      }
       const answer = variant(item.answer, family.id);
       const done = await submit(card, answer, how === 'auto' ? (family.mode === 'choice' ? 'tap' : 'fill') : how);
       assert.equal(done.body.correct, true, `${item.id}: ${answer} rejected: ${done.body.feedback}`);
       served.push({ family: family.id, case: item.id, answer });
       if (fresh && served.length === 1) assert.notEqual(done.body.new_status, 'MASTERED');
-      if (done.body.new_status === 'MASTERED') {
+      if (done.body.new_status === 'MASTERED' && requiredFamilies.every(id => served.some(a => a.family === id))) {
         const distinct = new Set(served.map(s => s.case)).size;
         // The bank of a section is finite. No case may come back before the others were shown.
         if (fresh) assert.equal(distinct, Math.min(served.length, family.cases.length), `${id} repeated a case early: ${served.map(s => s.case).join(' ')}`);
@@ -429,15 +438,11 @@ try {
     missed_case: valueCase.item.id, context: valueCase.item.context_code, wrong_answer: opposite, cause_shown: valueMiss.body.feedback,
     variant_case: valueVariant.item.id, variant_context: valueVariant.item.context_code, accepted_answer: valueVariant.item.answer });
 
-  // Complete prerequisites of D06-D08 using the study screen and its normal locks.
+  // Complete the whole curriculum using the study screen and its normal locks.
   const curriculum = JSON.parse(readFileSync(path.join(contentDir, 'curriculo.json'), 'utf8')).concepts;
-  const needed = new Set(curriculum.filter(c => c.stage >= 6 && c.stage <= 8).map(c => c.id));
-  for (const c of curriculum.toReversed()) {
-    if (needed.has(c.id)) c.prerequisites.forEach(id => needed.add(id));
-  }
   const mastered = new Set(result.checks.filter(c => c.name.startsWith('mastery_through_browser_'))
     .map(c => c.name.slice('mastery_through_browser_'.length)));
-  for (const c of curriculum.filter(c => needed.has(c.id) && !mastered.has(c.id))) {
+  for (const c of curriculum.filter(c => !mastered.has(c.id))) {
     const ready = await authenticatedJSON(`/api/lessons/${c.id}/readiness`);
     assert.equal(ready.eligible, true, `Locked: ${c.id}`);
     await openConcept(c.id);
@@ -456,9 +461,11 @@ try {
     }
     const answers = await master(c.id, 'auto', (answer, family) => {
       if (family === 'F027') return answer.replace(/(\w+)\[\]/, 'Array<$1>');
+      if (family === 'F070') return answer.split(' | ').reverse().join(' | ');
+      if (family === 'F054') return JSON.stringify(answer);
       if (family === 'F030') return answer.replace(/\): number/, ')');
       return answer;
-    }, c.stage >= 6 && c.family_ids.length === 1 && c.id !== 'ts.function.definition');
+    }, c.stage >= 6 && c.family_ids.length === 1 && c.id !== 'ts.function.definition', c.stage >= 6 ? c.family_ids : []);
     if (c.stage >= 6) {
       for (const id of c.family_ids) assert(answers.some(a => a.family === id), `Screen skipped ${id}`);
     }

@@ -1,6 +1,6 @@
 # Piloto do Mathua com TypeScript
 
-O bloco atual serve D01 a D08, com 32 conceitos, 38 famílias e 228 casos. O [registro dos degraus D06 a D08](BLOCO-3-D06-D08.md) descreve a correção e os testes. Os registros de [D01 a D03](BLOCO-1-D01-D03.md) e [D04 a D05](BLOCO-2-D04-D05.md) documentam as duas entregas anteriores.
+O piloto serve D01 a D15, com 46 conceitos, 74 famílias e 444 casos. O [registro do bloco final](BLOCO-4-D09-D15.md) cobre D09 a D15. O [registro dos degraus D06 a D08](BLOCO-3-D06-D08.md) descreve a correção e os testes. Os registros de [D01 a D03](BLOCO-1-D01-D03.md) e [D04 a D05](BLOCO-2-D04-D05.md) documentam as duas entregas anteriores.
 
 Para rodar, o executável precisa do diretório `conteudo/typescript-v1` deste repositório. Ele o encontra sozinho quando o clone do Mathua está em `pilotos/mathua/mathua/`. Em outro local, use a opção `-content`.
 

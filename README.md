@@ -4,17 +4,18 @@ Material e experimentos para aprender TypeScript por conceitos, com variação d
 
 ## Conteúdo completo da escada
 
-O [pacote de conteúdo](conteudo/typescript-v1/LEIA-ME.md) preserva os **15 degraus e 74 cartões originais** e entrega as aulas, gabaritos, explicações, critérios de correção e seis instâncias por família: **444 perguntas completas**, organizadas em 46 conceitos. O [currículo legível](conteudo/typescript-v1/CURRICULO.md), o [banco de exercícios](conteudo/typescript-v1/EXERCICIOS.md) e os JSON estão prontos para a próxima IA integrar ao piloto.
+O [pacote de conteúdo](conteudo/typescript-v1/LEIA-ME.md) preserva os **15 degraus e 74 cartões originais** e entrega as aulas, gabaritos, explicações, critérios de correção e seis instâncias por família: **444 perguntas completas**, organizadas em 46 conceitos. O [currículo legível](conteudo/typescript-v1/CURRICULO.md), o [banco de exercícios](conteudo/typescript-v1/EXERCICIOS.md) e os JSON descrevem o conteúdo que o piloto serve.
 
 ## Estudar no piloto do Mathua
 
-Os degraus **D01 a D08** estão disponíveis no aplicativo. São **32 conceitos, 38 famílias e 228 perguntas**. O piloto usa as aulas e os exercícios do pacote editorial, com os pré-requisitos, a revisão e o progresso do Mathua. Os degraus D09 a D15 estão no pacote de conteúdo para integração futura.
+Os degraus **D01 a D15** estão disponíveis no aplicativo. São **46 conceitos, 74 famílias e 444 perguntas**. O piloto usa as aulas e os exercícios do pacote editorial, com os pré-requisitos, a revisão e o progresso do Mathua.
 
 | Bloco | Conteúdo disponível |
 | --- | --- |
 | [D01–D03](pilotos/mathua/BLOCO-1-D01-D03.md) | Literais, tipos primitivos e declarações |
 | [D04–D05](pilotos/mathua/BLOCO-2-D04-D05.md) | Expressões, comparações, objetos e arrays |
 | [D06–D08](pilotos/mathua/BLOCO-3-D06-D08.md) | Aliases de objeto, arrays tipados, definições de função, chamadas e saída no console |
+| [D09–D15](pilotos/mathua/BLOCO-4-D09-D15.md) | Composição, callbacks, uniões, controle de fluxo, coleções e iteração |
 
 **Linux e Mac são execuções separadas.** As execuções em Linux são de 26/11/2026 e usaram o patch anterior. Os ajustes da tela desta rodada foram validados só em macOS.
 
@@ -25,7 +26,7 @@ Os degraus **D01 a D08** estão disponíveis no aplicativo. São **32 conceitos,
 | [Relatório e reprodução](pilotos/mathua/LEIA-ME.md) | Caso concreto, critérios, resultados, limites e comandos para reproduzir |
 | [Comandos e saídas em macOS](pilotos/mathua/COMANDOS-E-SAIDAS-MAC.md) | Rodada de 27/11/2026 com o patch atual: versões testadas e exigidas, testes, controle negativo e capturas de tela |
 | [Comandos e saídas em Linux](pilotos/mathua/COMANDOS-E-SAIDAS.md) | Rodada de 26/11/2026 com o patch anterior: ambiente, navegador, reinício, contrato `ungraded` e falha da suíte geral |
-| [Patch completo](pilotos/mathua/mathua-typescript-pilot.patch) | Piloto, aulas, servidor da interface existente, uma linha na API e os ajustes da tela ligados pela chave `NEXT_PUBLIC_TS_PILOT=1` |
+| [Patch completo](pilotos/mathua/mathua-typescript-pilot.patch) | Piloto, aulas, servidor da interface existente, rotas e correção da API e os ajustes da tela ligados pela chave `NEXT_PUBLIC_TS_PILOT=1` |
 | [Resultados estruturados](pilotos/mathua/resultados.json) | Versões, contagens, comandos e escopo dos testes |
 | [Evidências em Linux](pilotos/mathua/evidencias/) | Registros das execuções, falha anterior à correção e teste de reinício do executável |
 | [Evidências em macOS](pilotos/mathua/evidencias/mac/) | Registros das execuções no Mac e sete capturas de tela |

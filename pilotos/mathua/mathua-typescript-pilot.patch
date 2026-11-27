@@ -1,9 +1,9 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 00000000..98b03386
+index 00000000..caf2acdd
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,207 @@
+@@ -0,0 +1,214 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
@@ -20,8 +20,8 @@ index 00000000..98b03386
 +of the companion `anki-typescript` repository. It finds that directory above the working directory,
 +or takes it from `-content`. Nothing is copied into this patch, so the package stays the one source.
 +
-+`integratedThroughStage` in `content.go` is the last ladder stage served. It is 8 now.
-+The pilot serves 32 concepts, 38 families and 228 cases of stages D01 to D08.
++`integratedThroughStage` in `content.go` is the last ladder stage served. It is 15.
++The pilot serves 46 concepts, 74 families and 444 cases of stages D01 to D15.
 +
 +| What the package holds | How the existing engine receives it |
 +| --- | --- |
@@ -36,7 +36,7 @@ index 00000000..98b03386
 +
 +A family is one section because the existing stepper stays on a section after a wrong answer.
 +The practice route passes the section as `kp_ordinal`, and the generator serves that family only.
-+The route accepts `kp_ordinal` 1 to 3, so the loader refuses a concept with more than three families.
++The practice route accepts all section numbers present in the lesson. A concept with four families can draw a variant from its fourth family.
 +
 +The bank is finite: six cases per family. The generator walks the cases in order, so a batch never
 +repeats a case while others remain. With `NEXT_PUBLIC_TS_PILOT=1` the study page excludes the
@@ -79,8 +79,9 @@ index 00000000..98b03386
 +
 +`NEXT_PUBLIC_TS_PILOT=1` is a build-time switch read by `web/next-app/lib/pilot.ts`.
 +Without it, the interface builds exactly as the original Mathua interface.
-+With it, the build changes three things for this pilot:
++The pilot build changes the study interface:
 +
++- Code questions that need multiple lines use a textarea. Use the Check button to submit them. Other answer fields keep their original keyboard behavior.
 +- The answer field does not render the mathematical symbol palette.
 +- The study path uses Portuguese text: answer field, grading, continue, practise again, prerequisites and problem reports.
 +- Navigation omits the concept graph, the glossary, the resources group and the footer, which show the bundled mathematics catalog.
@@ -122,8 +123,7 @@ index 00000000..98b03386
 +## Grading contract
 +
 +Each family of the package has its own criterion. `grade.cjs` holds one grader per code family
-+and one per answer mode for `choice`, `token` and `value`. The `value` grader reads a number or a
-+boolean written in TypeScript notation; text labels, arrays and `undefined` belong to later stages.
++and one per answer mode for `choice`, `token` and `value`. The `value` grader reads numbers, booleans, text labels, literal arrays and `undefined`. The exercise keeps element order and repetitions when it compares arrays.
 +
 +| Family | Accepted | Not accepted |
 +| --- | --- | --- |
@@ -144,7 +144,14 @@ index 00000000..98b03386
 +| F030 function definition | a named binding with the requested signature and a return that reads the property, including a renamed parameter or inferred return | a constant result, an unrelated property, an incompatible public signature |
 +| F035 function call | the requested function and numeric argument | a function reference or different argument |
 +| F038 console output | `console.log(amount)` or `console['log'](amount)` | a different method or variable |
-+| `value` families F017, F024, F036 and F037 | `true`, `false`, `15000`, `15_000` | the value in quotes, the expression itself |
++| F039, F044 and F047 | nested calls or function references with the specified arguments | a fixed result or a callback invoked in place of its reference |
++| F045 and F046 | a number-to-boolean arrow or function type with a renamed parameter | a changed signature or inclusive test in F045 |
++| F048, F056 and F070 | the requested union members in either order | a different member or a wider type |
++| F052 and F058 | a two-way if or an early return, with explicit absence checking in F058 | a wrong limit, wrong branch or missing guard |
++| F062, F065 and F068 | map, filter or find with a matching callback and optional result binding | a different method, operation or operand |
++| F071 | for...of with output of the current element | indices or a fixed value |
++| F054, F063, F066 and F069 | a label with or without quotes, an ordered literal array or unquoted undefined as requested | a different label, missing duplicates or quoted absence |
++| Numeric and boolean value families | `true`, `false`, `15000`, `15_000` | the value in quotes, the expression itself |
 +| `token` families | the exact name or symbol; spaces and comments around it are ignored | another case, such as `Number`; two names |
 +| `choice` families | the letter of the correct alternative, or its text | any other alternative |
 +
@@ -213,10 +220,10 @@ index 00000000..98b03386
 +These checks do not measure a deployed installation or long-term retention.
 diff --git a/cmd/typescript-pilot/content.go b/cmd/typescript-pilot/content.go
 new file mode 100644
-index 00000000..e9a4234b
+index 00000000..3de47134
 --- /dev/null
 +++ b/cmd/typescript-pilot/content.go
-@@ -0,0 +1,422 @@
+@@ -0,0 +1,419 @@
 +package main
 +
 +import (
@@ -235,13 +242,10 @@ index 00000000..e9a4234b
 +// integratedThroughStage is the last ladder stage whose families have graders in grade.cjs.
 +// Raising it serves more of the content package. Startup grades every model answer of the
 +// served stages and refuses to run when a grader is missing or rejects its own model answer.
-+const integratedThroughStage = 8
++const integratedThroughStage = 15
 +
 +// contentDirName is where the editorial package lives in the repository that carries this pilot.
 +const contentDirName = "conteudo/typescript-v1"
-+
-+// maxFamiliesPerConcept follows the existing practice route, which accepts kp_ordinal 1 to 3.
-+const maxFamiliesPerConcept = 3
 +
 +// casesPerFamily is the bank size of the package. The study page rotates a section's bank with
 +// this size (PILOT_BANK in web/next-app/lib/pilot.ts), so the loader refuses any other size.
@@ -378,8 +382,8 @@ index 00000000..e9a4234b
 +				return nil, fmt.Errorf("%s: prerequisite %s is outside stages 1 to %d", spec.ID, pre, throughStage)
 +			}
 +		}
-+		if len(spec.FamilyIDs) == 0 || len(spec.FamilyIDs) > maxFamiliesPerConcept {
-+			return nil, fmt.Errorf("%s: %d families; the practice route serves 1 to %d sections", spec.ID, len(spec.FamilyIDs), maxFamiliesPerConcept)
++		if len(spec.FamilyIDs) == 0 {
++			return nil, fmt.Errorf("%s: lesson has no exercise families", spec.ID)
 +		}
 +		questions := map[string]string{}
 +		for _, id := range spec.FamilyIDs {
@@ -490,7 +494,7 @@ index 00000000..e9a4234b
 +			// The engine gives Grade only the reference answer. Two cases may share it only when
 +			// the grader would receive the same task for both. A choice is judged by its text alone.
 +			if other, seen := g.jobs[key]; seen {
-+				sameTask := other.Mode == job.Mode && (job.Mode == "choice" || other.Family == job.Family) &&
++				sameTask := other.Mode == job.Mode && (job.Mode == "choice" || job.Mode == "value" || other.Family == job.Family) &&
 +					(job.Mode != "code" || other.ContextCode == job.ContextCode)
 +				if !sameTask {
 +					return nil, fmt.Errorf("%s: cases %s and %s share the reference answer %q with different tasks", spec.ID, other.Case, k.ID, key)
@@ -526,7 +530,7 @@ index 00000000..e9a4234b
 +			at -= len(each.Cases)
 +		}
 +	}
-+	return generator.Problem{Question: questionText(k), Answer: expectedText(f, k), Explanation: k.Explanation}
++	return generator.Problem{Question: questionText(k), Answer: expectedText(f, k), Explanation: k.Explanation, MultilineAnswer: f.Mode == "code" && (strings.Contains(k.Answer, "\n") || f.ID == "F045")}
 +}
 +
 +func (g *exercise) Grade(expected, answer string) grader.Result {
@@ -641,10 +645,10 @@ index 00000000..e9a4234b
 +}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..441add73
+index 00000000..9b6770d2
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,665 @@
+@@ -0,0 +1,953 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
@@ -1190,6 +1194,269 @@ index 00000000..441add73
 +  return rejectedByCompiler(job, `(${given.text});`) || result(true, 'Correto. A chamada usa a função e o argumento pedidos.');
 +}
 +
++// Match the small expression vocabulary used in the remaining construction tasks.
++// Compare identifiers after binding local parameter names. Keep the order of call arguments.
++function sameExpression(actual, model, names = new Map()) {
++  actual = unwrap(actual);
++  model = unwrap(model);
++  if (!actual || !model) return false;
++  if (ts.isIdentifier(model)) return ts.isIdentifier(actual) && actual.text === (names.get(model.text) ?? model.text);
++  if (isLiteral(model)) return isLiteral(actual) && sameLiteral(actual, model);
++  if (ts.isPropertyAccessExpression(model)) {
++    const {key, owner} = propertyRead(actual);
++    return key === model.name.text && sameExpression(owner, model.expression, names);
++  }
++  if (ts.isCallExpression(model)) {
++    return ts.isCallExpression(actual) && sameExpression(actual.expression, model.expression, names) &&
++      actual.arguments.length === model.arguments.length &&
++      model.arguments.every((arg, i) => sameExpression(actual.arguments[i], arg, names));
++  }
++  if (ts.isBinaryExpression(model) && ts.isBinaryExpression(actual)) {
++    const op = model.operatorToken.kind;
++    const direct = actual.operatorToken.kind === op;
++    if (direct && sameExpression(actual.left, model.left, names) && sameExpression(actual.right, model.right, names)) return true;
++    const symmetric = op === K.PlusToken || op === K.EqualsEqualsEqualsToken || op === K.ExclamationEqualsEqualsToken;
++    const reverse = op === K.GreaterThanToken && actual.operatorToken.kind === K.LessThanToken;
++    return (reverse || (direct && symmetric)) &&
++      sameExpression(actual.right, model.left, names) && sameExpression(actual.left, model.right, names);
++  }
++  return false;
++}
++
++const correct = () => result(true, 'Correto.');
++const wrong = message => result(false, message);
++
++function requestedCall(job) {
++  const model = referenceExpression(job.expected);
++  const given = expressionAnswer(job.answer);
++  if (given.fail) return given.fail;
++  if (!sameExpression(given.expr, model)) return wrong(job.family === 'F039'
++    ? 'Passe o resultado da chamada interna como primeiro argumento e o limite como segundo.'
++    : 'Passe o número e a referência à função solicitada como argumentos, nessa ordem.');
++  return rejectedByCompiler(job, job.answer) || correct();
++}
++
++function singleParameter(fn) {
++  if (!fn || fn.parameters.length !== 1 || fn.typeParameters || fn.asteriskToken ||
++      fn.modifiers?.some(m => m.kind === K.AsyncKeyword)) return null;
++  const p = fn.parameters[0];
++  return ts.isIdentifier(p.name) && !p.questionToken && !p.dotDotDotToken && !p.initializer ? p : null;
++}
++
++function unarySignature(type) {
++  const signatures = type.getCallSignatures();
++  if (signatures.length !== 1) return null;
++  const sig = signatures[0];
++  if (!sig.declaration || !singleParameter(sig.declaration) || sig.thisParameter) return null;
++  return sig;
++}
++
++function takesNumberReturnsBoolean(checker, type) {
++  const sig = unarySignature(type);
++  return sig && checker.getTypeOfSymbol(sig.parameters[0]) === checker.getNumberType() &&
++    sig.getReturnType() === checker.getBooleanType();
++}
++
++function referenceBinding(job) {
++  const model = declaration(parse(job.expected)).item;
++  return typedDeclaration(job, (checker, stmt) => {
++    const item = namedVariable(stmt, model.name.text);
++    return item && sameExpression(item.initializer, model.initializer) && takesNumberReturnsBoolean(checker, checker.getTypeAtLocation(item.name))
++      ? correct() : wrong(`Vincule a própria função ${model.initializer.text} ao nome ${model.name.text}, preservando sua assinatura.`);
++  });
++}
++
++function bodyStatements(stmt) {
++  return ts.isBlock(stmt) ? stmt.statements.filter(s => !ts.isEmptyStatement(s)) : [stmt];
++}
++
++function returnedExpression(body) {
++  if (!body) return null;
++  if (!ts.isBlock(body)) return body;
++  const statements = bodyStatements(body);
++  return statements.length === 1 && ts.isReturnStatement(statements[0]) ? statements[0].expression : null;
++}
++
++function positiveArrow(job) {
++  const model = declaration(parse(job.expected)).item;
++  return typedDeclaration(job, (checker, stmt) => {
++    const item = namedVariable(stmt, model.name.text);
++    const fn = unwrap(item?.initializer);
++    const param = fn && ts.isArrowFunction(fn) && singleParameter(fn);
++    if (!param || !takesNumberReturnsBoolean(checker, checker.getTypeAtLocation(item.name)) ||
++        !takesNumberReturnsBoolean(checker, checker.getTypeAtLocation(fn))) {
++      return wrong(`Defina ${model.name.text} como arrow function de number para boolean.`);
++    }
++    const names = new Map([[model.initializer.parameters[0].name.text, param.name.text]]);
++    return sameExpression(returnedExpression(fn.body), model.initializer.body, names)
++      ? correct() : wrong('Verifique se o parâmetro é estritamente maior que zero.');
++  });
++}
++
++// A type in these union exercises is a primitive, a string literal or a named object type.
++// Flatten nested unions and ignore parentheses and the order of alternatives.
++function unionMembers(node) {
++  if (!node) return [];
++  if (ts.isParenthesizedTypeNode(node)) return unionMembers(node.type);
++  if (ts.isUnionTypeNode(node)) return node.types.flatMap(unionMembers);
++  return [node];
++}
++
++function typeKey(node) {
++  if (ts.isLiteralTypeNode(node) && isQuotedText(node.literal)) return 'literal:' + node.literal.text;
++  if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && !node.typeArguments) return 'name:' + node.typeName.text;
++  if ([K.NumberKeyword, K.StringKeyword, K.UndefinedKeyword].includes(node.kind)) return ts.tokenToString(node.kind);
++  return null;
++}
++
++function sameUnion(given, model) {
++  const actual = new Set(unionMembers(given).map(typeKey));
++  const expected = new Set(unionMembers(model).map(typeKey));
++  return !actual.has(null) && actual.size === expected.size && [...expected].every(k => actual.has(k));
++}
++
++function typeAliasTask(job) {
++  const model = parse(job.expected).statements[0];
++  return typedDeclaration(job, (checker, stmt) => {
++    if (!ts.isTypeAliasDeclaration(stmt) || stmt.typeParameters || stmt.name.text !== model.name.text)
++      return wrong(`Declare o tipo com o nome ${model.name.text}.`);
++    if (job.family === 'F046') {
++      const type = checker.getTypeAtLocation(stmt.name);
++      return takesNumberReturnsBoolean(checker, type) && !type.getProperties().length &&
++        !type.getConstructSignatures().length && !checker.getIndexInfosOfType(type).length
++        ? correct() : wrong('O tipo da função deve ter uma entrada number e saída boolean.');
++    }
++    return sameUnion(stmt.type, model.type) ? correct() : wrong('Inclua exatamente os tipos ou literais pedidos na união.');
++  });
++}
++
++function searchResultType(job) {
++  const given = parsedAnswer('type Resultado = ' + job.answer);
++  if (!given || given.statements.length !== 1 || !ts.isTypeAliasDeclaration(given.statements[0])) return wrong(SYNTAX);
++  const model = parse('type Resultado = ' + job.expected).statements[0];
++  return sameUnion(given.statements[0].type, model.type) ? correct() : wrong('Combine o tipo do elemento com undefined.');
++}
++
++// Extract the two return paths from either an if/else or an early return.
++function branchReturns(body, allowFallthrough = false) {
++  if (!body || !ts.isBlock(body)) return null;
++  const statements = bodyStatements(body);
++  const first = statements[0];
++  if (!first || !ts.isIfStatement(first)) return null;
++  const fallthrough = !first.elseStatement && statements.length === 1 && allowFallthrough;
++  if (!fallthrough && statements.length !== (first.elseStatement ? 1 : 2)) return null;
++  function branch(stmt) {
++    const list = bodyStatements(stmt);
++    return list.length === 1 && ts.isReturnStatement(list[0]) ? list[0] : null;
++  }
++  const yes = branch(first.thenStatement);
++  const no = fallthrough ? {expression: undefined} : branch(first.elseStatement || statements[1]);
++  return yes && no ? {test: unwrap(first.expression), yes, no} : null;
++}
++
++function conditionalFunction(job) {
++  const model = parse(job.expected).statements[0];
++  const ref = branchReturns(model.body);
++  const optional = job.family === 'F058';
++  return typedDeclaration(job, (checker, stmt) => {
++    const item = namedVariable(stmt, model.name.text);
++    const fn = item ? unwrap(item.initializer) : stmt;
++    if (!fn || !(ts.isFunctionDeclaration(fn) && fn.name?.text === model.name.text ||
++        ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) return wrong(`Defina a função ${model.name.text}.`);
++    const p = singleParameter(fn);
++    const paths = branchReturns(fn.body, optional);
++    if (!p || !paths) return wrong('Escreva um if com retorno nos dois caminhos. O else é opcional após um retorno.');
++    const names = new Map([[model.parameters[0].name.text, p.name.text]]);
++    const sig = checker.getSignatureFromDeclaration(fn);
++    const exposed = unarySignature(checker.getTypeAtLocation(item ? item.name : fn.name));
++    const record = optional && parse(job.context_code).statements[0];
++    const isOptional = (type, matches) => type.isUnion() && type.types.length === 2 &&
++      type.types.some(t => t.flags === ts.TypeFlags.Undefined) && type.types.some(matches);
++    function signatureMatches(signature) {
++      if (!signature) return false;
++      const input = checker.getTypeOfSymbol(signature.parameters[0]);
++      const output = signature.getReturnType();
++      if (optional) return isOptional(input, t => matchesRecord(checker, t, record.type)) &&
++        isOptional(output, t => t === checker.getNumberType());
++      return input === checker.getNumberType() && output.isUnion() && output.types.length === 2 &&
++        [ref.yes.expression.text, ref.no.expression.text].every(s => output.types.some(t => t.isStringLiteral() && t.value === s));
++    }
++    if (!signatureMatches(sig) || !signatureMatches(exposed)) return wrong('Confira os tipos de entrada e de retorno da função.');
++    let test = paths.test, yes = paths.yes, no = paths.no;
++    // An inverted test swaps the branches. Complementary number comparisons are not
++    // interchangeable for NaN; an explicit logical negation is always the complement.
++    if (ts.isPrefixUnaryExpression(test) && test.operator === K.ExclamationToken) {
++      test = unwrap(test.operand);
++      [yes, no] = [no, yes];
++    }
++    let matchesTest = sameExpression(test, ref.test, names);
++    if (optional && ts.isBinaryExpression(test)) {
++      const left = unwrap(test.left), right = unwrap(test.right);
++      const isAbsent = n => ts.isIdentifier(n) && n.text === 'undefined' && p.name.text !== 'undefined';
++      const isParam = n => ts.isIdentifier(n) && n.text === p.name.text;
++      const op = test.operatorToken.kind;
++      const loose = op === K.EqualsEqualsToken || op === K.ExclamationEqualsToken;
++      const absence = n => isAbsent(n) || (loose && n.kind === K.NullKeyword);
++      const typeofParam = n => ts.isTypeOfExpression(n) && isParam(unwrap(n.expression));
++      const label = n => isQuotedText(n) && n.text === 'undefined';
++      matchesTest = (isParam(left) && absence(right)) || (isParam(right) && absence(left)) ||
++        (typeofParam(left) && label(right)) || (typeofParam(right) && label(left));
++      matchesTest &&= [K.EqualsEqualsEqualsToken, K.EqualsEqualsToken, K.ExclamationEqualsEqualsToken, K.ExclamationEqualsToken].includes(op);
++      if (op === K.ExclamationEqualsEqualsToken || op === K.ExclamationEqualsToken) [yes, no] = [no, yes];
++    }
++    const absentReturn = optional && !yes.expression;
++    if (!matchesTest || !(absentReturn || sameExpression(yes.expression, ref.yes.expression, names)) ||
++        !sameExpression(no.expression, ref.no.expression, names)) return wrong(optional
++      ? 'Teste explicitamente a ausência. Devolva undefined nesse caminho e a quantia no caminho presente.'
++      : 'Confira o limite estrito e a classificação devolvida em cada ramo.');
++    return correct();
++  });
++}
++
++function arrayMethod(job) {
++  const model = declaration(parse(job.expected)).item.initializer;
++  const ref = model.arguments[0];
++  const method = model.expression.name.text;
++  return typedDeclaration(job, (checker, stmt) => {
++    let call;
++    if (ts.isExpressionStatement(stmt)) call = unwrap(stmt.expression);
++    else if (ts.isVariableStatement(stmt) && stmt.declarationList.declarations.length === 1) {
++      const item = stmt.declarationList.declarations[0];
++      if (ts.isIdentifier(item.name)) call = unwrap(item.initializer);
++    }
++    if (!call || !ts.isCallExpression(call) || call.arguments.length !== 1 ||
++        !sameExpression(call.expression, model.expression)) return wrong(`Use ${method} no array solicitado com uma função de callback.`);
++    const fn = unwrap(call.arguments[0]);
++    const param = (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && singleParameter(fn);
++    if (!param) return wrong('Use uma função que recebe o elemento do array.');
++    const input = checker.getTypeAtLocation(param);
++    const expectsObject = method === 'find';
++    const expectedInput = expectsObject ? matchesRecord(checker, input, parse(job.context_code).statements[0].type) : input === checker.getNumberType();
++    const returned = checker.getSignatureFromDeclaration(fn).getReturnType();
++    if (!expectedInput || returned !== (method === 'map' ? checker.getNumberType() : checker.getBooleanType()))
++      return wrong(`Confira os tipos de entrada e de retorno da função passada a ${method}.`);
++    const names = new Map([[ref.parameters[0].name.text, param.name.text]]);
++    if (!sameExpression(returnedExpression(fn.body), ref.body, names)) return wrong(`Confira a operação feita sobre cada elemento em ${method}.`);
++    return correct();
++  });
++}
++
++function forOfOutput(job) {
++  const ref = parse(job.expected).statements[0];
++  return typedDeclaration(job, (checker, stmt) => {
++    if (!ts.isForOfStatement(stmt) || stmt.awaitModifier || !sameExpression(stmt.expression, ref.expression) ||
++        !ts.isVariableDeclarationList(stmt.initializer) || stmt.initializer.declarations.length !== 1)
++      return wrong('Percorra o array solicitado usando for...of.');
++    const item = stmt.initializer.declarations[0];
++    if (!ts.isIdentifier(item.name)) return wrong('Use um nome local para o elemento da iteração.');
++    const names = new Map([[ref.initializer.declarations[0].name.text, item.name.text]]);
++    const body = bodyStatements(stmt.statement);
++    return body.length === 1 && ts.isExpressionStatement(body[0]) &&
++      sameExpression(body[0].expression, ref.statement.statements[0].expression, names)
++      ? correct() : wrong('Apresente o elemento atual com console.log dentro do laço.');
++  });
++}
++
 +const CODE = {
 +  F002: numericLiteral,
 +  F003: stringLiteral,
@@ -1208,6 +1475,19 @@ index 00000000..441add73
 +  F030: functionDefinition,
 +  F035: callWithArgument,
 +  F038: callWithArgument,
++  F039: requestedCall,
++  F044: referenceBinding,
++  F045: positiveArrow,
++  F046: typeAliasTask,
++  F047: requestedCall,
++  F048: typeAliasTask,
++  F052: conditionalFunction,
++  F056: typeAliasTask,
++  F058: conditionalFunction,
++  F062: arrayMethod,
++  F065: arrayMethod,
++  F068: arrayMethod,
++  F071: forOfOutput,
 +};
 +
 +// A value is the result a question asks the learner to read off: a number, a boolean, the absence
@@ -1225,6 +1505,17 @@ index 00000000..441add73
 +  if (ts.isNumericLiteral(ref)) {
 +    if (!node || !ts.isNumericLiteral(node)) return result(false, 'Responda com o número obtido, sem aspas e sem operações.');
 +    return Number(node.text) === Number(ref.text) ? result(true, 'Correto.') : result(false, 'O número obtido é outro.');
++  }
++  if (ts.isArrayLiteralExpression(ref)) {
++    const matches = node && ts.isArrayLiteralExpression(node) && node.elements.length === ref.elements.length &&
++      ref.elements.every((element, i) => isLiteral(node.elements[i]) && sameLiteral(node.elements[i], element));
++    return matches ? correct() : wrong('Responda com o array resultante, mantendo a ordem e as repetições.');
++  }
++  if (ts.isIdentifier(ref)) {
++    if (ref.text === 'undefined') return node && ts.isIdentifier(node) && node.text === ref.text
++      ? correct() : wrong('Indique o valor que representa a ausência de um resultado, sem aspas.');
++    const label = node && (ts.isIdentifier(node) || isQuotedText(node)) ? node.text : null;
++    return label === ref.text ? correct() : wrong('Responda com o rótulo devolvido pela função.');
 +  }
 +  throw new Error('No value grader for this kind of result');
 +}
@@ -1272,13 +1563,14 @@ index 00000000..441add73
 +  if (!answer.trim()) return result(false, 'Digite a resposta solicitada.');
 +  if (answer.length > 4096) return result(false, 'A resposta excede o tamanho deste exercício.');
 +  if (mode === 'choice') return choice(job);
-+  if (mode === 'token') return token(job);
-+  if (mode !== 'value' && !(mode === 'code' && Object.hasOwn(CODE, family))) throw new Error(`No grader for family ${family} (${mode})`);
++  if (mode === 'token' && family !== 'F070') return token(job);
++  if (mode !== 'value' && !(mode === 'token' && family === 'F070') && !(mode === 'code' && Object.hasOwn(CODE, family))) throw new Error(`No grader for family ${family} (${mode})`);
 +  try {
 +    // A triple-slash directive changes what the compiler loads. It is never part of a requested answer.
 +    if (hasDirective(answer)) {
 +      return result(false, 'Remova a diretiva /// <reference>. A resposta deve conter somente o que a tarefa pede.');
 +    }
++    if (mode === 'token') return searchResultType(job);
 +    return mode === 'value' ? value(job) : CODE[family](job);
 +  } catch (error) {
 +    // An answer nested too deeply for the parser is the learner's answer, not a grader outage.
@@ -1530,10 +1822,10 @@ index 00000000..f75ee4b0
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..f9e8d34f
+index 00000000..0ed5d982
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,1168 @@
+@@ -0,0 +1,1222 @@
 +package main
 +
 +import (
@@ -2033,10 +2325,10 @@ index 00000000..f9e8d34f
 +}
 +
 +func TestContentOfTheIntegratedStages(t *testing.T) {
-+	dir, c := testContent(t)
++	_, c := testContent(t)
 +	cases, questions := 0, 0
 +	for _, spec := range c.Concepts {
-+		if len(spec.FamilyIDs) < 1 || len(spec.FamilyIDs) > maxFamiliesPerConcept {
++		if len(spec.FamilyIDs) < 1 {
 +			t.Fatalf("%s has %d families", spec.ID, len(spec.FamilyIDs))
 +		}
 +		for _, f := range c.familiesOf(spec) {
@@ -2050,7 +2342,7 @@ index 00000000..f9e8d34f
 +			}
 +		}
 +	}
-+	if len(c.Concepts) != 32 || len(c.families) != 38 || cases != 228 {
++	if len(c.Concepts) != 46 || len(c.families) != 74 || cases != 444 {
 +		t.Fatalf("stages 1 to %d: %d concepts, %d families, %d cases", integratedThroughStage, len(c.Concepts), len(c.families), cases)
 +	}
 +	// The three original concepts keep their IDs and the family the package assigns to them.
@@ -2064,11 +2356,6 @@ index 00000000..f9e8d34f
 +		if !found {
 +			t.Fatalf("%s must be served by family %s alone", id, want)
 +		}
-+	}
-+	// D09 introduces a fourth family in a concept. Refuse it as a whole until
-+	// the practice route can serve that fourth section.
-+	if _, err := loadContent(dir, 9); err == nil || !strings.Contains(err.Error(), "ts.function.composition: 4 families") {
-+		t.Fatalf("expected the four-section D09 concept to be rejected, got %v", err)
 +	}
 +	t.Logf("%s: %d concepts, %d families, %d cases, %d questions identified", c.Version, len(c.Concepts), len(c.families), cases, questions)
 +}
@@ -2702,6 +2989,65 @@ index 00000000..f9e8d34f
 +		{"argument_is_not_parameter", "F037-V0", "amount", false, ""},
 +	})
 +}
++
++func TestCriteriaOfStagesNineThroughFifteen(t *testing.T) {
++	judge(t, testChecker(t), []criterion{
++		{"composition_with_separators", "F039-V0", "isAboveLimit((getAmount(refund)), 10_000)", true, ""},
++		{"composition_fixed_value", "F039-V0", "isAboveLimit(15000, 10000)", false, ""},
++		{"composition_wrong_order", "F039-V0", "isAboveLimit(10000, getAmount(refund))", false, ""},
++		{"reference_without_call", "F043-V1", "isAboveZero /* função */", true, ""},
++		{"reference_called", "F043-V1", "isAboveZero()", false, ""},
++		{"renamed_binding", "F044-V0", "let check = (isPositive)", true, ""},
++		{"bound_result", "F044-V0", "const check = isPositive(5)", false, ""},
++		{"arrow_block_and_reversed_test", "F045-V0", "const isPositive = (n: number) => { return 0 < n }", true, ""},
++		{"arrow_contextual", "F045-V0", "const isPositive: (a:number)=>boolean = n => n > 0", true, ""},
++		{"arrow_any", "F045-V0", "const isPositive = (n: any) => n > 0", false, ""},
++		{"arrow_inclusive", "F045-V0", "const isPositive = (n:number) => n >= 0", false, ""},
++		{"function_type_renamed", "F046-V0", "type Check = (valor: number) => boolean", true, ""},
++		{"function_type_wrong_result", "F046-V0", "type Check = (valor:number) => any", false, ""},
++		{"function_type_extra_parameter", "F046-V0", "type Check = (n:number, m:number) => boolean", false, ""},
++		{"callback_reference", "F047-V0", "applyCheck((5), (isPositive));", true, ""},
++		{"callback_result", "F047-V0", "applyCheck(5, isPositive(5))", false, ""},
++		{"reordered_literal_union", "F048-V0", "type ReviewStatus = ('not_required' | 'required')", true, ""},
++		{"widened_union", "F048-V0", "type ReviewStatus = string", false, ""},
++		{"early_return_classification", "F052-V0", "function classify(n: number) { if (10000 < n) return 'required'; return 'not_required' }", true, ""},
++		{"classification_wrong_boundary", "F052-V0", "function classify(n: number) { if (n >= 10000) return 'required'; return 'not_required' }", false, ""},
++		{"classification_wrong_labels", "F052-V0", "function classify(n: number) { if (n > 10000) return 'not_required'; return 'required' }", false, ""},
++		{"classification_no_if", "F052-V0", "function classify(n: number) { return n > 10000 ? 'required' : 'not_required' }", false, ""},
++		{"label_quoted", "F054-V0", "'not_required'", true, ""},
++		{"label_opposite", "F054-V0", "required", false, ""},
++		{"optional_union", "F056-V0", "type MaybeRefund = (undefined | Refund)", true, ""},
++		{"optional_union_unsafe", "F056-V0", "type MaybeRefund = any | undefined", false, ""},
++		{"guard_present_else", "F058-V0", "function getAmount(r: undefined | Refund) { if (r !== undefined) return r['amount']; else return undefined }", true, ""},
++		{"guard_typeof", "F058-V0", "function getAmount(r: Refund | undefined) { if (typeof r === 'undefined') return; return r.amount }", true, ""},
++		{"guard_nullish_fallthrough", "F058-V0", "function getAmount(r: Refund | undefined) { if (r != null) return r.amount }", true, ""},
++		{"optional_chain_instead_of_guard", "F058-V0", "function getAmount(r: Refund | undefined) { return r?.amount }", false, ""},
++		{"guard_assertion", "F058-V0", "function getAmount(r: Refund | undefined) { return r!.amount }", false, ""},
++		{"map_no_binding", "F062-V0", "amounts['map'](n => { return 100 + n })", true, ""},
++		{"map_wrong_increment", "F062-V0", "amounts.map(n => n + 1)", false, ""},
++		{"map_async", "F062-V0", "amounts.map(async n => n + 100)", false, ""},
++		{"boolean_array", "F063-V0", "[true, (false), false,]", true, ""},
++		{"boolean_array_hole", "F063-V0", "[true,,false]", false, ""},
++		{"filter_renamed", "F065-V0", "const kept = amounts.filter(function(v) { return 10_000 < v })", true, ""},
++		{"filter_inclusive", "F065-V0", "amounts.filter(n => n >= 10000)", false, ""},
++		{"filtered_repeats", "F066-V4", "[1_200, 1200]", true, ""},
++		{"filtered_repeat_missing", "F066-V4", "[1200]", false, ""},
++		{"find_with_reverse_equality", "F068-V0", "refunds.find(r => 'r2' === r['id'])", true, ""},
++		{"find_with_other_id", "F068-V0", "refunds.find(r => r.id === 'r1')", false, ""},
++		{"absence_value", "F069-V0", "(undefined)", true, ""},
++		{"absence_text", "F069-V0", "'undefined'", false, ""},
++		{"lookup_number_union", "F070-V0", "undefined | (number)", true, ""},
++		{"lookup_object_union", "F070-V5", "(undefined | RefundItem)", true, ""},
++		{"lookup_union_extra", "F070-V0", "number | undefined | null", false, ""},
++		{"lookup_union_other_record", "F070-V5", "Refund | undefined", false, ""},
++		{"loop_free_name", "F071-V0", "for (let quantia of amounts) console['log'](quantia)", true, ""},
++		{"loop_indices", "F071-V0", "for (const i in amounts) console.log(i)", false, ""},
++		{"loop_fixed_output", "F071-V0", "for (const n of amounts) console.log(15000)", false, ""},
++		{"loop_empty_by_value", "F073-V4", "0", true, ""},
++		{"loop_empty_by_rule", "F074-V0", "0", true, ""},
++		{"empty_loop_wrong_value", "F074-V0", "1", false, ""},
++	})
++}
 diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
 new file mode 100644
 index 00000000..10f8e984
@@ -2750,11 +3096,42 @@ index 00000000..78f08371
 +    "typescript": "5.9.3"
 +  }
 +}
+diff --git a/internal/generator/generator.go b/internal/generator/generator.go
+index 6e757253..572b15c5 100644
+--- a/internal/generator/generator.go
++++ b/internal/generator/generator.go
+@@ -22,9 +22,10 @@ type GeneratorContext struct {
+ }
+
+ type Problem struct {
+-	Question    string
+-	Answer      string
+-	Explanation string
++	MultilineAnswer bool `json:"multiline_answer,omitempty"`
++	Question        string
++	Answer          string
++	Explanation     string
+ 	// Facts are the named values this instance was built from, the operands
+ 	// and the derived quantities, already computed and already reduced. A
+ 	// corpus solution schema interpolates them into authored prose; it never
 diff --git a/internal/server/server.go b/internal/server/server.go
-index f19517a5..f879bf14 100644
+index f19517a5..a54f4ec7 100644
 --- a/internal/server/server.go
 +++ b/internal/server/server.go
-@@ -2153,6 +2153,8 @@ func (s *Server) handleLessonConcept(w http.ResponseWriter, r *http.Request) {
+@@ -2147,12 +2147,20 @@ func (s *Server) handleLessonConcept(w http.ResponseWriter, r *http.Request) {
+ 	}
+ 	kpOrdinal := 0
+ 	if kp := r.URL.Query().Get("kp_ordinal"); kp != "" {
+-		if v, err := strconv.Atoi(kp); err == nil && v >= 1 && v <= 3 {
++		// Original generators accept 1..3 even without a lesson shard.
++		// A longer authored lesson can serve all of its own sections.
++		maxOrdinal := 3
++		if ll := s.eng.GetLessonLoader(); ll != nil {
++			maxOrdinal = max(maxOrdinal, len(ll.KPs(conceptID)))
++		}
++		if v, err := strconv.Atoi(kp); err == nil && v >= 1 && v <= maxOrdinal {
+ 			kpOrdinal = v
+ 		}
  	}
  	excluded := make(map[string]bool)
  	for _, ex := range r.URL.Query()["exclude"] {
@@ -2763,7 +3140,24 @@ index f19517a5..f879bf14 100644
  		for _, part := range strings.Split(ex, "\n") {
  			if part != "" {
  				excluded[part] = true
-@@ -3370,6 +3372,7 @@ func (s *Server) handleStudyAnswer(w http.ResponseWriter, r *http.Request) {
+@@ -2168,6 +2176,7 @@ func (s *Server) handleLessonConcept(w http.ResponseWriter, r *http.Request) {
+ 		Source          string `json:"source,omitempty"`
+ 		AnswerHint      string `json:"answer_hint,omitempty"`
+ 		AnswerInputMode string `json:"answer_input_mode,omitempty"`
++		MultilineAnswer bool   `json:"multiline_answer,omitempty"`
+ 		KPOrdinal       int    `json:"kp_ordinal,omitempty"`
+ 	}
+ 	// Every question in this response carries the format its answer needs, not
+@@ -2276,7 +2285,7 @@ func (s *Server) handleLessonConcept(w http.ResponseWriter, r *http.Request) {
+ 		if p.KPOrdinal > 0 {
+ 			qOrdinal = p.KPOrdinal
+ 		}
+-		questions[i] = qInfo{Question: p.Question, Source: "generator", AnswerHint: qFormat.Hint, AnswerInputMode: qFormat.InputMode, KPOrdinal: qOrdinal}
++		questions[i] = qInfo{Question: p.Question, Source: "generator", AnswerHint: qFormat.Hint, AnswerInputMode: qFormat.InputMode, MultilineAnswer: p.MultilineAnswer, KPOrdinal: qOrdinal}
+ 	}
+ 	writeJSON(w, map[string]interface{}{"questions": questions, "concept_id": conceptID})
+ }
+@@ -3370,6 +3379,7 @@ func (s *Server) handleStudyAnswer(w http.ResponseWriter, r *http.Request) {
  		"xp_source":       res.XPSource,
  		"expected_answer": res.ExpectedAnswer,
  		"halted":          res.Halted,
@@ -2884,12 +3278,12 @@ index 913a6102..6733c0ca 100644
      <footer
        // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae4..5d1ab853 100644
+index 2f6abae4..7f827835 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
 @@ -1,5 +1,6 @@
  'use client'
- 
+
 +import { TS_PILOT, pilotAdmit, pilotDiagnosis, pilotExclude, pilotFresh, pilotUsable, pt } from '@/lib/pilot'
  import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  import Link from 'next/link'
@@ -2908,7 +3302,7 @@ index 2f6abae4..5d1ab853 100644
 @@ -206,8 +207,38 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
      target?.scrollIntoView(options)
    }, [lastEntryKey, lastEntryKind])
- 
+
 +  // Pilot only. The pilot serves a finite bank of cases per section, so a fetch must exclude what
 +  // the learner was shown, not what was merely fetched: the page fetches three questions and a
 +  // section closes after two answers, and excluding the fetched ones brought the answered ones back.
@@ -2956,7 +3350,7 @@ index 2f6abae4..5d1ab853 100644
        setBuffer(pr.questions)
        const first = pr.questions[0]
 @@ -334,17 +366,24 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
- 
+
    // Take the next question: buffer first, fetching when empty.
    async function takeNext(diff: number): Promise<PracticeQuestion | null> {
 -    if (buffer.length > 0) {
@@ -3289,7 +3683,7 @@ index 2f6abae4..5d1ab853 100644
 -                  placeholder="Your answer"
 +                    placeholder={pt('Your answer')}
 +                    ariaLabel={pt('Your answer')}
-+                    multiline={TS_PILOT && conceptId === 'ts.function.definition'}
++                    multiline={TS_PILOT && qe.q.multiline_answer}
 +                    showPalette={!TS_PILOT}
                      className="sm:flex-1"
                    />
@@ -3753,6 +4147,18 @@ index 8d2faeb7..5986ca56 100644
    if (editor === 'text') {
      if (focusRef) focusRef.current = { focus: () => inputRef.current?.focus() }
      return (
+diff --git a/web/next-app/lib/api.ts b/web/next-app/lib/api.ts
+index 007e8c05..139a0daf 100644
+--- a/web/next-app/lib/api.ts
++++ b/web/next-app/lib/api.ts
+@@ -1247,6 +1247,7 @@ export async function getLessons(studentId?: string): Promise<LessonsRes> {
+ }
+
+ export interface PracticeQuestion {
++	multiline_answer?: boolean
+ 	question: string
+ 	// The answer and explanation are deliberately absent. They are returned by
+ 	// POST /api/study/answer after the learner submits, so the served question
 diff --git a/web/next-app/lib/nav.ts b/web/next-app/lib/nav.ts
 index 5bd3fb8f..18ec286b 100644
 --- a/web/next-app/lib/nav.ts

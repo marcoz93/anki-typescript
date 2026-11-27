@@ -27,8 +27,8 @@
   "mudancas": {
     "arquivos_existentes": {
       "internal/server/server.go": {
-        "linhas_adicionadas": 3,
-        "linhas_removidas": 0
+        "linhas_adicionadas": 12,
+        "linhas_removidas": 2
       },
       "web/next-app/app/learn/page.tsx": {
         "linhas_adicionadas": 3,
@@ -85,6 +85,14 @@
       "web/next-app/components/math/MathInput.tsx": {
         "linhas_adicionadas": 23,
         "linhas_removidas": 0
+      },
+      "internal/generator/generator.go": {
+        "linhas_adicionadas": 4,
+        "linhas_removidas": 3
+      },
+      "web/next-app/lib/api.ts": {
+        "linhas_adicionadas": 1,
+        "linhas_removidas": 0
       }
     },
     "arquivos_novos": [
@@ -99,17 +107,17 @@
       "web/next-app/test/pilot.test.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "ad41230c31e3735b07106e6fb0a5cf9509e9f9ddf712b4cc613eed3fcf5927ca",
+    "patch_sha256": "86c9069394eab06cf755062880254ce74a2e5aadb7369a808b01a0ca51a1f912",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
-    "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos D01 a D08 com 32 conceitos, 38 famílias e 228 casos.",
-    "patch_sha256_anterior": "9bc6f4e573ef67e509561194c19ec4c493afdfe5a2e9eff32ee64799bce773ec",
+    "conteudo": "Conteúdo typescript-escada-v1 completo em D01 a D15, com 46 conceitos, 74 famílias e 444 casos.",
+    "patch_sha256_anterior": "ad41230c31e3735b07106e6fb0a5cf9509e9f9ddf712b4cc613eed3fcf5927ca",
     "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
     "ajustes_da_tela": [
       "Campo de resposta sem a paleta de símbolos matemáticos.",
       "Textos do percurso de estudo em português: campo de resposta, correção, continuar, praticar novamente, pré-requisitos e relato de problema.",
       "Menus sem o grafo de conceitos, o glossário, o grupo Resources e o rodapé.",
       "Página /my-reports aberta para o visitante do piloto.",
-      "Resposta em múltiplas linhas na definição de funções (D07)."
+      "A pergunta indica quando o campo aceita várias linhas de código."
     ]
   },
   "testes_linux_patch_anterior": {
@@ -634,6 +642,62 @@
       "evidencias/bloco-3-d06-d08/atualizacao.json",
       "evidencias/bloco-3-d06-d08/go.jsonl",
       "evidencias/bloco-3-d06-d08/navegador.json"
+    ]
+  },
+  "bloco_4_d09_d15": {
+    "base_anki": "76e286d",
+    "patch_sha256": "86c9069394eab06cf755062880254ce74a2e5aadb7369a808b01a0ca51a1f912",
+    "conteudo": {
+      "degraus_servidos": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "conceitos": 46,
+      "familias": 74,
+      "casos": 444,
+      "entraram_neste_bloco": {
+        "conceitos": 14,
+        "familias": 36,
+        "casos": 216
+      }
+    },
+    "testes_macos": {
+      "casos_finais_piloto": 570,
+      "conceitos_dominados_api": 46,
+      "variantes_verificadas": {
+        "families": 36,
+        "cases": 216,
+        "checks": 432,
+        "failures": []
+      },
+      "vitest_arquivos": 199,
+      "vitest_testes": 1897,
+      "chromium_verificacoes": 64,
+      "conceitos_dominados_na_tela": 46,
+      "familias_novas_na_tela": 36,
+      "go_pacotes": {
+        "pass": 60,
+        "skip": 5
+      }
+    },
+    "relatorio": "BLOCO-4-D09-D15.md",
+    "evidencias": [
+      "evidencias/bloco-4-d09-d15/atualizacao.json",
+      "evidencias/bloco-4-d09-d15/go.json",
+      "evidencias/bloco-4-d09-d15/navegador.json"
     ]
   }
 }

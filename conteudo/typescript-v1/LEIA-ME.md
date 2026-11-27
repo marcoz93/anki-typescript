@@ -2,7 +2,7 @@
 
 Entrega editorial de 27/11/2026, preparada para integrar ao piloto existente. A ordem original tem **15 degraus e 74 cartões**. Este pacote organiza esses cartões em **46 conceitos, 74 famílias e 444 instâncias completas**: seis casos por família, incluindo o caso adaptado do cartão de origem. Não há geração por IA durante o estudo.
 
-O conteúdo está pronto para a implementação. O aplicativo ainda precisa receber esse conteúdo e os corretores correspondentes. Esta entrega acrescenta arquivos de conteúdo e sua verificação, sem alterar o patch do Mathua.
+Os 15 degraus estão integrados ao piloto. Este diretório reúne a entrega editorial original. A execução do material no aplicativo está documentada no [registro de integração](../../pilotos/mathua/BLOCO-4-D09-D15.md).
 
 ## O que ler
 
@@ -73,4 +73,4 @@ O gerador expande dados editoriais fixos e emite os dois JSON e `EXERCICIOS.md`.
 
 O aluno deve conseguir ler a aula do conceito, responder aos seus exercícios, receber correção coerente com o contrato, obter uma variante após erro e registrar ou consultar seu relato. Ao recarregar ou reiniciar, o progresso anterior precisa continuar disponível. Uma falha do corretor não deve contar como erro do aluno.
 
-Comprove o bloco integrado com comandos e saídas reais, incluindo uma solução válida diferente do gabarito quando a rubrica a admite, uma resposta incorreta e uma falha técnica de correção. Verifique também o relato e o progresso existente. Não confunda os testes de conteúdo desta entrega com testes dessa integração, que ainda precisa ser feita.
+Comprove o bloco integrado com comandos e saídas reais, incluindo uma solução válida diferente do gabarito quando a rubrica a admite, uma resposta incorreta e uma falha técnica de correção. Verifique também o relato e o progresso existente. Não confunda os testes de conteúdo desta entrega com testes dessa integração, documentada nos relatórios do piloto.
