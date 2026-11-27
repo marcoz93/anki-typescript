@@ -4,7 +4,7 @@ Data da execução: 27/11/2026, America/Sao_Paulo. Ambiente: macOS 26.4.1 arm64,
 
 Ponto de partida: commit `3d1fdc4` deste repositório, que entregou o bloco 1. O registro do bloco 1 está em [BLOCO-1-D01-D03.md](BLOCO-1-D01-D03.md) e explica como o conteúdo se liga ao motor do Mathua. Este documento registra só o que mudou no bloco 2.
 
-Quem fez o quê: os corretores foram escritos pelo assistente principal. Um segundo agente (Claude Opus, esforço alto) escreveu os testes de critério com a ordem de achar defeitos, e achou quatro. Um falseador externo (Codex, somente leitura) revisou a entrega depois; o resultado dele está na seção 7.
+Quem fez o quê: os corretores foram escritos pelo assistente principal. Um segundo agente (Claude Opus, esforço alto) escreveu os testes de critério com a ordem de achar defeitos, e achou quatro. Um falseador externo (Codex, somente leitura) revisou a entrega depois do commit `c7f3c85`. Ele achou oito pontos; seis viraram correção, um já estava registrado e um não se confirmou. O resultado está na seção 7.
 
 ## 1. Conteúdo que entrou
 
@@ -42,9 +42,9 @@ Só arquivos do piloto, em `cmd/typescript-pilot/`:
 
 O teste de navegador, em `scripts/browser-smoke.mjs`, ganhou um passo para o degrau 4.
 
-Nenhum código existente do Mathua mudou neste bloco. Medido: `git diff --stat -- web internal` → os mesmos 14 arquivos, 162 linhas adicionadas e 110 removidas do bloco 1. A interface não foi recompilada.
+Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois dela, mudaram 3 linhas em `web/next-app/components/LearnStepper.tsx` e a função `pilotExclude` em `web/next-app/lib/pilot.ts`, e entrou o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 165 linhas adicionadas e 111 removidas. A interface foi recompilada.
 
-O patch atual tem 22 arquivos, 2667 linhas adicionadas e 110 removidas. Resumo SHA-256: `655cb649282f2efa7dc45d452ac24e0948ad3669e4e83a533e366b242938ad8e`.
+O patch atual tem 23 arquivos, 2818 linhas adicionadas e 111 removidas. Resumo SHA-256: `cd4f4889050219de5aa44cb16468ce95037e75ceb3262b7ce25c5fc14dc276d2`. O patch do commit `c7f3c85`, anterior à revisão, tinha o resumo `655cb649282f2efa7dc45d452ac24e0948ad3669e4e83a533e366b242938ad8e`.
 
 ## 3. O que os corretores novos aceitam
 
@@ -76,11 +76,11 @@ go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1
 
 | Evidência | Código | Aprovados | Falhas |
 | --- | --- | --- | --- |
-| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 435 casos finais | 0 |
+| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 451 casos finais | 0 |
 | [mathua-native-http.jsonl](evidencias/bloco-2-d04-d05/mathua-native-http.jsonl) | 0 | 26 casos finais | 0 |
 | [mathua-native-engine.jsonl](evidencias/bloco-2-d04-d05/mathua-native-engine.jsonl) | 0 | 154 casos finais | 0 |
 
-Os 435 casos do piloto, por função de teste:
+As evidências desta pasta são da execução final, depois das correções da seção 7. Os 451 casos do piloto, por função de teste:
 
 | Função | Casos | O que confere |
 | --- | --- | --- |
@@ -88,6 +88,7 @@ Os 435 casos do piloto, por função de teste:
 | `TestCriteriaOfStagesFourAndFive` | 170 | Respostas aceitas e recusadas de F015 a F025, com a mensagem em parte dos casos |
 | `TestCriteriaHoldInEveryCaseOfStagesFourAndFive` | 204 | As equivalências do contrato aplicadas aos 6 casos de cada família, cada um com o próprio contexto |
 | `TestWholeLadderThroughTheAPI` | 1 | Um visitante novo domina os 23 conceitos pela API real, em ordem, com 6 perguntas distintas por conceito |
+| `TestFindingsOfTheIndependentReview` | 16 | Os achados do falseador, cada um com a resposta que ele relatou |
 | `TestPilotHTTP` | 7 | Pré-requisitos, domínio, variante após erro, repetição, relato, reinício e falha do corretor |
 | Outras quatro funções | 4 | Conteúdo servido, seções por família, alternativas por letra e reparo de histórico |
 
@@ -97,6 +98,17 @@ node scripts/browser-smoke.mjs --mathua ./mathua --output evidencias/bloco-2-d04
 ```
 
 Reinício: código 0, `passed: true`. Navegador: código 0, `passed: true`, 23 verificações, 10 capturas, `page_errors: []`, `api_errors: []`.
+
+Interface, em `web/next-app`, com Node `24.22.3`, depois das correções da seção 7:
+
+| Comando | Código | Saída |
+| --- | --- | --- |
+| `npx tsc --noEmit -p .` | 0 | Nenhuma mensagem |
+| `npm run lint` | 0 | 0 erros, em [lint.log](evidencias/bloco-2-d04-d05/lint.log) |
+| `npm test` | 0 | `Test Files  199 passed (199)`, `Tests  1891 passed (1891)`, em [vitest.log](evidencias/bloco-2-d04-d05/vitest.log) |
+| `NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build` | 0 | [ui-build.log](evidencias/bloco-2-d04-d05/ui-build.log) |
+
+O arquivo de teste novo, `test/pilot.test.ts`, tem 6 testes.
 
 ## 5. O que foi observado pela tela no degrau 4
 
@@ -128,7 +140,28 @@ Cada defeito tem um teste com nome próprio, por exemplo `f021_ts_ignore_does_no
 
 ## 7. Verificação por falseador
 
-Preenchida depois da revisão do Codex. Ver a seção "Falseador" ao fim deste documento.
+O falseador foi o Codex, em modo somente leitura, sobre os commits `3d1fdc4` e `c7f3c85`. Ele rodou 94 comandos. O relatório dele, com cada comando e saída, está em [falseador-codex.md](evidencias/bloco-2-d04-d05/falseador-codex.md).
+
+A primeira tentativa não rodou: o filtro de segurança do Codex recusou o pedido, que usava vocabulário de teste de invasão. O pedido foi reescrito como revisão de qualidade e rodou.
+
+Cada achado foi reproduzido antes de virar correção.
+
+| Achado do falseador | Reproduzido? | O que foi feito |
+| --- | --- | --- |
+| 1. F002 aceitava uma resposta com a diretiva `/// <reference lib="invalidlib" />`, que o TypeScript recusa | Sim; o mesmo valia para F016 | Toda resposta de código ou de resultado com diretiva `/// <reference>` é recusada, com mensagem própria |
+| 2. Quatro respostas válidas eram recusadas: `const total: 18000 = 18_000;`, `const id: (string) = "reembolso-21";`, `{ ["id"]: "r11", total: 18000 }` e `request[("value")]` | Sim, as quatro | A anotação de F010 e F011 aceita qualquer tipo ao qual o valor se ajusta, menos `any` e `unknown`. A chave computada textual e os parênteses na chave são aceitos |
+| 3. F021 dizia "não tem o valor solicitado" para `total: 12000 + 6000`, que vale 18000 | Sim; já constava como imprecisão na seção 8 | A mensagem agora é "Escreva o valor da propriedade total como um literal, sem operações." A recusa continua. Duas outras mensagens imprecisas da seção 8 também foram corrigidas: asserção de tipo e comparações dentro do `&&` |
+| 4. Uma resposta com 1400 parênteses encaixados fazia o corretor sair sem veredito | Sim: "Maximum call stack size exceeded", código 1 | A resposta agora é recusada como resposta, com mensagem própria |
+| 5. `pilotExclude` podia deixar zero candidatos, ou só a pergunta recém-errada, com banco diferente de seis ou fila cheia | Sim, nos cenários dele | A função prioriza as duas perguntas mostradas por último e limita a exclusão a cinco. O carregador recusa família com número de casos diferente de seis |
+| 6. Duas buscas sobrepostas punham o mesmo caso duas vezes seguidas na fila | Sim, no cenário em memória dele | A tela remove as repetidas no momento em que acrescenta à fila |
+| 7. O registro do bloco 1 diria que o patch não altera `/my-reports` | Não se confirma | A frase tratava da página `/reports`, em `app/reports/page.tsx`, que o patch não altera. O patch altera `app/my-reports/page.tsx`. O texto do bloco 1 foi reescrito para citar o arquivo |
+| 8. Este documento remetia a uma seção que não existia | Sim | É esta seção |
+
+O que o falseador tentou e não derrubou: os 150 gabaritos; instrução extra, segunda declaração, `as any` no operando e `@ts-ignore` foram recusados; comentário, vírgula final, propriedade reordenada e limite invertido foram aceitos; 150 enunciados distintos por conceito, sem colisão de tarefa; sem a chave do piloto, os textos e o diagnóstico ficam como no original; as contagens e os resumos SHA-256 dos dois registros conferem.
+
+O que o falseador não verificou: a frequência da repetição em navegador real, uma compilação nova da interface sem a chave, e as suítes Go e de navegador, que ele não rodou por estar em modo somente leitura.
+
+As correções desta seção não passaram por uma segunda rodada do falseador.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 
@@ -136,20 +169,20 @@ Nenhum destes casos tem asserção nos testes. O comportamento atual está indic
 
 | Caso | Comportamento atual | Leitura A | Leitura B |
 | --- | --- | --- | --- |
-| `as const` em F021 e F023 | Recusa, com a mensagem "Inicialize a constante com um objeto", que é imprecisa | Aceitar: a asserção acrescenta e não substitui a construção | Recusar com mensagem que cite a asserção |
-| Anotação `any` em F021 e F023 | Aceita | Aceitar: a tarefa não pede um tipo | Recusar: o contrato lista `any` como inaceitável |
+| `as const` em F021 e F023 | Recusa, agora com a mensagem "Escreva o objeto diretamente, sem asserção de tipo." | Aceitar: a asserção acrescenta e não substitui a construção | Recusar com mensagem que cite a asserção |
+| Anotação `any` em F021 e F023 | Aceita. Em F010 e F011, `any` e `unknown` são recusados | Aceitar: a tarefa não pede um tipo | Recusar: o contrato lista `any` como inaceitável |
 | `refund?.amount` em F022 | Recusa | Aceitar: o resultado é o mesmo | Recusar com mensagem que cite o `?.` |
 | Crase no lugar de aspas, em F018 e F022 | Recusa, como em F003 | Manter: o contrato fala em aspas simples ou duplas | Aceitar: o texto é o mesmo |
 | Outras notações de número, como `1e4` e `0x2710` | Aceita | Aceitar qualquer literal de mesmo valor | Aceitar só a notação decimal |
-| Conta no lugar do valor em F021, como `amount: 10000 + 5000` | Recusa, com a mensagem "não tem o valor solicitado", que é imprecisa | Aceitar: o dado é 15000 | Recusar com mensagem "sem operações" |
-| `isSigned === true && hasPages === true` em F019 | Recusa, com mensagem imprecisa | Manter: o critério é `&&` entre os dois booleanos | Aceitar: o resultado é equivalente |
+| Conta no lugar do valor em F021, como `amount: 10000 + 5000` | Recusa, agora com a mensagem "Escreva o valor da propriedade amount como um literal, sem operações." | Aceitar: o dado é 15000 | Recusar com mensagem "sem operações" |
+| `isSigned === true && hasPages === true` em F019 | Recusa, agora com a mensagem "Use isSigned e hasPages diretamente como operandos de &&, sem outras operações." | Manter: o critério é `&&` entre os dois booleanos | Aceitar: o resultado é equivalente |
 
 Um problema no próprio conteúdo, que não foi alterado: o campo `counterexample` de F019 em `exercicios.json` está quebrado. Ele tem `answer: "isSigned "` e `reason: "| hasPages|A disjunção…"`. Parece um `||` cortado na separação de colunas do arquivo de origem.
 
 ## 9. Limites desta verificação
 
 - **Só macOS e só Chromium `151.0.7922.34`.**
-- **Interface.** Os testes unitários, o lint e a compilação da interface não foram repetidos, porque nenhum arquivo de `web/next-app` mudou neste bloco.
+- **Segunda rodada do falseador.** As correções da seção 7 foram verificadas por testes, e não por uma nova revisão independente.
 - **Suíte geral.** `go test ./...` e o pacote `internal/server` inteiro não foram repetidos, porque nenhum arquivo de `internal/` mudou neste bloco.
 - **Conceitos percorridos pela tela.** O navegador percorreu 9 dos 23 conceitos. Os 23 foram dominados pela API real no teste `TestWholeLadderThroughTheAPI`.
 - **Tempo de partida.** Medido uma vez: 14,3 segundos com 23 conceitos. O Mathua confere cada gerador em um processo separado. Com 46 conceitos, a partida fica mais lenta.

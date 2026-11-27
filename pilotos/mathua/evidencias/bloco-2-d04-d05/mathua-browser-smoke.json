@@ -60,11 +60,11 @@
       "passed": true,
       "observed": {
         "family": "F001",
-        "missed_case": "F001-V5",
+        "missed_case": "F001-V4",
         "tapped": "A",
         "reference_shown": "Uma notação que expressa diretamente um valor.",
         "explanation_shown": "Um literal escreve diretamente um valor; um identificador referencia uma vinculação, e uma operação pode combinar valores.",
-        "variant_case": "F001-V0"
+        "variant_case": "F001-V5"
       }
     },
     {
@@ -75,9 +75,9 @@
         "new_status": "MASTERED",
         "distinct_cases": 5,
         "cases": [
+          "F001-V5",
           "F001-V0",
           "F001-V1",
-          "F001-V4",
           "F001-V2",
           "F001-V3"
         ],
@@ -100,14 +100,14 @@
         "new_status": "MASTERED",
         "distinct_cases": 6,
         "cases": [
-          "F002-V3",
-          "F002-V4",
           "F002-V5",
           "F002-V0",
-          "F002-V2",
-          "F002-V1"
+          "F002-V3",
+          "F002-V4",
+          "F002-V1",
+          "F002-V2"
         ],
-        "sample_answer": "18_000"
+        "sample_answer": "9_000"
       }
     },
     {
@@ -118,12 +118,12 @@
         "new_status": "MASTERED",
         "distinct_cases": 6,
         "cases": [
-          "F005-V2",
-          "F005-V3",
-          "F005-V1",
           "F005-V4",
+          "F005-V5",
           "F005-V0",
-          "F005-V5"
+          "F005-V1",
+          "F005-V2",
+          "F005-V3"
         ],
         "sample_answer": "number"
       }
@@ -192,9 +192,9 @@
           {
             "family": "F009",
             "cases": [
+              "F009-V4",
               "F009-V5",
-              "F009-V0",
-              "F009-V1"
+              "F009-V0"
             ]
           },
           {
@@ -232,12 +232,12 @@
         "new_status": "MASTERED",
         "distinct_cases": 6,
         "cases": [
-          "F004-V1",
           "F004-V2",
           "F004-V3",
           "F004-V4",
+          "F004-V5",
           "F004-V0",
-          "F004-V5"
+          "F004-V1"
         ],
         "sample_answer": "true"
       }
@@ -250,12 +250,12 @@
         "new_status": "MASTERED",
         "distinct_cases": 6,
         "cases": [
-          "F007-V5",
-          "F007-V0",
-          "F007-V1",
           "F007-V2",
           "F007-V3",
-          "F007-V4"
+          "F007-V1",
+          "F007-V4",
+          "F007-V5",
+          "F007-V0"
         ],
         "sample_answer": "boolean"
       }
@@ -268,12 +268,12 @@
         "new_status": "MASTERED",
         "distinct_cases": 4,
         "cases": [
+          "F010-V0",
+          "F010-V1",
           "F010-V2",
-          "F010-V3",
-          "F010-V5",
-          "F010-V0"
+          "F010-V3"
         ],
-        "sample_answer": "const amount: number = 15000;"
+        "sample_answer": "const quantity: number = 30000;"
       }
     },
     {
@@ -284,14 +284,14 @@
         "new_status": "MASTERED",
         "distinct_cases": 6,
         "cases": [
-          "F015-V3",
-          "F015-V4",
           "F015-V5",
           "F015-V0",
           "F015-V1",
-          "F015-V2"
+          "F015-V2",
+          "F015-V4",
+          "F015-V3"
         ],
-        "sample_answer": "D"
+        "sample_answer": "C"
       }
     },
     {
@@ -320,12 +320,12 @@
       "name": "greater_than_section_1_miss_names_cause_then_variant_accepts_limit_first",
       "passed": true,
       "observed": {
-        "missed_case": "F016-V3",
-        "wrong_answer": "quantity >= 20000",
+        "missed_case": "F016-V2",
+        "wrong_answer": "value >= 6000",
         "cause_shown": "A tarefa pede estritamente maior. Os operadores >= e <= também aceitam a igualdade.",
-        "variant_case": "F016-V4",
-        "model_answer": "requestedValue > 800",
-        "accepted_answer": "800 < requestedValue"
+        "variant_case": "F016-V3",
+        "model_answer": "quantity > 20000",
+        "accepted_answer": "20000 < quantity"
       }
     },
     {
@@ -333,16 +333,16 @@
       "passed": true,
       "observed": {
         "section_1_cases": [
+          "F016-V2",
           "F016-V3",
-          "F016-V4",
-          "F016-V5"
+          "F016-V4"
         ],
-        "missed_case": "F017-V0",
-        "context": "10000 > 10000",
+        "missed_case": "F017-V3",
+        "context": "20000 > 20000",
         "wrong_answer": "true",
         "cause_shown": "A expressão produz o outro valor booleano.",
-        "variant_case": "F017-V1",
-        "variant_context": "18000 > 12000",
+        "variant_case": "F017-V4",
+        "variant_context": "1200 > 800",
         "accepted_answer": "true"
       }
     }
@@ -375,9 +375,9 @@
       "section": 1,
       "excluded": 0,
       "served": [
+        "F001-V4",
         "F001-V5",
-        "F001-V0",
-        "F001-V1"
+        "F001-V0"
       ]
     },
     {
@@ -385,32 +385,32 @@
       "section": 1,
       "excluded": 3,
       "served": [
+        "F001-V1",
         "F001-V2",
-        "F001-V3",
+        "F001-V3"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F001-V1",
+        "F001-V2",
+        "F001-V3"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 5,
+      "served": [
         "F001-V4"
       ]
     },
     {
       "concept": "ts.value.literal_notation",
       "section": 1,
-      "excluded": 3,
-      "served": [
-        "F001-V4",
-        "F001-V2",
-        "F001-V3"
-      ]
-    },
-    {
-      "concept": "ts.value.literal_notation",
-      "section": 1,
-      "excluded": 5,
-      "served": [
-        "F001-V5"
-      ]
-    },
-    {
-      "concept": "ts.value.literal_notation",
-      "section": 1,
       "excluded": 5,
       "served": [
         "F001-V3"
@@ -421,7 +421,7 @@
       "section": 1,
       "excluded": 5,
       "served": [
-        "F001-V5"
+        "F001-V4"
       ]
     },
     {
@@ -429,7 +429,7 @@
       "section": 1,
       "excluded": 5,
       "served": [
-        "F001-V0"
+        "F001-V5"
       ]
     },
     {
@@ -437,9 +437,9 @@
       "section": 1,
       "excluded": 0,
       "served": [
-        "F002-V3",
-        "F002-V4",
-        "F002-V5"
+        "F002-V5",
+        "F002-V0",
+        "F002-V1"
       ]
     },
     {
@@ -448,8 +448,8 @@
       "excluded": 3,
       "served": [
         "F002-V2",
-        "F002-V0",
-        "F002-V1"
+        "F002-V3",
+        "F002-V4"
       ]
     },
     {
@@ -457,8 +457,8 @@
       "section": 1,
       "excluded": 2,
       "served": [
-        "F002-V5",
-        "F002-V0",
+        "F002-V3",
+        "F002-V4",
         "F002-V1"
       ]
     },
@@ -475,8 +475,8 @@
       "section": 1,
       "excluded": 4,
       "served": [
-        "F002-V2",
-        "F002-V1"
+        "F002-V1",
+        "F002-V2"
       ]
     },
     {
@@ -484,7 +484,7 @@
       "section": 1,
       "excluded": 5,
       "served": [
-        "F002-V3"
+        "F002-V5"
       ]
     },
     {
@@ -492,7 +492,7 @@
       "section": 1,
       "excluded": 5,
       "served": [
-        "F002-V4"
+        "F002-V0"
       ]
     },
     {
@@ -500,9 +500,9 @@
       "section": 1,
       "excluded": 0,
       "served": [
-        "F005-V2",
-        "F005-V3",
-        "F005-V4"
+        "F005-V4",
+        "F005-V5",
+        "F005-V0"
       ]
     },
     {
@@ -510,9 +510,9 @@
       "section": 1,
       "excluded": 3,
       "served": [
-        "F005-V5",
-        "F005-V0",
-        "F005-V1"
+        "F005-V1",
+        "F005-V2",
+        "F005-V3"
       ]
     },
     {
@@ -520,33 +520,8 @@
       "section": 1,
       "excluded": 2,
       "served": [
-        "F005-V1",
-        "F005-V4",
-        "F005-V5"
-      ]
-    },
-    {
-      "concept": "ts.type.number",
-      "section": 1,
-      "excluded": 5,
-      "served": [
-        "F005-V0"
-      ]
-    },
-    {
-      "concept": "ts.type.number",
-      "section": 1,
-      "excluded": 4,
-      "served": [
         "F005-V0",
-        "F005-V5"
-      ]
-    },
-    {
-      "concept": "ts.type.number",
-      "section": 1,
-      "excluded": 5,
-      "served": [
+        "F005-V1",
         "F005-V2"
       ]
     },
@@ -556,6 +531,31 @@
       "excluded": 5,
       "served": [
         "F005-V3"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 4,
+      "served": [
+        "F005-V2",
+        "F005-V3"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F005-V4"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F005-V5"
       ]
     },
     {
@@ -583,9 +583,9 @@
       "section": 1,
       "excluded": 0,
       "served": [
+        "F009-V4",
         "F009-V5",
-        "F009-V0",
-        "F009-V1"
+        "F009-V0"
       ]
     },
     {
@@ -593,9 +593,9 @@
       "section": 1,
       "excluded": 3,
       "served": [
+        "F009-V1",
         "F009-V2",
-        "F009-V3",
-        "F009-V4"
+        "F009-V3"
       ]
     },
     {
@@ -623,19 +623,9 @@
       "section": 1,
       "excluded": 0,
       "served": [
-        "F010-V1",
-        "F010-V2",
-        "F010-V3"
-      ]
-    },
-    {
-      "concept": "ts.binding.const_number",
-      "section": 1,
-      "excluded": 0,
-      "served": [
-        "F010-V3",
         "F010-V4",
-        "F010-V5"
+        "F010-V5",
+        "F010-V0"
       ]
     },
     {
@@ -643,9 +633,19 @@
       "section": 1,
       "excluded": 0,
       "served": [
-        "F010-V5",
+        "F010-V2",
+        "F010-V3",
+        "F010-V4"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 0,
+      "served": [
         "F010-V0",
-        "F010-V1"
+        "F010-V1",
+        "F010-V2"
       ]
     },
     {
@@ -653,9 +653,9 @@
       "section": 1,
       "excluded": 0,
       "served": [
-        "F004-V1",
         "F004-V2",
-        "F004-V3"
+        "F004-V3",
+        "F004-V4"
       ]
     },
     {
@@ -663,9 +663,9 @@
       "section": 1,
       "excluded": 3,
       "served": [
-        "F004-V4",
-        "F004-V5",
-        "F004-V0"
+        "F004-V0",
+        "F004-V1",
+        "F004-V5"
       ]
     },
     {
@@ -673,26 +673,9 @@
       "section": 1,
       "excluded": 2,
       "served": [
-        "F004-V3",
         "F004-V4",
-        "F004-V5"
-      ]
-    },
-    {
-      "concept": "ts.value.boolean_literal",
-      "section": 1,
-      "excluded": 5,
-      "served": [
+        "F004-V5",
         "F004-V0"
-      ]
-    },
-    {
-      "concept": "ts.value.boolean_literal",
-      "section": 1,
-      "excluded": 4,
-      "served": [
-        "F004-V0",
-        "F004-V5"
       ]
     },
     {
@@ -706,15 +689,42 @@
     {
       "concept": "ts.value.boolean_literal",
       "section": 1,
+      "excluded": 4,
+      "served": [
+        "F004-V0",
+        "F004-V1"
+      ]
+    },
+    {
+      "concept": "ts.value.boolean_literal",
+      "section": 1,
       "excluded": 5,
       "served": [
         "F004-V2"
       ]
     },
     {
+      "concept": "ts.value.boolean_literal",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F004-V3"
+      ]
+    },
+    {
       "concept": "ts.type.boolean",
       "section": 1,
       "excluded": 0,
+      "served": [
+        "F007-V2",
+        "F007-V3",
+        "F007-V4"
+      ]
+    },
+    {
+      "concept": "ts.type.boolean",
+      "section": 1,
+      "excluded": 3,
       "served": [
         "F007-V5",
         "F007-V0",
@@ -724,45 +734,10 @@
     {
       "concept": "ts.type.boolean",
       "section": 1,
-      "excluded": 3,
-      "served": [
-        "F007-V3",
-        "F007-V4",
-        "F007-V2"
-      ]
-    },
-    {
-      "concept": "ts.type.boolean",
-      "section": 1,
       "excluded": 2,
       "served": [
         "F007-V1",
-        "F007-V2",
-        "F007-V3"
-      ]
-    },
-    {
-      "concept": "ts.type.boolean",
-      "section": 1,
-      "excluded": 5,
-      "served": [
-        "F007-V4"
-      ]
-    },
-    {
-      "concept": "ts.type.boolean",
-      "section": 1,
-      "excluded": 4,
-      "served": [
-        "F007-V3",
-        "F007-V4"
-      ]
-    },
-    {
-      "concept": "ts.type.boolean",
-      "section": 1,
-      "excluded": 5,
-      "served": [
+        "F007-V4",
         "F007-V5"
       ]
     },
@@ -775,9 +750,54 @@
       ]
     },
     {
+      "concept": "ts.type.boolean",
+      "section": 1,
+      "excluded": 4,
+      "served": [
+        "F007-V5",
+        "F007-V0"
+      ]
+    },
+    {
+      "concept": "ts.type.boolean",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F007-V2"
+      ]
+    },
+    {
+      "concept": "ts.type.boolean",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F007-V3"
+      ]
+    },
+    {
       "concept": "ts.binding.const_number",
       "section": 1,
       "excluded": 0,
+      "served": [
+        "F010-V0",
+        "F010-V1",
+        "F010-V2"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F010-V3",
+        "F010-V4",
+        "F010-V5"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 2,
       "served": [
         "F010-V2",
         "F010-V3",
@@ -787,55 +807,15 @@
     {
       "concept": "ts.binding.const_number",
       "section": 1,
-      "excluded": 3,
-      "served": [
-        "F010-V1",
-        "F010-V5",
-        "F010-V0"
-      ]
-    },
-    {
-      "concept": "ts.binding.const_number",
-      "section": 1,
-      "excluded": 2,
-      "served": [
-        "F010-V5",
-        "F010-V0",
-        "F010-V1"
-      ]
-    },
-    {
-      "concept": "ts.binding.const_number",
-      "section": 1,
       "excluded": 5,
       "served": [
-        "F010-V4"
+        "F010-V5"
       ]
     },
     {
       "concept": "ts.expression.value",
       "section": 1,
       "excluded": 0,
-      "served": [
-        "F015-V3",
-        "F015-V4",
-        "F015-V5"
-      ]
-    },
-    {
-      "concept": "ts.expression.value",
-      "section": 1,
-      "excluded": 3,
-      "served": [
-        "F015-V2",
-        "F015-V0",
-        "F015-V1"
-      ]
-    },
-    {
-      "concept": "ts.expression.value",
-      "section": 1,
-      "excluded": 2,
       "served": [
         "F015-V5",
         "F015-V0",
@@ -845,25 +825,20 @@
     {
       "concept": "ts.expression.value",
       "section": 1,
-      "excluded": 5,
+      "excluded": 3,
       "served": [
+        "F015-V3",
+        "F015-V4",
         "F015-V2"
       ]
     },
     {
       "concept": "ts.expression.value",
       "section": 1,
-      "excluded": 4,
+      "excluded": 2,
       "served": [
         "F015-V1",
-        "F015-V2"
-      ]
-    },
-    {
-      "concept": "ts.expression.value",
-      "section": 1,
-      "excluded": 5,
-      "served": [
+        "F015-V2",
         "F015-V3"
       ]
     },
@@ -876,13 +851,38 @@
       ]
     },
     {
+      "concept": "ts.expression.value",
+      "section": 1,
+      "excluded": 4,
+      "served": [
+        "F015-V4",
+        "F015-V3"
+      ]
+    },
+    {
+      "concept": "ts.expression.value",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F015-V5"
+      ]
+    },
+    {
+      "concept": "ts.expression.value",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F015-V0"
+      ]
+    },
+    {
       "concept": "ts.expression.greater_than",
       "section": 1,
       "excluded": 0,
       "served": [
+        "F016-V2",
         "F016-V3",
-        "F016-V4",
-        "F016-V5"
+        "F016-V4"
       ]
     },
     {
@@ -892,17 +892,7 @@
       "served": [
         "F016-V0",
         "F016-V1",
-        "F016-V2"
-      ]
-    },
-    {
-      "concept": "ts.expression.greater_than",
-      "section": 2,
-      "excluded": 3,
-      "served": [
-        "F017-V0",
-        "F017-V1",
-        "F017-V2"
+        "F016-V5"
       ]
     },
     {
@@ -913,6 +903,16 @@
         "F017-V3",
         "F017-V4",
         "F017-V5"
+      ]
+    },
+    {
+      "concept": "ts.expression.greater_than",
+      "section": 2,
+      "excluded": 3,
+      "served": [
+        "F017-V0",
+        "F017-V1",
+        "F017-V2"
       ]
     }
   ],

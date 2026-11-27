@@ -186,7 +186,7 @@ Uma resposta de alternativas que não é letra de nenhuma alternativa, como `Z`,
 
 3. **Formato da alternativa.** O registro de geradores do Mathua recusou o primeiro formato de gabarito, "C) texto". O motor converte a letra tocada no texto da alternativa antes de corrigir. O gabarito de alternativas passou a ser o texto da alternativa correta, como nas perguntas de alternativas do próprio Mathua.
 
-4. **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 1 de 3 execuções da suíte completa e passou em 3 execuções isoladas. O patch não altera essa página. A execução gravada como evidência passou.
+4. **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 1 de 3 execuções da suíte completa e passou em 3 execuções isoladas. Esse teste cobre a página `/reports`, em `app/reports/page.tsx`, que o patch não altera. O patch altera outra página, `app/my-reports/page.tsx`. A execução gravada como evidência passou.
 
 ## 7. Limites desta verificação
 

@@ -51,8 +51,8 @@
         "linhas_removidas": 0
       },
       "web/next-app/components/LearnStepper.tsx": {
-        "linhas_adicionadas": 81,
-        "linhas_removidas": 52
+        "linhas_adicionadas": 84,
+        "linhas_removidas": 53
       },
       "web/next-app/components/NextUpCard.tsx": {
         "linhas_adicionadas": 3,
@@ -91,13 +91,14 @@
       "cmd/typescript-pilot/main_test.go",
       "cmd/typescript-pilot/package-lock.json",
       "cmd/typescript-pilot/package.json",
-      "web/next-app/lib/pilot.ts"
+      "web/next-app/lib/pilot.ts",
+      "web/next-app/test/pilot.test.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "655cb649282f2efa7dc45d452ac24e0948ad3669e4e83a533e366b242938ad8e",
+    "patch_sha256": "cd4f4889050219de5aa44cb16468ce95037e75ceb3262b7ce25c5fc14dc276d2",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
     "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos os degraus D01 a D05: 23 conceitos, 25 famílias, 150 casos.",
-    "patch_sha256_anterior": "e93777ab18e65c6fd0f61d80af3d8735f64747372fc92450b1dda3746be3020c",
+    "patch_sha256_anterior": "655cb649282f2efa7dc45d452ac24e0948ad3669e4e83a533e366b242938ad8e",
     "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
     "ajustes_da_tela": [
       "Campo de resposta sem a paleta de símbolos matemáticos.",
@@ -322,7 +323,7 @@
   },
   "bloco_2_d04_d05": {
     "observacao": "Integração dos degraus D04 e D05. Execuções no Mac do usuário em 27/11/2026. Registro em BLOCO-2-D04-D05.md.",
-    "patch_sha256": "655cb649282f2efa7dc45d452ac24e0948ad3669e4e83a533e366b242938ad8e",
+    "patch_sha256": "cd4f4889050219de5aa44cb16468ce95037e75ceb3262b7ce25c5fc14dc276d2",
     "conteudo": {
       "versao": "typescript-escada-v1",
       "degraus_servidos": [
@@ -347,7 +348,7 @@
       "falseador": "Codex, somente leitura, depois do commit"
     },
     "evidencias/bloco-2-d04-d05/mathua-pilot.jsonl": {
-      "pass_folhas": 435,
+      "pass_folhas": 451,
       "fail": 0,
       "skip": 0
     },
@@ -377,14 +378,38 @@
       "conceitos_dominados": 23,
       "perguntas_distintas_por_conceito": 6
     },
-    "defeitos_corrigidos": 5,
+    "defeitos_corrigidos": 11,
     "decisoes_de_contrato_em_aberto": 7,
     "tempo_de_partida_segundos": 14.3,
     "nao_repetido_neste_bloco": [
-      "testes unitários, lint e compilação da interface (web/next-app não mudou)",
       "pacote internal/server inteiro e go test ./... (internal/ não mudou)",
       "Linux"
-    ]
+    ],
+    "patch_sha256_antes_do_falseador": "655cb649282f2efa7dc45d452ac24e0948ad3669e4e83a533e366b242938ad8e",
+    "evidencias/bloco-2-d04-d05/vitest.log": {
+      "exit_code": 0,
+      "test_files_passed": 199,
+      "tests_passed": 1891
+    },
+    "evidencias/bloco-2-d04-d05/lint.log": {
+      "exit_code": 0,
+      "errors": 0
+    },
+    "falseador": {
+      "ferramenta": "Codex, somente leitura",
+      "commits_revisados": [
+        "3d1fdc4",
+        "c7f3c85"
+      ],
+      "comandos_rodados": 94,
+      "relatorio": "evidencias/bloco-2-d04-d05/falseador-codex.md",
+      "achados": 8,
+      "viraram_correcao": 6,
+      "ja_registrado": 1,
+      "nao_confirmado": 1,
+      "primeira_tentativa": "recusada pelo filtro de segurança do Codex; o pedido foi reescrito",
+      "segunda_rodada_sobre_as_correcoes": false
+    }
   },
   "contrato_ungraded": {
     "http_bem_sucedido": {

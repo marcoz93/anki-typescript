@@ -1,9 +1,9 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 00000000..bdec3846
+index 00000000..18f38af7
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,200 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
@@ -130,8 +130,8 @@ index 00000000..bdec3846
 +| F002 numeric literal | `15000`, `15_000` | `"15000"`, `10000 + 5000` |
 +| F003 text literal | `"reembolso-01"`, `'reembolso-01'` | a template literal, other content, no quotes |
 +| F004 boolean literal | `false`, `true;` | `"false"`, the opposite value, `True` |
-+| F010 numeric `const` | with or without `: number` | `let`, other name or value, text initializer |
-+| F011 text `const` | with or without `: string`, either quote | `let`, other name or content, `: number` |
++| F010 numeric `const` | no annotation, `: number`, or any type the value fits, such as `: 15000` | `let`, other name or value, text initializer, `: any`, `: unknown`, `: string` |
++| F011 text `const` | no annotation, `: string` or any type the value fits; either quote | `let`, other name or content, `: any`, `: number` |
 +| F016 `name > limit` | `amount > 10000`, `10000 < amount`, parentheses, `10_000` | `>=`, the opposite comparison, another name or limit |
 +| F018 `name === "text"` | either operand order, either quote | `=`, `==`, another name or text |
 +| F019 `a && b` | either operand order | `\|\|`, `&`, one name only |
@@ -167,6 +167,8 @@ index 00000000..bdec3846
 +An answer is typechecked after the code the question shows, its `context_code`.
 +The comments `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck` are neutralised before the check,
 +so they cannot hide a type error.
++An answer with a triple-slash directive (`/// <reference ... />`) is rejected.
++An answer nested too deeply for the parser is rejected as an answer, not reported as an outage.
 +Compiler file reads are restricted to the virtual answer and TypeScript's standard library declarations.
 +Compiler failure returns an unavailable result instead of a learner error.
 +The added `ungraded` field transmits that distinction on an unavailable result.
@@ -204,10 +206,10 @@ index 00000000..bdec3846
 +These checks do not measure a deployed installation or long-term retention.
 diff --git a/cmd/typescript-pilot/content.go b/cmd/typescript-pilot/content.go
 new file mode 100644
-index 00000000..23f6b61f
+index 00000000..2747118e
 --- /dev/null
 +++ b/cmd/typescript-pilot/content.go
-@@ -0,0 +1,415 @@
+@@ -0,0 +1,422 @@
 +package main
 +
 +import (
@@ -233,6 +235,10 @@ index 00000000..23f6b61f
 +
 +// maxFamiliesPerConcept follows the existing practice route, which accepts kp_ordinal 1 to 3.
 +const maxFamiliesPerConcept = 3
++
++// casesPerFamily is the bank size of the package. The study page rotates a section's bank with
++// this size (PILOT_BANK in web/next-app/lib/pilot.ts), so the loader refuses any other size.
++const casesPerFamily = 6
 +
 +type choice struct {
 +	ID   string `json:"id"`
@@ -371,8 +377,11 @@ index 00000000..23f6b61f
 +		questions := map[string]string{}
 +		for _, id := range spec.FamilyIDs {
 +			f := all[id]
-+			if f == nil || f.ConceptID != spec.ID || len(f.Cases) == 0 {
-+				return nil, fmt.Errorf("%s: family %s is missing, empty or belongs to another concept", spec.ID, id)
++			if f == nil || f.ConceptID != spec.ID {
++				return nil, fmt.Errorf("%s: family %s is missing or belongs to another concept", spec.ID, id)
++			}
++			if len(f.Cases) != casesPerFamily {
++				return nil, fmt.Errorf("%s: %d cases; the study page rotates a bank of %d", id, len(f.Cases), casesPerFamily)
 +			}
 +			for _, k := range f.Cases {
 +				if strings.TrimSpace(k.Prompt) == "" || strings.TrimSpace(k.Answer) == "" || strings.TrimSpace(k.Explanation) == "" {
@@ -625,10 +634,10 @@ index 00000000..23f6b61f
 +}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..053beaee
+index 00000000..10b5d04e
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,424 @@
+@@ -0,0 +1,460 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
@@ -747,11 +756,15 @@ index 00000000..053beaee
 +  const init = unwrap(actual.item.initializer);
 +  if (!init || !isValue(init)) return result(false, `Inicialize a constante com ${literalName}.`);
 +  if (!sameValue(init, reference.item.initializer)) return result(false, 'O valor inicial difere do solicitado.');
-+  if (actual.item.type && actual.item.type.kind !== keyword) {
-+    return result(false, `Neste exercício, omita a anotação ou use ${kind}.`);
++  // The annotation is optional, and any type the value is assignable to is compatible, such as
++  // `number`, `(number)` or the literal type `15000`. `any` and `unknown` say nothing about the value.
++  if (actual.item.type && erasesType(actual.item.type)) {
++    return result(false, `any e unknown não informam o tipo do valor. Omita a anotação ou use ${kind}.`);
 +  }
 +  const errors = typeErrors(job.answer);
-+  if (errors.length) return result(false, `O compilador TypeScript rejeitou a declaração: ${errors[0]}`);
++  if (errors.length) {
++    return result(false, actual.item.type ? `A anotação não é compatível com o valor: ${errors[0]}` : `O compilador TypeScript rejeitou a declaração: ${errors[0]}`);
++  }
 +  return result(true, `Correto. A constante tem o nome e o valor solicitados. A anotação ${kind} é opcional neste exercício.`);
 +}
 +
@@ -852,7 +865,9 @@ index 00000000..053beaee
 +  const operator = given.expr.operatorToken.kind;
 +  if (operator === K.BarBarToken) return result(false, 'A tarefa exige as duas condições ao mesmo tempo. O operador || aceita apenas uma delas.');
 +  if (operator !== K.AmpersandAmpersandToken) return result(false, 'Use o operador && para exigir as duas condições ao mesmo tempo.');
-+  const names = [unwrap(given.expr.left), unwrap(given.expr.right)].map(node => ts.isIdentifier(node) ? node.text : '').sort();
++  const operands = [unwrap(given.expr.left), unwrap(given.expr.right)];
++  if (!operands.every(ts.isIdentifier)) return result(false, `Use ${ref.left.text} e ${ref.right.text} diretamente como operandos de &&, sem outras operações.`);
++  const names = operands.map(node => node.text).sort();
 +  if (names.join(' ') !== [ref.left.text, ref.right.text].sort().join(' ')) {
 +    return result(false, `Combine exatamente ${ref.left.text} e ${ref.right.text}.`);
 +  }
@@ -892,7 +907,27 @@ index 00000000..053beaee
 +  return {init: unwrap(actual.item.initializer)};
 +}
 +
-+const propertyKey = property => ts.isPropertyAssignment(property) && (ts.isIdentifier(property.name) || isQuotedText(property.name)) ? property.name.text : null;
++function propertyKey(property) {
++  if (!ts.isPropertyAssignment(property)) return null;
++  const name = property.name;
++  if (ts.isIdentifier(name) || isQuotedText(name)) return name.text;
++  // `{ ["id"]: ... }` names the same property as `{ id: ... }`.
++  if (ts.isComputedPropertyName(name) && isQuotedText(unwrap(name.expression))) return unwrap(name.expression).text;
++  return null;
++}
++
++const isAssertion = node => !!node && (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node) || ts.isSatisfiesExpression(node) || ts.isNonNullExpression(node));
++
++// True when a type annotation contains `any` or `unknown`.
++function erasesType(node) {
++  let found = false;
++  const visit = child => {
++    if (child.kind === ts.SyntaxKind.AnyKeyword || child.kind === ts.SyntaxKind.UnknownKeyword) found = true;
++    else ts.forEachChild(child, visit);
++  };
++  visit(node);
++  return found;
++}
 +
 +// F021: a const object with the requested properties and values. Property order is free.
 +function objectDeclaration(job) {
@@ -904,6 +939,7 @@ index 00000000..053beaee
 +  }
 +  const given = constAnswer(job, reference.item.name.text);
 +  if (given.fail) return given.fail;
++  if (isAssertion(given.init)) return result(false, 'Escreva o objeto diretamente, sem asserção de tipo.');
 +  if (!given.init || !ts.isObjectLiteralExpression(given.init)) return result(false, 'Inicialize a constante com um objeto, entre chaves, com as propriedades pedidas.');
 +  const wanted = new Map(shape.properties.map(p => [propertyKey(p), p.initializer]));
 +  const names = [...wanted.keys()].join(' e ');
@@ -912,9 +948,8 @@ index 00000000..053beaee
 +    const key = propertyKey(property);
 +    if (key === null || !wanted.has(key) || seen.has(key)) return result(false, `O objeto deve ter exatamente as propriedades ${names}.`);
 +    seen.add(key);
-+    if (!isLiteral(property.initializer) || !sameLiteral(property.initializer, wanted.get(key))) {
-+      return result(false, `A propriedade ${key} não tem o valor solicitado.`);
-+    }
++    if (!isLiteral(property.initializer)) return result(false, `Escreva o valor da propriedade ${key} como um literal, sem operações.`);
++    if (!sameLiteral(property.initializer, wanted.get(key))) return result(false, `A propriedade ${key} não tem o valor solicitado.`);
 +  }
 +  if (seen.size !== wanted.size) return result(false, `O objeto deve ter exatamente as propriedades ${names}.`);
 +  return rejectedByCompiler(job, job.answer) || result(true, 'Correto. O objeto tem as propriedades e os valores solicitados.');
@@ -929,6 +964,7 @@ index 00000000..053beaee
 +  }
 +  const given = constAnswer(job, reference.item.name.text);
 +  if (given.fail) return given.fail;
++  if (isAssertion(given.init)) return result(false, 'Escreva o array diretamente, sem asserção de tipo.');
 +  if (!given.init || !ts.isArrayLiteralExpression(given.init)) return result(false, 'Inicialize a constante com um array, entre colchetes, com os elementos pedidos.');
 +  const elements = given.init.elements;
 +  if (elements.length !== list.elements.length || !elements.every(isLiteral)) return result(false, `O array deve ter exatamente ${list.elements.length} elementos, escritos como literais.`);
@@ -955,9 +991,9 @@ index 00000000..053beaee
 +  if (ts.isPropertyAccessExpression(given.expr) && !given.expr.questionDotToken) {
 +    owner = unwrap(given.expr.expression);
 +    key = given.expr.name.text;
-+  } else if (ts.isElementAccessExpression(given.expr) && !given.expr.questionDotToken && isQuotedText(given.expr.argumentExpression)) {
++  } else if (ts.isElementAccessExpression(given.expr) && !given.expr.questionDotToken && isQuotedText(unwrap(given.expr.argumentExpression))) {
 +    owner = unwrap(given.expr.expression);
-+    key = given.expr.argumentExpression.text;
++    key = unwrap(given.expr.argumentExpression).text;
 +  }
 +  if (key === null) return result(false, `Escreva o acesso à propriedade ${ref.name.text}, com ponto ou com colchetes e o nome entre aspas.`);
 +  if (!ts.isIdentifier(owner) || owner.text !== ref.expression.text) return result(false, `Acesse a propriedade no objeto ${ref.expression.text}.`);
@@ -1025,9 +1061,18 @@ index 00000000..053beaee
 +  if (answer.length > 4096) return result(false, 'A resposta excede o tamanho deste exercício.');
 +  if (mode === 'choice') return choice(job);
 +  if (mode === 'token') return token(job);
-+  if (mode === 'value') return value(job);
-+  if (mode === 'code' && Object.hasOwn(CODE, family)) return CODE[family](job);
-+  throw new Error(`No grader for family ${family} (${mode})`);
++  if (mode !== 'value' && !(mode === 'code' && Object.hasOwn(CODE, family))) throw new Error(`No grader for family ${family} (${mode})`);
++  // A triple-slash directive changes what the compiler loads. It is never part of a requested answer.
++  if (/^\s*\/\/\/\s*<\s*(reference|amd-)/m.test(answer)) {
++    return result(false, 'Remova a diretiva /// <reference>. A resposta deve conter somente o que a tarefa pede.');
++  }
++  try {
++    return mode === 'value' ? value(job) : CODE[family](job);
++  } catch (error) {
++    // An answer nested too deeply for the parser is the learner's answer, not a grader outage.
++    if (error instanceof RangeError) return result(false, 'A resposta tem parênteses ou expressões encaixadas demais para este exercício.');
++    throw error;
++  }
 +}
 +
 +// One verdict per job. A job that cannot be judged yields {error}, apart from a wrong answer.
@@ -1273,10 +1318,10 @@ index 00000000..f75ee4b0
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..857473b7
+index 00000000..32f2f6c6
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,1033 @@
+@@ -0,0 +1,1076 @@
 +package main
 +
 +import (
@@ -2310,6 +2355,49 @@ index 00000000..857473b7
 +		t.Fatalf("mastered %d of %d concepts", len(mastered), len(c.Concepts))
 +	}
 +}
++
++// Findings of the independent reviewer (Codex, read-only) on blocks 1 and 2, each one reproduced
++// before the fix. The answers are the ones it reported; the context is the case's own.
++func TestFindingsOfTheIndependentReview(t *testing.T) {
++	check := testChecker(t)
++	const twoBooleans = "const isSigned: boolean = true;\nconst hasPages: boolean = false;"
++	const expense = `const expense = { id: "r11", total: 18000 };`
++	cases := []struct {
++		name, family, context, reference, answer string
++		correct                                  bool
++		feedback                                 string
++	}{
++		// 1. A triple-slash directive made the compiler load something else and was accepted.
++		{"f002_reference_directive", "F002", "", "18000", "/// <reference lib=\"invalidlib\" />\n18_000", false, "diretiva"},
++		{"f016_reference_directive", "F016", "const amount = 15000;", "amount > 10000", "/// <reference lib=\"invalidlib\" />\namount > 10000", false, "diretiva"},
++		{"f010_reference_directive", "F010", "", "const amount: number = 15000;", "/// <reference path=\"missing.ts\" />\nconst amount: number = 15000;", false, "diretiva"},
++		// 2. Valid answers that were rejected.
++		{"f010_literal_type_annotation", "F010", "", "const total: number = 18000;", "const total: 18000 = 18_000;", true, ""},
++		{"f010_union_annotation", "F010", "", "const total: number = 18000;", "const total: number | string = 18000;", true, ""},
++		{"f011_parenthesized_annotation", "F011", "", `const id: string = "reembolso-21";`, `const id: (string) = "reembolso-21";`, true, ""},
++		{"f021_computed_text_key", "F021", "", expense, `const expense = { ["id"]: "r11", total: 18000 };`, true, ""},
++		{"f022_parenthesized_key", "F022", `const request = { id: "r21", value: 9000 };`, "request.value", `request[("value")]`, true, ""},
++		// The annotation stays a criterion: it must fit the value and say something about it.
++		{"f010_any_annotation", "F010", "", "const total: number = 18000;", "const total: any = 18000;", false, "any"},
++		{"f010_unknown_annotation", "F010", "", "const total: number = 18000;", "const total: unknown = 18000;", false, "unknown"},
++		{"f010_incompatible_annotation", "F010", "", "const total: number = 18000;", "const total: string = 18000;", false, "compatível"},
++		// 3. Messages that named a cause the answer did not have.
++		{"f021_sum_is_not_a_wrong_value", "F021", "", expense, `const expense = { id: "r11", total: 12000 + 6000 };`, false, "sem operações"},
++		{"f021_assertion_is_not_a_missing_object", "F021", "", expense, expense[:len(expense)-1] + " as const;", false, "asserção"},
++		{"f023_assertion_is_not_a_missing_array", "F023", "", "const totals = [18000, 4000, 12000];", "const totals = [18000, 4000, 12000] as const;", false, "asserção"},
++		{"f019_comparisons_inside_and", "F019", twoBooleans, "isSigned && hasPages", "isSigned === true && hasPages === true", false, "diretamente"},
++		// 4. A deeply nested answer made the grader exit without a verdict.
++		{"f002_deeply_nested_parentheses", "F002", "", "18000", strings.Repeat("(", 1400) + "18000" + strings.Repeat(")", 1400), false, "encaixadas"},
++	}
++	for _, tc := range cases {
++		t.Run(tc.name, func(t *testing.T) {
++			got := check.grade(gradeJob{Family: tc.family, Mode: "code", Expected: tc.reference, ContextCode: tc.context, Answer: tc.answer})
++			if got.Unavailable || got.Correct != tc.correct || !strings.Contains(got.Feedback, tc.feedback) {
++				t.Fatalf("grade = %+v, want correct=%t with %q", got, tc.correct, tc.feedback)
++			}
++		})
++	}
++}
 diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
 new file mode 100644
 index 00000000..10f8e984
@@ -2492,7 +2580,7 @@ index 913a6102..6733c0ca 100644
      <footer
        // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae4..7244dd48 100644
+index 2f6abae4..5bd7d02b 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
 @@ -1,5 +1,6 @@
@@ -2556,7 +2644,18 @@ index 2f6abae4..7244dd48 100644
        seenRef.current = pr.questions.map(q => q.question)
        setBuffer(pr.questions)
        const first = pr.questions[0]
-@@ -471,7 +496,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -342,7 +367,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+         refill(diff, seenRef.current, kpIndex + 1, epoch).then(fresh => {
+           if (practiceEpochRef.current !== epoch) return
+           seenRef.current = [...seenRef.current, ...fresh.map(q => q.question)].slice(-20)
+-          setBuffer(prev => [...prev, ...fresh].slice(0, 6))
++          // Two fetches can overlap. Each saw the buffer as it was when it started, so the pilot
++          // drops again, against the buffer as it is now, what the other one already added.
++          setBuffer(prev => [...prev, ...(TS_PILOT ? pilotFresh(fresh, prev.map(q => q.question)) : fresh)].slice(0, 6))
+         }).catch(() => {})
+       }
+       return head
+@@ -471,7 +498,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
      try {
        const res = await submitStudyAnswer(conceptId, entry.answer.trim(), elapsed, entry.q.question)
        if (res.ungraded) {
@@ -2565,7 +2664,7 @@ index 2f6abae4..7244dd48 100644
          return
        }
        setAnsweredCount(n => n + 1)
-@@ -489,7 +514,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -489,7 +516,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              correct: true,
              text: res.explanation ?? '',
              expected: res.expected_answer ?? '',
@@ -2574,7 +2673,7 @@ index 2f6abae4..7244dd48 100644
              xp: res.xp ?? 0,
              xpAdjustment: res.xp_adjustment ?? 0,
              xpNote: res.xp_note,
-@@ -523,7 +548,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -523,7 +550,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              correct: false,
              text: res.explanation || '',
              expected: res.expected_answer ?? '',
@@ -2583,7 +2682,7 @@ index 2f6abae4..7244dd48 100644
              xp: 0,
              xpAdjustment: res.xp_adjustment ?? 0,
              xpNote: res.xp_note,
-@@ -576,7 +601,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -576,7 +603,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (practiceEpochRef.current !== epoch) return
            if (fresh.length > 0) {
              seenRef.current = [...seenRef.current, fresh[0].question].slice(-20)
@@ -2592,7 +2691,7 @@ index 2f6abae4..7244dd48 100644
              setBuffer(prev => [...prev, ...fresh.slice(1)].slice(0, 6))
              return
            }
-@@ -588,12 +613,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -588,12 +615,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        }
        const status = getErrorStatus(e)
        const message = status === 401
@@ -2609,7 +2708,7 @@ index 2f6abae4..7244dd48 100644
        setEntry(key, { error: message })
      } finally {
        setEntry(key, { checking: false })
-@@ -627,10 +652,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -627,10 +654,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          />
          <div className="mt-4 flex flex-wrap gap-3">
            <Link href="/domains" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue">
@@ -2622,7 +2721,7 @@ index 2f6abae4..7244dd48 100644
            </Link>
          </div>
        </div>
-@@ -663,15 +688,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -663,15 +690,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        .slice(0, 3).map(p => p.title).join(', ')
      if (unmetPrereqs.length === 0 && unstartedPrereqs.length > 0) {
        const unstarted = unstartedPrereqs.slice(0, 3).map(p => p.title).join(', ')
@@ -2642,7 +2741,7 @@ index 2f6abae4..7244dd48 100644
    })()
    const totalAnswered = answeredCount
    const totalCorrect = correctCount
-@@ -686,8 +711,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -686,8 +713,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
    return (
      <div className="max-w-2xl mx-auto">
        <div className="sticky top-0 z-10 bg-mathua-bg backdrop-blur py-2 mb-4 flex items-center gap-2 font-mono text-[11px] text-mathua-muted border-b border-mathua-border">
@@ -2653,7 +2752,7 @@ index 2f6abae4..7244dd48 100644
          {totalXP !== 0 && <span className={totalXP > 0 ? 'text-yellow-400' : 'text-mathua-red'}>· {totalXP > 0 ? '+' : ''}{totalXP} XP</span>}
          {band && (
            <span title="How you're doing on this concept, from your recent answers. Progress only, mastery is decided separately.">
-@@ -700,7 +725,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -700,7 +727,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <PrerequisitePanel
            prerequisites={prerequisites}
            returnStack={prereqStack}
@@ -2662,7 +2761,7 @@ index 2f6abae4..7244dd48 100644
            intro={prereqIntro}
            onDismiss={() => setBannerDismissed(true)}
          />
-@@ -712,9 +737,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -712,9 +739,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <div className="border border-mathua-green-faint bg-mathua-surface p-5 mb-4">
            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
              <div>
@@ -2674,7 +2773,7 @@ index 2f6abae4..7244dd48 100644
                </p>
              </div>
              <div className="flex flex-wrap items-center gap-2 shrink-0">
-@@ -723,12 +748,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -723,12 +750,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href={nextShelf.next.href}
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -2689,7 +2788,7 @@ index 2f6abae4..7244dd48 100644
                  </span>
                )}
                {!nextLoading && nextSettled && !canContinue && (
-@@ -736,14 +761,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -736,14 +763,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href="/learn"
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -2706,7 +2805,7 @@ index 2f6abae4..7244dd48 100644
                </Link>
              </div>
            </div>
-@@ -805,7 +830,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -805,7 +832,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  <div className="mt-5 flex flex-wrap items-center gap-3">
                    {!practiceStarted && (
                      <button type="button" onClick={startPracticing} disabled={startingPractice} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 py-2.5 font-mono text-xs min-h-[44px] disabled:opacity-50">
@@ -2715,7 +2814,7 @@ index 2f6abae4..7244dd48 100644
                      </button>
                    )}
                    {isMastered && canContinue && nextShelf && (
-@@ -813,7 +838,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -813,7 +840,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                        href={nextShelf.next.href}
                        className="border border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue px-6 py-2.5 font-mono text-xs min-h-[44px] inline-flex items-center"
                      >
@@ -2724,7 +2823,7 @@ index 2f6abae4..7244dd48 100644
                      </Link>
                    )}
                  </div>
-@@ -835,15 +860,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -835,15 +862,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (e.kind === 'halt') {
              return (
                <div key={e.key} className="border border-mathua-red-faint bg-mathua-surface p-5">
@@ -2743,7 +2842,7 @@ index 2f6abae4..7244dd48 100644
                  </div>
                </div>
              )
-@@ -852,7 +877,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -852,7 +879,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              const upcoming: LockedSuccessor[] = upcomingLocked(catalogEntries(), shelfProgress, conceptId)
              return (
                <div key={e.key} className="border border-mathua-green-faint bg-mathua-surface p-6">
@@ -2752,7 +2851,7 @@ index 2f6abae4..7244dd48 100644
                  <XPTaskSummary
                    answerXP={totalAnswerXP}
                    adjustment={totalAdjustment}
-@@ -861,22 +886,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -861,22 +888,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    className="mt-4"
                  />
                  {e.note && <p role="status" className="mt-2 font-mono text-[11px] text-mathua-secondary">{e.note}</p>}
@@ -2781,7 +2880,7 @@ index 2f6abae4..7244dd48 100644
                      </summary>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {nextShelf.alternatives.map((it, i) => (
-@@ -895,7 +920,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -895,7 +922,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  {upcoming.length > 0 && (
                    <div className="mt-3 border border-mathua-border">
                      <p className="font-mono text-[11px] text-mathua-secondary px-4 py-2.5">
@@ -2790,7 +2889,7 @@ index 2f6abae4..7244dd48 100644
                      </p>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {upcoming.map(u => (
-@@ -905,7 +930,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -905,7 +932,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                            className="border border-mathua-border p-3 hover:border-mathua-blue transition-colors block min-w-0"
                          >
                            <div className="font-mono text-xs text-mathua-primary truncate">{u.label}</div>
@@ -2799,7 +2898,7 @@ index 2f6abae4..7244dd48 100644
                          </Link>
                        ))}
                      </div>
-@@ -923,7 +948,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -923,7 +950,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                <ChoiceOptions question={qe.q.question} value={qe.answer} onPick={v => setEntry(qe.key, { answer: v })} disabled={locked || blocked || qe.checking} />
                {!locked && !blocked && (
                  <form ref={qe.key === lastEntryKey ? answerFormRef : undefined} onSubmit={ev => { ev.preventDefault(); handleCheck(qe.key) }} className="clear-of-tabs mt-3 flex flex-col sm:flex-row gap-2">
@@ -2808,7 +2907,7 @@ index 2f6abae4..7244dd48 100644
                    <MathAnswerInput
                      id={`learn-answer-${qe.key}`}
                      focusRef={qe.key === lastEntryKey ? answerFocusRef : undefined}
-@@ -935,20 +960,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -935,20 +962,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      disabled={qe.checking}
                      status={qe.feedback ? (qe.feedback.correct ? 'correct' : 'incorrect') : 'default'}
                      inputMode={format.inputMode}
@@ -2836,7 +2935,7 @@ index 2f6abae4..7244dd48 100644
                      prerequisites={(qe.blockedPrerequisiteIds?.length ? qe.blockedPrerequisiteIds : prerequisites.flatMap(p => p.met ? [] : [p.conceptId])).map(id => ({
                        conceptId: id,
                        title: prerequisites.find(p => p.conceptId === id)?.title ?? concepts.find(c => c.id === id)?.label ?? id,
-@@ -957,7 +984,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -957,7 +986,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      }))}
                      returnStack={prereqStack}
                    />
@@ -2845,7 +2944,7 @@ index 2f6abae4..7244dd48 100644
                  </div>
                )}
                <div className="mt-2 flex justify-end">
-@@ -967,6 +994,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -967,6 +996,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    kind="question"
                    question={qe.q.question}
                    source="practice"
@@ -2854,7 +2953,7 @@ index 2f6abae4..7244dd48 100644
                    answerGiven={qe.answer}
                    gradingType={conceptGradingType}
                    answerHint={format.hint}
-@@ -976,8 +1005,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -976,8 +1007,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                {locked && qe.feedback && (
                  <div className="mt-3">
                    <p className={`font-mono text-xs ${qe.feedback.correct ? 'text-green-400' : 'text-red-400'}`}>
@@ -2865,7 +2964,7 @@ index 2f6abae4..7244dd48 100644
                    </p>
                    <XPAdjustmentNote
                      adjustment={qe.feedback.xpAdjustment}
-@@ -986,7 +1015,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -986,7 +1017,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      className="mt-2"
                    />
                    <p className="mt-1.5 font-mono text-xs text-mathua-primary">
@@ -2874,7 +2973,7 @@ index 2f6abae4..7244dd48 100644
                    </p>
                    {/* The explanation is the solution for *this* instance, shown
                        on both verdicts: a correct answer still needs the
-@@ -1002,7 +1031,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -1002,7 +1033,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    {qe.feedback.text && (
                      <div className="mt-1.5">
                        <p className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted">
@@ -3250,10 +3349,10 @@ index 5bd3fb8f..18ec286b 100644
  // Mobile compass overflow: destinations missing from the bottom tabs.
 diff --git a/web/next-app/lib/pilot.ts b/web/next-app/lib/pilot.ts
 new file mode 100644
-index 00000000..8d6e52d1
+index 00000000..b27226c6
 --- /dev/null
 +++ b/web/next-app/lib/pilot.ts
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,195 @@
 +// Switches for the TypeScript pilot served by cmd/typescript-pilot.
 +//
 +// Everything here is off unless the interface is built with NEXT_PUBLIC_TS_PILOT=1,
@@ -3285,7 +3384,8 @@ index 00000000..8d6e52d1
 +  return res.feedback || undefined
 +}
 +
-+// Cases per section in the content package.
++// Cases per section in the content package. The pilot's loader (casesPerFamily in content.go)
++// refuses a family of any other size, so one case always remains after five are excluded.
 +const PILOT_BANK = 6
 +
 +/**
@@ -3294,9 +3394,16 @@ index 00000000..8d6e52d1
 + * longest ago: every case is reached before one repeats, and a missed case does not come back next.
 + */
 +export function pilotExclude(shown: string[], buffered: string[]): string[] {
-+  const keep = Math.max(0, PILOT_BANK - 1 - buffered.length)
-+  const recent = keep > 0 ? shown.filter(q => !buffered.includes(q)).slice(-keep) : []
-+  return [...buffered, ...recent]
++  const picked: string[] = []
++  const add = (question: string) => {
++    if (picked.length < PILOT_BANK - 1 && !picked.includes(question)) picked.push(question)
++  }
++  // The two questions shown last go first, so the one just missed is never the case left over,
++  // however full the buffer is. Then the buffer, then older questions, newest first.
++  for (const question of shown.slice(-2).reverse()) add(question)
++  for (const question of buffered) add(question)
++  for (const question of [...shown].reverse()) add(question)
++  return picked
 +}
 +
 +/** With few cases left the server repeats one inside a batch. Keep each once, and none already buffered. */
@@ -3484,3 +3591,61 @@ index 225320f8..7498dcd4 100644
          xp: 0,
        }
    return {
+diff --git a/web/next-app/test/pilot.test.ts b/web/next-app/test/pilot.test.ts
+new file mode 100644
+index 00000000..0ccf2a79
+--- /dev/null
++++ b/web/next-app/test/pilot.test.ts
+@@ -0,0 +1,52 @@
++import { describe, expect, it } from 'vitest'
++import { pilotExclude, pilotFresh } from '../lib/pilot'
++
++// The pilot serves a bank of six cases per section. These helpers decide what a practice fetch
++// excludes, so that the bank rotates and a missed question does not come straight back.
++const BANK = ['a', 'b', 'c', 'd', 'e', 'f']
++const left = (shown: string[], buffered: string[]) => BANK.filter(q => !pilotExclude(shown, buffered).includes(q))
++
++describe('pilotExclude', () => {
++  it('excludes nothing before anything was shown', () => {
++    expect(pilotExclude([], [])).toEqual([])
++  })
++
++  it('leaves the case shown longest ago once the whole bank was shown', () => {
++    expect(left(['a', 'b', 'c', 'd', 'e'], [])).toEqual(['f'])
++    expect(left(['a', 'b', 'c', 'd', 'e', 'f'], [])).toEqual(['a'])
++    expect(left(['a', 'b', 'c', 'd', 'e', 'f', 'a'], [])).toEqual(['b'])
++  })
++
++  it('always leaves a candidate, and never the question just shown, however full the buffer is', () => {
++    for (let shownCount = 1; shownCount <= 7; shownCount++) {
++      for (let bufferCount = 0; bufferCount <= 6; bufferCount++) {
++        const shown = Array.from({ length: shownCount }, (_, i) => BANK[i % 6])
++        const buffered = BANK.filter(q => q !== shown[shown.length - 1]).slice(0, bufferCount)
++        const candidates = left(shown, buffered)
++        expect(candidates.length).toBeGreaterThan(0)
++        expect(candidates).not.toContain(shown[shown.length - 1])
++        expect(pilotExclude(shown, buffered).length).toBeLessThanOrEqual(5)
++      }
++    }
++  })
++
++  it('keeps the missed question out when the buffer already holds the other five', () => {
++    expect(left(['a'], ['b', 'c', 'd', 'e', 'f'])).toEqual(['f'])
++  })
++})
++
++describe('pilotFresh', () => {
++  const q = (question: string) => ({ question })
++
++  it('keeps each fetched question once and drops what is already buffered', () => {
++    expect(pilotFresh([q('a'), q('a'), q('b'), q('c')], ['c'])).toEqual([q('a'), q('b')])
++  })
++
++  it('makes two overlapping fetches add each question once', () => {
++    let buffer = ['a', 'b']
++    for (const fetched of [['c', 'd', 'e'], ['e', 'c', 'd']]) {
++      buffer = [...buffer, ...pilotFresh(fetched.map(q), buffer).map(item => item.question)]
++    }
++    expect(buffer).toEqual(['a', 'b', 'c', 'd', 'e'])
++  })
++})
