@@ -42,9 +42,9 @@ Só arquivos do piloto, em `cmd/typescript-pilot/`:
 
 O teste de navegador, em `scripts/browser-smoke.mjs`, ganhou um passo para o degrau 4.
 
-Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e as funções `pilotExclude` e `pilotAdmit` em `web/next-app/lib/pilot.ts`, e entrou o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 177 linhas adicionadas e 113 removidas. A interface foi recompilada.
+Antes da revisão do falseador, nenhum código existente do Mathua tinha mudado neste bloco. Depois das passadas dele, mudaram trechos de `web/next-app/components/LearnStepper.tsx` e entraram as funções `pilotExclude`, `pilotAdmit` e `pilotUsable` em `web/next-app/lib/pilot.ts`, com o teste novo `web/next-app/test/pilot.test.ts`. Medido: `git diff --stat -- web internal` → 14 arquivos, 186 linhas adicionadas e 116 removidas. A interface foi recompilada.
 
-O patch atual tem 23 arquivos, 2894 linhas adicionadas e 113 removidas. Resumo SHA-256: `22277907f88d7642212465500a908c5c5c62520596963d8b1508cce46c0cdee5`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`, depois da primeira passada; `68a01259…` no commit `7d3bc28`, depois da segunda.
+O patch atual tem 23 arquivos, 2944 linhas adicionadas e 116 removidas. Resumo SHA-256: `719c4fd39a8b79fc3f2b5b49c0c8d376fb2b2cb0a04041a54b42661b48952b69`. Resumos anteriores: `655cb649…` no commit `c7f3c85`, antes da revisão; `cd4f4889…` no commit `7f3d02e`; `68a01259…` no commit `7d3bc28`; `22277907…` no commit `cf3f065`.
 
 ## 3. O que os corretores novos aceitam
 
@@ -56,7 +56,7 @@ O patch atual tem 23 arquivos, 2894 linhas adicionadas e 113 removidas. Resumo S
 | F020 negação `!` | `!isValid`, `!(isValid)` | o nome sozinho, a dupla negação |
 | F021 objeto | propriedades em qualquer ordem, chave entre aspas, parênteses | array, propriedade a mais, a menos ou com outro valor |
 | F022 propriedade | `refund.amount`, `refund["amount"]` | outra propriedade, outro objeto |
-| F023 array | os elementos na ordem pedida | outra ordem, elemento diferente ou repetido |
+| F023 array | os elementos na ordem pedida, com `const` ou `let` | outra ordem, elemento diferente ou repetido |
 | F017 e F024 resultado | `true`, `false`, `15000`, `15_000` | o valor entre aspas, a própria expressão do contexto |
 | F015 e F025 alternativas | a letra da alternativa correta | outra alternativa |
 
@@ -76,11 +76,11 @@ go test -json ./internal/mastery ./internal/scheduler ./internal/repair -count=1
 
 | Evidência | Código | Aprovados | Falhas |
 | --- | --- | --- | --- |
-| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 462 casos finais | 0 |
+| [mathua-pilot.jsonl](evidencias/bloco-2-d04-d05/mathua-pilot.jsonl) | 0 | 466 casos finais | 0 |
 | [mathua-native-http.jsonl](evidencias/bloco-2-d04-d05/mathua-native-http.jsonl) | 0 | 26 casos finais | 0 |
 | [mathua-native-engine.jsonl](evidencias/bloco-2-d04-d05/mathua-native-engine.jsonl) | 0 | 154 casos finais | 0 |
 
-As evidências desta pasta são da execução final, depois das correções das três passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 462 casos do piloto, por função de teste:
+As evidências desta pasta são da execução final, depois das correções das quatro passadas do falseador, na seção 7. Os três arquivos `.jsonl`, o registro de reinício e o registro de navegador foram gerados de novo nessa execução. Os 466 casos do piloto, por função de teste:
 
 | Função | Casos | O que confere |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ As evidências desta pasta são da execução final, depois das correções das 
 | `TestCriteriaOfStagesFourAndFive` | 170 | Respostas aceitas e recusadas de F015 a F025, com a mensagem em parte dos casos |
 | `TestCriteriaHoldInEveryCaseOfStagesFourAndFive` | 204 | As equivalências do contrato aplicadas aos 6 casos de cada família, cada um com o próprio contexto |
 | `TestWholeLadderThroughTheAPI` | 1 | Um visitante novo domina os 23 conceitos pela API real, em ordem, com 6 perguntas distintas por conceito |
-| `TestFindingsOfTheIndependentReview` | 27 | Os achados do falseador, cada um com a resposta que ele relatou |
+| `TestFindingsOfTheIndependentReview` | 31 | Os achados do falseador, cada um com a resposta que ele relatou |
 | `TestPilotHTTP` | 7 | Pré-requisitos, domínio, variante após erro, repetição, relato, reinício e falha do corretor |
 | Outras quatro funções | 4 | Conteúdo servido, seções por família, alternativas por letra e reparo de histórico |
 
@@ -105,12 +105,12 @@ Interface, em `web/next-app`, com Node `24.22.3`, depois das correções da seç
 | --- | --- | --- |
 | `npx tsc --noEmit -p .` | 0 | Nenhuma mensagem, em [tsc.log](evidencias/bloco-2-d04-d05/tsc.log) |
 | `npm run lint` | 0 | 0 erros, em [lint.log](evidencias/bloco-2-d04-d05/lint.log) |
-| `npm test` | 0 | `Test Files  199 passed (199)`, `Tests  1894 passed (1894)`, em [vitest.log](evidencias/bloco-2-d04-d05/vitest.log) |
+| `npm test` | 0 | `Test Files  199 passed (199)`, `Tests  1897 passed (1897)`, em [vitest.log](evidencias/bloco-2-d04-d05/vitest.log) |
 | `NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1 NEXT_TELEMETRY_DISABLED=1 npm run build` | 0 | [ui-build.log](evidencias/bloco-2-d04-d05/ui-build.log) |
 
-O arquivo de teste novo, `test/pilot.test.ts`, tem 9 testes.
+O arquivo de teste novo, `test/pilot.test.ts`, tem 12 testes.
 
-A suíte da interface rodou três vezes depois das correções da segunda passada e duas vezes depois das correções da terceira. As duas últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
+A suíte da interface rodou três vezes depois das correções da segunda passada duas vezes depois das correções da terceira e uma vez depois das correções da quarta. As três últimas passaram, e o registro gravado é o da última. Das três anteriores, a primeira falhou em `test/reportsPage.test.tsx > renders the overview for an established learner`; esse registro está em [vitest-execucao-com-falha-intermitente.log](evidencias/bloco-2-d04-d05/vitest-execucao-com-falha-intermitente.log). As duas execuções seguintes passaram. É o mesmo arquivo de teste que falhou uma vez no bloco 1. Ele cobre `app/reports/page.tsx`, que o patch não altera. Não foi medido se esse teste também falha no commit-base sem o patch.
 
 ## 5. O que foi observado pela tela no degrau 4
 
@@ -190,9 +190,19 @@ Ele conferiu as cinco correções da segunda passada: quatro se sustentaram e a 
 | 3. Duas mensagens imprecisas: `\|\|` "aceita apenas uma delas", e `{ id, total: 18000 }` "deve ter exatamente as propriedades id e total" | Baixa | As mensagens agora são "O operador \|\| já é verdadeiro quando só uma delas é verdadeira." e "Escreva o valor de id junto com o nome, como em id: valor." |
 | 4. A seção 8 dizia que nenhum caso tinha asserção nos testes e citava "o objeto" para F021 e F023 | Baixa | A seção 8 foi corrigida |
 
-### Quarta passada
+### Quarta passada, sobre o commit `cf3f065`
 
-Preenchida depois da revisão do Codex sobre o commit das correções da terceira passada.
+O falseador rodou 91 comandos. O relatório está em [falseador-codex-4a-passada.md](evidencias/bloco-2-d04-d05/falseador-codex-4a-passada.md). Ele conferiu as quatro correções da terceira passada, e as quatro se sustentaram. Ele testou de novo 250 respostas, sem aceitação indevida. Ele relatou dois achados médios e um baixo.
+
+| Achado da quarta passada | Severidade | O que foi feito |
+| --- | --- | --- |
+| 1. Depois de um erro, a seção podia acabar com três perguntas inéditas na fila. A função que tira a próxima pergunta usava a fila de uma tela anterior, pedia outro lote e descartava o único caso que o servidor ainda podia mandar | Média | No piloto, a função lê a fila como ela está agora. Quando o filtro do piloto não deixa passar nada, a tela usa o que o servidor mandou, menos a pergunta mostrada por último (`pilotUsable`, com 3 testes) |
+| 2. F023 recusava `let amounts = [15000, 5000, 10000];`, com uma mensagem que exigia `const`. O critério e o enunciado de F023 não citam `const` | Média | F023 aceita `let`. Ver a decisão em aberto na seção 8, porque um teste da primeira revisão exigia a recusa |
+| 3. Um nome de tipo com erro de digitação, como `numbr`, recebia a mensagem "A anotação não é compatível com o valor" | Baixa | A mensagem agora é neutra: "O compilador TypeScript rejeitou a declaração:", seguida do texto do compilador |
+
+### Quinta passada
+
+Preenchida depois da revisão do Codex sobre o commit das correções da quarta passada.
 
 ## 8. Decisões de interpretação do contrato que ficaram em aberto
 
@@ -208,12 +218,16 @@ Nenhum destes casos tem teste que force a aceitação ou a recusa como regra do 
 | Conta no lugar do valor em F021, como `amount: 10000 + 5000` | Recusa, agora com a mensagem "Escreva o valor da propriedade amount como um literal, sem operações." | Aceitar: o dado é 15000 | Recusar com mensagem "sem operações" |
 | `isSigned === true && hasPages === true` em F019 | Recusa, agora com a mensagem "Use isSigned e hasPages diretamente como operandos de &&, sem outras operações." | Manter: o critério é `&&` entre os dois booleanos | Aceitar: o resultado é equivalente |
 
+| `let` em vez de `const` em F023 e F021 | F023 aceita `let`. F021 recusa, com a mensagem "A tarefa pede uma declaração com const." | Manter: o critério de F021 cita `const`; o de F023 não | Unificar. Em F021 o enunciado mostrado ao aluno, "Declare refund como objeto com id igual a r1 e amount igual a 15000.", também não cita `const`; ou o enunciado passa a citar, ou a recusa deixa de existir |
+
+A linha acima nasceu de uma discordância entre os dois revisores: o teste do segundo agente exigia a recusa de `let` em F023, e o falseador relatou a recusa como defeito.
+
 Um problema no próprio conteúdo, que não foi alterado: o campo `counterexample` de F019 em `exercicios.json` está quebrado. Ele tem `answer: "isSigned "` e `reason: "| hasPages|A disjunção…"`. Parece um `||` cortado na separação de colunas do arquivo de origem.
 
 ## 9. Limites desta verificação
 
 - **Só macOS e só Chromium `151.0.7922.34`.**
-- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 9 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
+- **Teste unitário intermitente da interface.** `test/reportsPage.test.tsx` falhou em 2 de 10 execuções da suíte completa nesta sessão. Não foi medido no commit-base.
 - **Suíte geral.** `go test ./...` e o pacote `internal/server` inteiro não foram repetidos, porque nenhum arquivo de `internal/` mudou neste bloco.
 - **Conceitos percorridos pela tela.** O navegador percorreu 9 dos 23 conceitos. Os 23 foram dominados pela API real no teste `TestWholeLadderThroughTheAPI`.
 - **Tempo de partida.** Medido uma vez: 14,3 segundos com 23 conceitos. O Mathua confere cada gerador em um processo separado. Com 46 conceitos, a partida fica mais lenta.

@@ -1,6 +1,6 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 00000000..b85d3f14
+index 00000000..da6fab2c
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
 @@ -0,0 +1,202 @@
@@ -138,7 +138,7 @@ index 00000000..b85d3f14
 +| F020 `!name` | `!isValid`, `!(isValid)` | the name alone, a double negation |
 +| F021 const object | properties in any order, quoted keys, parentheses | an array, a missing, extra or wrong property |
 +| F022 property access | `refund.amount`, `refund["amount"]` | another property, another object |
-+| F023 const array | the elements in the requested order | another order, another or repeated element |
++| F023 array | the elements in the requested order, declared with `const` or `let` | another order, another or repeated element |
 +| `value` families F017, F024 | `true`, `false`, `15000`, `15_000` | the value in quotes, the expression itself |
 +| `token` families | the exact name or symbol, surrounding spaces ignored | another case, such as `Number` |
 +| `choice` families | the letter of the correct alternative, or its text | any other alternative |
@@ -636,10 +636,10 @@ index 00000000..2747118e
 +}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..2f22513b
+index 00000000..6fb28e5e
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,479 @@
+@@ -0,0 +1,482 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
@@ -785,7 +785,7 @@ index 00000000..2f22513b
 +  // `unknown` says nothing about the value.
 +  const compiled = compile(job.answer);
 +  if (compiled.errors.length) {
-+    return result(false, actual.item.type ? `A anotação não é compatível com o valor: ${compiled.errors[0]}` : `O compilador TypeScript rejeitou a declaração: ${compiled.errors[0]}`);
++    return result(false, `O compilador TypeScript rejeitou a declaração: ${compiled.errors[0]}`);
 +  }
 +  if (actual.item.type && declaresNoType(compiled)) {
 +    return result(false, `A anotação resulta em any ou unknown, que não informam o tipo do valor. Omita a anotação ou use ${kind}.`);
@@ -919,12 +919,13 @@ index 00000000..2f22513b
 +}
 +
 +// The declared name and initializer of `const name = ...`, or the verdict that says what is missing.
-+function constAnswer(job, referenceName) {
++// requireConst is false for a task whose criterion asks for a declaration without naming `const`.
++function constAnswer(job, referenceName, requireConst = true) {
 +  const sf = parsedAnswer(job.answer);
 +  if (!sf) return {fail: result(false, SYNTAX)};
 +  const actual = declaration(sf);
-+  if (!actual) return {fail: result(false, 'Escreva somente uma declaração de constante, com um único nome.')};
-+  if (!(actual.list.flags & ts.NodeFlags.Const)) return {fail: result(false, 'Declare com const, como nas declarações deste material.')};
++  if (!actual) return {fail: result(false, 'Escreva somente uma declaração, com um único nome.')};
++  if (requireConst && !(actual.list.flags & ts.NodeFlags.Const)) return {fail: result(false, 'A tarefa pede uma declaração com const.')};
 +  if (!ts.isIdentifier(actual.item.name) || actual.item.name.text !== referenceName) {
 +    return {fail: result(false, `Use o nome solicitado: ${referenceName}.`)};
 +  }
@@ -983,7 +984,9 @@ index 00000000..2f22513b
 +  if (!reference || !ts.isIdentifier(reference.item.name) || !list || !ts.isArrayLiteralExpression(list) || !list.elements.every(isLiteral)) {
 +    throw new Error('Invalid reference array');
 +  }
-+  const given = constAnswer(job, reference.item.name.text);
++  // The criterion of this family is the array, its name and the order of its elements. It does not
++  // name `const`, so `let` declares the requested array as well.
++  const given = constAnswer(job, reference.item.name.text, false);
 +  if (given.fail) return given.fail;
 +  if (isAssertion(given.init)) return result(false, 'Escreva o array diretamente, sem asserção de tipo.');
 +  if (!given.init || !ts.isArrayLiteralExpression(given.init)) return result(false, 'Inicialize a constante com um array, entre colchetes, com os elementos pedidos.');
@@ -1339,10 +1342,10 @@ index 00000000..f75ee4b0
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..231bc1cc
+index 00000000..75b41891
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,1089 @@
+@@ -0,0 +1,1097 @@
 +package main
 +
 +import (
@@ -2205,7 +2208,10 @@ index 00000000..231bc1cc
 +		{"f023_hole", "F023-V0", "const amounts = [15000, , 10000];", false, ""},
 +		{"f023_numbers_as_text", "F023-V0", `const amounts = ["15000", "5000", "10000"];`, false, different},
 +		{"f023_brazilian_thousands_point", "F023-V0", "const amounts = [15.000, 5.000, 10.000];", false, different},
-+		{"f023_let", "F023-V0", "let amounts = [15000, 5000, 10000];", false, "const"},
++		// The criterion and the prompt of F023 do not name const, so let declares the requested array.
++		// The first review asserted a rejection here and the independent review an acceptance; the
++		// reading is recorded as an open decision in the block record.
++		{"f023_let", "F023-V0", "let amounts = [15000, 5000, 10000];", true, ""},
 +		{"f023_array_constructor", "F023-V0", "const amounts = new Array(15000, 5000, 10000);", false, "array"},
 +		{"f023_object_with_indexes", "F023-V0", "const amounts = { 0: 15000, 1: 5000, 2: 10000 };", false, "array"},
 +		{"f023_wrong_name", "F023-V0", "const values = [15000, 5000, 10000];", false, "amounts"},
@@ -2401,7 +2407,7 @@ index 00000000..231bc1cc
 +		// The annotation stays a criterion: it must fit the value and say something about it.
 +		{"f010_any_annotation", "F010", "", "const total: number = 18000;", "const total: any = 18000;", false, "any"},
 +		{"f010_unknown_annotation", "F010", "", "const total: number = 18000;", "const total: unknown = 18000;", false, "unknown"},
-+		{"f010_incompatible_annotation", "F010", "", "const total: number = 18000;", "const total: string = 18000;", false, "compatível"},
++		{"f010_incompatible_annotation", "F010", "", "const total: number = 18000;", "const total: string = 18000;", false, "not assignable"},
 +		// 3. Messages that named a cause the answer did not have.
 +		{"f021_sum_is_not_a_wrong_value", "F021", "", expense, `const expense = { id: "r11", total: 12000 + 6000 };`, false, "sem operações"},
 +		{"f021_assertion_is_not_a_missing_object", "F021", "", expense, expense[:len(expense)-1] + " as const;", false, "asserção"},
@@ -2420,6 +2426,11 @@ index 00000000..231bc1cc
 +		{"f019_or_is_true_with_one_or_both", "F019", twoBooleans, "isSigned && hasPages", "isSigned || hasPages", false, "quando só uma delas"},
 +		{"f021_shorthand_property_has_its_name", "F021", "", expense, "const expense = { id, total: 18000 };", false, "junto com o nome"},
 +		{"f021_method_is_not_a_missing_property", "F021", "", expense, "const expense = { id() { return 1; }, total: 18000 };", false, "nome: valor"},
++		// Fourth pass.
++		{"f023_let_declares_the_requested_array", "F023", "", "const totals = [18000, 4000, 12000];", "let totals = [18000, 4000, 12000];", true, ""},
++		{"f023_let_keeps_the_order_criterion", "F023", "", "const totals = [18000, 4000, 12000];", "let totals = [4000, 18000, 12000];", false, "outra ordem"},
++		{"f021_object_task_names_const", "F021", "", expense, "let expense = { id: \"r11\", total: 18000 };", false, "const"},
++		{"f010_misspelled_type_is_not_an_incompatible_value", "F010", "", "const amount: number = 15000;", "const amount: numbr = 15000;", false, "Cannot find name"},
 +		// 4. A deeply nested answer made the grader exit without a verdict.
 +		{"f002_deeply_nested_parentheses", "F002", "", "18000", strings.Repeat("(", 1400) + "18000" + strings.Repeat(")", 1400), false, "encaixadas"},
 +	}
@@ -2614,13 +2625,13 @@ index 913a6102..6733c0ca 100644
      <footer
        // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae4..199a8ee6 100644
+index 2f6abae4..bc265379 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
 @@ -1,5 +1,6 @@
  'use client'
  
-+import { TS_PILOT, pilotAdmit, pilotDiagnosis, pilotExclude, pilotFresh, pt } from '@/lib/pilot'
++import { TS_PILOT, pilotAdmit, pilotDiagnosis, pilotExclude, pilotFresh, pilotUsable, pt } from '@/lib/pilot'
  import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  import Link from 'next/link'
  import dynamic from 'next/dynamic'
@@ -2682,7 +2693,20 @@ index 2f6abae4..199a8ee6 100644
        seenRef.current = pr.questions.map(q => q.question)
        setBuffer(pr.questions)
        const first = pr.questions[0]
-@@ -342,9 +371,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -334,17 +363,23 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+ 
+   // Take the next question: buffer first, fetching when empty.
+   async function takeNext(diff: number): Promise<PracticeQuestion | null> {
+-    if (buffer.length > 0) {
+-      const [head, ...rest] = buffer
++    // This function can run with the buffer of an earlier render. The pilot reads the buffer as it
++    // is now, so a fetch that filled it meanwhile is used instead of being fetched around.
++    const queue = TS_PILOT ? bufferRef.current : buffer
++    if (queue.length > 0) {
++      const [head, ...rest] = queue
+       setBuffer(rest)
+       if (rest.length < 2) {
+         const epoch = practiceEpochRef.current
          refill(diff, seenRef.current, kpIndex + 1, epoch).then(fresh => {
            if (practiceEpochRef.current !== epoch) return
            seenRef.current = [...seenRef.current, ...fresh.map(q => q.question)].slice(-20)
@@ -2696,18 +2720,22 @@ index 2f6abae4..199a8ee6 100644
        return head
      }
      try {
-@@ -352,8 +384,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -352,8 +387,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        const fresh = await refill(diff, seenRef.current, kpIndex + 1, epoch)
        if (practiceEpochRef.current !== epoch) return null
        seenRef.current = [...seenRef.current, ...fresh.map(q => q.question)].slice(-20)
 -      const [head, ...rest] = fresh
-+      const [head, ...rest] = TS_PILOT ? pilotAdmit(fresh, [], shownRef.current.get(kpIndex + 1) ?? []) : fresh
-       setBuffer(rest)
+-      setBuffer(rest)
++      const [head, ...rest] = TS_PILOT ? pilotUsable(fresh, shownRef.current.get(kpIndex + 1) ?? []) : fresh
++      // The buffer may have been filled while this fetch was on its way; the pilot adds to it.
++      setBuffer(prev => TS_PILOT && head
++        ? [...prev.filter(q => q.question !== head.question), ...pilotAdmit(rest, [...prev.map(q => q.question), head.question], shownRef.current.get(kpIndex + 1) ?? [])].slice(0, 6)
++        : rest)
 +      if (TS_PILOT && head) noteShown(kpIndex + 1, head.question)
        return head ?? null
      } catch {
        return null
-@@ -471,7 +504,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -471,7 +510,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
      try {
        const res = await submitStudyAnswer(conceptId, entry.answer.trim(), elapsed, entry.q.question)
        if (res.ungraded) {
@@ -2716,7 +2744,7 @@ index 2f6abae4..199a8ee6 100644
          return
        }
        setAnsweredCount(n => n + 1)
-@@ -489,7 +522,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -489,7 +528,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              correct: true,
              text: res.explanation ?? '',
              expected: res.expected_answer ?? '',
@@ -2725,7 +2753,7 @@ index 2f6abae4..199a8ee6 100644
              xp: res.xp ?? 0,
              xpAdjustment: res.xp_adjustment ?? 0,
              xpNote: res.xp_note,
-@@ -523,7 +556,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -523,7 +562,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              correct: false,
              text: res.explanation || '',
              expected: res.expected_answer ?? '',
@@ -2734,7 +2762,7 @@ index 2f6abae4..199a8ee6 100644
              xp: 0,
              xpAdjustment: res.xp_adjustment ?? 0,
              xpNote: res.xp_note,
-@@ -576,8 +609,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -576,8 +615,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (practiceEpochRef.current !== epoch) return
            if (fresh.length > 0) {
              seenRef.current = [...seenRef.current, fresh[0].question].slice(-20)
@@ -2749,7 +2777,7 @@ index 2f6abae4..199a8ee6 100644
              return
            }
          } catch {
-@@ -588,12 +625,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -588,12 +631,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        }
        const status = getErrorStatus(e)
        const message = status === 401
@@ -2766,7 +2794,7 @@ index 2f6abae4..199a8ee6 100644
        setEntry(key, { error: message })
      } finally {
        setEntry(key, { checking: false })
-@@ -627,10 +664,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -627,10 +670,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          />
          <div className="mt-4 flex flex-wrap gap-3">
            <Link href="/domains" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue">
@@ -2779,7 +2807,7 @@ index 2f6abae4..199a8ee6 100644
            </Link>
          </div>
        </div>
-@@ -663,15 +700,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -663,15 +706,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        .slice(0, 3).map(p => p.title).join(', ')
      if (unmetPrereqs.length === 0 && unstartedPrereqs.length > 0) {
        const unstarted = unstartedPrereqs.slice(0, 3).map(p => p.title).join(', ')
@@ -2799,7 +2827,7 @@ index 2f6abae4..199a8ee6 100644
    })()
    const totalAnswered = answeredCount
    const totalCorrect = correctCount
-@@ -686,8 +723,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -686,8 +729,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
    return (
      <div className="max-w-2xl mx-auto">
        <div className="sticky top-0 z-10 bg-mathua-bg backdrop-blur py-2 mb-4 flex items-center gap-2 font-mono text-[11px] text-mathua-muted border-b border-mathua-border">
@@ -2810,7 +2838,7 @@ index 2f6abae4..199a8ee6 100644
          {totalXP !== 0 && <span className={totalXP > 0 ? 'text-yellow-400' : 'text-mathua-red'}>· {totalXP > 0 ? '+' : ''}{totalXP} XP</span>}
          {band && (
            <span title="How you're doing on this concept, from your recent answers. Progress only, mastery is decided separately.">
-@@ -700,7 +737,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -700,7 +743,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <PrerequisitePanel
            prerequisites={prerequisites}
            returnStack={prereqStack}
@@ -2819,7 +2847,7 @@ index 2f6abae4..199a8ee6 100644
            intro={prereqIntro}
            onDismiss={() => setBannerDismissed(true)}
          />
-@@ -712,9 +749,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -712,9 +755,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <div className="border border-mathua-green-faint bg-mathua-surface p-5 mb-4">
            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
              <div>
@@ -2831,7 +2859,7 @@ index 2f6abae4..199a8ee6 100644
                </p>
              </div>
              <div className="flex flex-wrap items-center gap-2 shrink-0">
-@@ -723,12 +760,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -723,12 +766,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href={nextShelf.next.href}
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -2846,7 +2874,7 @@ index 2f6abae4..199a8ee6 100644
                  </span>
                )}
                {!nextLoading && nextSettled && !canContinue && (
-@@ -736,14 +773,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -736,14 +779,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href="/learn"
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -2863,7 +2891,7 @@ index 2f6abae4..199a8ee6 100644
                </Link>
              </div>
            </div>
-@@ -805,7 +842,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -805,7 +848,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  <div className="mt-5 flex flex-wrap items-center gap-3">
                    {!practiceStarted && (
                      <button type="button" onClick={startPracticing} disabled={startingPractice} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 py-2.5 font-mono text-xs min-h-[44px] disabled:opacity-50">
@@ -2872,7 +2900,7 @@ index 2f6abae4..199a8ee6 100644
                      </button>
                    )}
                    {isMastered && canContinue && nextShelf && (
-@@ -813,7 +850,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -813,7 +856,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                        href={nextShelf.next.href}
                        className="border border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue px-6 py-2.5 font-mono text-xs min-h-[44px] inline-flex items-center"
                      >
@@ -2881,7 +2909,7 @@ index 2f6abae4..199a8ee6 100644
                      </Link>
                    )}
                  </div>
-@@ -835,15 +872,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -835,15 +878,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (e.kind === 'halt') {
              return (
                <div key={e.key} className="border border-mathua-red-faint bg-mathua-surface p-5">
@@ -2900,7 +2928,7 @@ index 2f6abae4..199a8ee6 100644
                  </div>
                </div>
              )
-@@ -852,7 +889,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -852,7 +895,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              const upcoming: LockedSuccessor[] = upcomingLocked(catalogEntries(), shelfProgress, conceptId)
              return (
                <div key={e.key} className="border border-mathua-green-faint bg-mathua-surface p-6">
@@ -2909,7 +2937,7 @@ index 2f6abae4..199a8ee6 100644
                  <XPTaskSummary
                    answerXP={totalAnswerXP}
                    adjustment={totalAdjustment}
-@@ -861,22 +898,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -861,22 +904,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    className="mt-4"
                  />
                  {e.note && <p role="status" className="mt-2 font-mono text-[11px] text-mathua-secondary">{e.note}</p>}
@@ -2938,7 +2966,7 @@ index 2f6abae4..199a8ee6 100644
                      </summary>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {nextShelf.alternatives.map((it, i) => (
-@@ -895,7 +932,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -895,7 +938,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  {upcoming.length > 0 && (
                    <div className="mt-3 border border-mathua-border">
                      <p className="font-mono text-[11px] text-mathua-secondary px-4 py-2.5">
@@ -2947,7 +2975,7 @@ index 2f6abae4..199a8ee6 100644
                      </p>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {upcoming.map(u => (
-@@ -905,7 +942,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -905,7 +948,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                            className="border border-mathua-border p-3 hover:border-mathua-blue transition-colors block min-w-0"
                          >
                            <div className="font-mono text-xs text-mathua-primary truncate">{u.label}</div>
@@ -2956,7 +2984,7 @@ index 2f6abae4..199a8ee6 100644
                          </Link>
                        ))}
                      </div>
-@@ -923,7 +960,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -923,7 +966,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                <ChoiceOptions question={qe.q.question} value={qe.answer} onPick={v => setEntry(qe.key, { answer: v })} disabled={locked || blocked || qe.checking} />
                {!locked && !blocked && (
                  <form ref={qe.key === lastEntryKey ? answerFormRef : undefined} onSubmit={ev => { ev.preventDefault(); handleCheck(qe.key) }} className="clear-of-tabs mt-3 flex flex-col sm:flex-row gap-2">
@@ -2965,7 +2993,7 @@ index 2f6abae4..199a8ee6 100644
                    <MathAnswerInput
                      id={`learn-answer-${qe.key}`}
                      focusRef={qe.key === lastEntryKey ? answerFocusRef : undefined}
-@@ -935,20 +972,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -935,20 +978,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      disabled={qe.checking}
                      status={qe.feedback ? (qe.feedback.correct ? 'correct' : 'incorrect') : 'default'}
                      inputMode={format.inputMode}
@@ -2993,7 +3021,7 @@ index 2f6abae4..199a8ee6 100644
                      prerequisites={(qe.blockedPrerequisiteIds?.length ? qe.blockedPrerequisiteIds : prerequisites.flatMap(p => p.met ? [] : [p.conceptId])).map(id => ({
                        conceptId: id,
                        title: prerequisites.find(p => p.conceptId === id)?.title ?? concepts.find(c => c.id === id)?.label ?? id,
-@@ -957,7 +996,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -957,7 +1002,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      }))}
                      returnStack={prereqStack}
                    />
@@ -3002,7 +3030,7 @@ index 2f6abae4..199a8ee6 100644
                  </div>
                )}
                <div className="mt-2 flex justify-end">
-@@ -967,6 +1006,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -967,6 +1012,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    kind="question"
                    question={qe.q.question}
                    source="practice"
@@ -3011,7 +3039,7 @@ index 2f6abae4..199a8ee6 100644
                    answerGiven={qe.answer}
                    gradingType={conceptGradingType}
                    answerHint={format.hint}
-@@ -976,8 +1017,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -976,8 +1023,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                {locked && qe.feedback && (
                  <div className="mt-3">
                    <p className={`font-mono text-xs ${qe.feedback.correct ? 'text-green-400' : 'text-red-400'}`}>
@@ -3022,7 +3050,7 @@ index 2f6abae4..199a8ee6 100644
                    </p>
                    <XPAdjustmentNote
                      adjustment={qe.feedback.xpAdjustment}
-@@ -986,7 +1027,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -986,7 +1033,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      className="mt-2"
                    />
                    <p className="mt-1.5 font-mono text-xs text-mathua-primary">
@@ -3031,7 +3059,7 @@ index 2f6abae4..199a8ee6 100644
                    </p>
                    {/* The explanation is the solution for *this* instance, shown
                        on both verdicts: a correct answer still needs the
-@@ -1002,7 +1043,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -1002,7 +1049,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    {qe.feedback.text && (
                      <div className="mt-1.5">
                        <p className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted">
@@ -3407,10 +3435,10 @@ index 5bd3fb8f..18ec286b 100644
  // Mobile compass overflow: destinations missing from the bottom tabs.
 diff --git a/web/next-app/lib/pilot.ts b/web/next-app/lib/pilot.ts
 new file mode 100644
-index 00000000..34247b1b
+index 00000000..42be81de
 --- /dev/null
 +++ b/web/next-app/lib/pilot.ts
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,216 @@
 +// Switches for the TypeScript pilot served by cmd/typescript-pilot.
 +//
 +// Everything here is off unless the interface is built with NEXT_PUBLIC_TS_PILOT=1,
@@ -3481,6 +3509,18 @@ index 00000000..34247b1b
 + */
 +export function pilotAdmit<T extends { question: string }>(fresh: T[], buffered: string[], shown: string[]): T[] {
 +  return pilotFresh(fresh, [...buffered, ...shown.slice(-(PILOT_BANK - 1))])
++}
++
++/**
++ * The questions to use from a fetch the page waited for because its buffer was empty. It is what
++ * pilotAdmit lets through; when that is nothing, it is what the server sent, except the question
++ * shown last. The pilot's own filter must never be the reason a section ends.
++ */
++export function pilotUsable<T extends { question: string }>(fresh: T[], shown: string[]): T[] {
++  const admitted = pilotAdmit(fresh, [], shown)
++  if (admitted.length > 0) return admitted
++  const last = shown[shown.length - 1]
++  return pilotFresh(fresh, []).filter(q => q.question !== last)
 +}
 +
 +const PT: Record<string, string> = {
@@ -3660,12 +3700,12 @@ index 225320f8..7498dcd4 100644
    return {
 diff --git a/web/next-app/test/pilot.test.ts b/web/next-app/test/pilot.test.ts
 new file mode 100644
-index 00000000..09683290
+index 00000000..817d781c
 --- /dev/null
 +++ b/web/next-app/test/pilot.test.ts
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,91 @@
 +import { describe, expect, it } from 'vitest'
-+import { pilotAdmit, pilotExclude, pilotFresh } from '../lib/pilot'
++import { pilotAdmit, pilotExclude, pilotFresh, pilotUsable } from '../lib/pilot'
 +
 +// The pilot serves a bank of six cases per section. These helpers decide what a practice fetch
 +// excludes, so that the bank rotates and a missed question does not come straight back.
@@ -3735,5 +3775,23 @@ index 00000000..09683290
 +      buffer = [...buffer, ...pilotAdmit(fetched.map(q), buffer, ['a', 'b']).map(item => item.question)]
 +    }
 +    expect(buffer).toEqual(['c', 'd', 'e', 'f'])
++  })
++})
++
++describe('pilotUsable', () => {
++  const q = (question: string) => ({ question })
++
++  it('is what pilotAdmit lets through when that is something', () => {
++    expect(pilotUsable([q('a'), q('f')], ['b', 'c', 'd', 'e', 'f'])).toEqual([q('a')])
++  })
++
++  it('never leaves the page without a question because of the pilot filter', () => {
++    // The fetch excluded a full buffer, so the server could only send a case shown three questions ago.
++    expect(pilotUsable([q('a')], ['a', 'b', 'c'])).toEqual([q('a')])
++  })
++
++  it('still refuses the question shown last', () => {
++    expect(pilotUsable([q('c'), q('a')], ['a', 'b', 'c'])).toEqual([q('a')])
++    expect(pilotUsable([q('c')], ['a', 'b', 'c'])).toEqual([])
 +  })
 +})
