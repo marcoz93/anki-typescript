@@ -1,0 +1,1 @@
+ok  	github.com/chuma-beep/mathua/internal/server	32.528s

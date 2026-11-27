@@ -1,38 +1,59 @@
 diff --git a/cmd/typescript-pilot/README.md b/cmd/typescript-pilot/README.md
 new file mode 100644
-index 00000000..6510fe7c
+index 00000000..e2a0c7ad
 --- /dev/null
 +++ b/cmd/typescript-pilot/README.md
-@@ -0,0 +1,142 @@
+@@ -0,0 +1,186 @@
 +# TypeScript pilot
 +
 +This pilot connects TypeScript exercises to Mathua's existing generator interface.
 +It uses the existing engine, HTTP routes, SQLite store, prerequisite rules, mastery model and report workflow.
 +It serves Mathua's existing study interface beside the API.
-+The three pilot concepts have short explanations in Portuguese.
++Exercises, lessons and prerequisite edges come from an editorial package outside this patch.
 +
 +The TypeScript content and grader are a separate adaptation.
 +They are not Math Academy content or an official Mathua curriculum.
 +
 +## Scope
 +
-+| Concept ID | Observable task | Prerequisites in this pilot |
-+| --- | --- | --- |
-+| `ts.value.numeric_literal` | Write a numeric literal for a stated value | None |
-+| `ts.type.number` | Name the numeric type in a type annotation | None |
-+| `ts.binding.const_number` | Declare a constant with the requested name and numeric literal | Both concepts above |
++The pilot reads `curriculo.json` and `exercicios.json` from the package `conteudo/typescript-v1`
++of the companion `anki-typescript` repository. It finds that directory above the working directory,
++or takes it from `-content`. Nothing is copied into this patch, so the package stays the one source.
 +
-+The prerequisite edges are a teaching choice.
++`integratedThroughStage` in `content.go` is the last ladder stage served. It is 3 now:
++13 concepts, 14 families and 84 cases of stages D01 to D03. Later stages have no grader yet.
++
++| What the package holds | How the existing engine receives it |
++| --- | --- |
++| Concept, with prerequisites | One concept of the DAG, with the same ID and edges |
++| Family, a task with one criterion | One section of the concept's lesson (a knowledge point) |
++| Case, one concrete question | One problem of the concept's generator |
++| Stage lesson | The lesson of every concept of that stage, once per section |
++| `choice` family | Question text ending in `A) ...` blocks, which the interface draws as buttons |
++
++The three concepts of the first pilot keep their IDs: `ts.value.numeric_literal` (family F002),
++`ts.type.number` (F005) and `ts.binding.const_number` (F010). Stored progress stays attached to them.
++
++A family is one section because the existing stepper stays on a section after a wrong answer.
++The practice route passes the section as `kp_ordinal`, and the generator serves that family only.
++The route accepts `kp_ordinal` 1 to 3, so the loader refuses a concept with more than three families.
++
++The bank is finite: six cases per family. The generator walks the cases in order, so a batch never
++repeats a case while others remain. With `NEXT_PUBLIC_TS_PILOT=1` the study page excludes the
++questions it showed most recently, which leaves the case shown longest ago.
++The practice route now excludes a multi-line question as a whole. Before, it compared the excluded
++text line by line, so a question with a choice list was never excluded.
++
++At start the pilot grades the model answer of every served case with `grade.cjs`, in one process.
++A family without a grader, or a model answer its own grader rejects, stops the start with the list.
++
++The prerequisite edges are the package's teaching choice.
 +They do not define a mandatory sequence for all TypeScript learning.
-+The native mastery thresholds remain in `internal/mastery/evidence.go`.
-+The pilot does not validate their educational calibration.
-+
-+Each concept has one exercise family.
-+The generator varies the value and, where applicable, the identifier.
-+These parameter changes do not create a new exercise family.
-+Generation uses a local draw counter because the registry reuses one context within a batch.
-+A seed alone does not reproduce a question without the counter state.
-+Reports preserve the question, expected answer and learner answer for replay.
++The native mastery thresholds remain in `internal/mastery/evidence.go`, and every concept keeps the
++threshold the first pilot used. The pilot does not validate their educational calibration.
++Reports preserve the concept, the question, the expected answer and the learner answer for replay.
++Concept and question identify one family and one case of the package; `content.lookup` returns them.
++The report row does not store the family, the case or the content version as separate fields.
 +
 +## Install and test
 +
@@ -72,7 +93,8 @@ index 00000000..6510fe7c
 +Use `-db` to set the SQLite database path.
 +Keep the adjacent `.jwt` file with the database to preserve login tokens across process restarts.
 +Use `-node` or `-grader` to set non-default executable and script paths.
-+The lesson directory sits beside `grade.cjs`.
++Use `-content` to set the editorial package directory.
++The lesson files the engine reads are written to `<db>.lessons` on every start.
 +Use `-web` to set the static export directory.
 +Run the binary from the repository root with the default paths.
 +Without a frontend build, the API still starts and the command prints the build instruction.
@@ -99,7 +121,28 @@ index 00000000..6510fe7c
 +
 +## Grading contract
 +
-+The constant prompt states that a `number` annotation is optional.
++Each family of the package has its own criterion. `grade.cjs` holds one grader per code family
++and one per answer mode for `choice` and `token`. The mode `value` belongs to later stages.
++
++| Family | Accepted | Not accepted |
++| --- | --- | --- |
++| F002 numeric literal | `15000`, `15_000` | `"15000"`, `10000 + 5000` |
++| F003 text literal | `"reembolso-01"`, `'reembolso-01'` | a template literal, other content, no quotes |
++| F004 boolean literal | `false`, `true;` | `"false"`, the opposite value, `True` |
++| F010 numeric `const` | with or without `: number` | `let`, other name or value, text initializer |
++| F011 text `const` | with or without `: string`, either quote | `let`, other name or content, `: number` |
++| `token` families | the exact name or symbol, surrounding spaces ignored | another case, such as `Number` |
++| `choice` families | the letter of the correct alternative, or its text | any other alternative |
++
++A learner answers a choice by letter. The engine resolves the letter against the served question
++and hands the grader the text of that alternative, as it does for Mathua's own choice questions.
++The reference answer shown after grading is therefore the text of the correct alternative.
++
++A wrong answer shows the explanation of that case. The grader also states what is wrong with the
++answer when the answer itself supports it, for example `let` where the task asks for `const`.
++With `NEXT_PUBLIC_TS_PILOT=1` the study page shows that sentence; the original page drops it.
++
++The constant prompt states that the type annotation is optional.
 +Both answers below satisfy that task:
 +
 +```ts
@@ -109,6 +152,7 @@ index 00000000..6510fe7c
 +
 +Each submission contains only one of these declarations.
 +The checker rejects `let`, an incorrect name, an incorrect value, a string initializer or extra statements.
++A reference answer that is not in the served content is reported as not graded, never as wrong.
 +It accepts numeric separators, whitespace and ordinary comments.
 +It checks TypeScript syntax and types without executing or emitting learner code.
 +Compiler file reads are restricted to the virtual answer and TypeScript's standard library declarations.
@@ -146,29 +190,444 @@ index 00000000..6510fe7c
 +The companion `anki-typescript` repository supplies `process-smoke.py` for real process restarts
 +and `browser-smoke.mjs` for the existing interface against the real API.
 +These checks do not measure a deployed installation or long-term retention.
+diff --git a/cmd/typescript-pilot/content.go b/cmd/typescript-pilot/content.go
+new file mode 100644
+index 00000000..f24b5537
+--- /dev/null
++++ b/cmd/typescript-pilot/content.go
+@@ -0,0 +1,415 @@
++package main
++
++import (
++	"encoding/json"
++	"fmt"
++	"os"
++	"path/filepath"
++	"strings"
++	"sync/atomic"
++
++	"github.com/chuma-beep/mathua/internal/concepts"
++	"github.com/chuma-beep/mathua/internal/generator"
++	"github.com/chuma-beep/mathua/internal/grader"
++)
++
++// integratedThroughStage is the last ladder stage whose families have graders in grade.cjs.
++// Raising it serves more of the content package. Startup grades every model answer of the
++// served stages and refuses to run when a grader is missing or rejects its own model answer.
++const integratedThroughStage = 3
++
++// contentDirName is where the editorial package lives in the repository that carries this pilot.
++const contentDirName = "conteudo/typescript-v1"
++
++// maxFamiliesPerConcept follows the existing practice route, which accepts kp_ordinal 1 to 3.
++const maxFamiliesPerConcept = 3
++
++type choice struct {
++	ID   string `json:"id"`
++	Text string `json:"text"`
++}
++
++type exerciseCase struct {
++	ID                string   `json:"id"`
++	Prompt            string   `json:"prompt"`
++	ContextCode       string   `json:"context_code"`
++	Answer            string   `json:"answer"`
++	AnswerExplanation string   `json:"answer_explanation"`
++	Explanation       string   `json:"explanation"`
++	CodeForm          string   `json:"code_form"`
++	Choices           []choice `json:"choices"`
++}
++
++type family struct {
++	ID        string         `json:"id"`
++	ConceptID string         `json:"concept_id"`
++	Mode      string         `json:"mode"`
++	Cases     []exerciseCase `json:"cases"`
++}
++
++type conceptSpec struct {
++	ID            string   `json:"id"`
++	Label         string   `json:"label"`
++	Stage         int      `json:"stage"`
++	Prerequisites []string `json:"prerequisites"`
++	FamilyIDs     []string `json:"family_ids"`
++}
++
++// content is the served part of the editorial package: the concepts up to one stage.
++type content struct {
++	Version  string
++	Concepts []conceptSpec
++	families map[string]*family
++	lessons  map[int]string
++}
++
++// gradeJob is what grade.cjs needs to judge one answer. The learner's answer is filled in last.
++type gradeJob struct {
++	Case        string `json:"case"`
++	Family      string `json:"family"`
++	Mode        string `json:"mode"`
++	Expected    string `json:"expected"`
++	ContextCode string `json:"context_code"`
++	CodeForm    string `json:"code_form"`
++	Answer      string `json:"answer"`
++}
++
++// findContentDir walks up from start until it finds the editorial package.
++func findContentDir(start string) (string, error) {
++	dir, err := filepath.Abs(start)
++	if err != nil {
++		return "", err
++	}
++	for {
++		candidate := filepath.Join(dir, filepath.FromSlash(contentDirName))
++		if _, err := os.Stat(filepath.Join(candidate, "exercicios.json")); err == nil {
++			return candidate, nil
++		}
++		parent := filepath.Dir(dir)
++		if parent == dir {
++			return "", fmt.Errorf("content package %s not found above %s; pass -content", contentDirName, start)
++		}
++		dir = parent
++	}
++}
++
++func readJSON(path string, into any) error {
++	raw, err := os.ReadFile(path)
++	if err != nil {
++		return err
++	}
++	if err := json.Unmarshal(raw, into); err != nil {
++		return fmt.Errorf("%s: %w", path, err)
++	}
++	return nil
++}
++
++// loadContent reads curriculo.json and exercicios.json and keeps the concepts up to throughStage.
++// It rejects content the existing engine cannot serve as written, instead of serving part of it.
++func loadContent(dir string, throughStage int) (*content, error) {
++	var curriculum struct {
++		Version string `json:"version"`
++		Stages  []struct {
++			Order          int    `json:"order"`
++			LessonMarkdown string `json:"lesson_markdown"`
++		} `json:"stages"`
++		Concepts []conceptSpec `json:"concepts"`
++	}
++	var exercises struct {
++		Version  string   `json:"version"`
++		Families []family `json:"families"`
++	}
++	if err := readJSON(filepath.Join(dir, "curriculo.json"), &curriculum); err != nil {
++		return nil, err
++	}
++	if err := readJSON(filepath.Join(dir, "exercicios.json"), &exercises); err != nil {
++		return nil, err
++	}
++	if curriculum.Version == "" || curriculum.Version != exercises.Version {
++		return nil, fmt.Errorf("content versions differ: curriculum %q, exercises %q", curriculum.Version, exercises.Version)
++	}
++	c := &content{Version: curriculum.Version, families: map[string]*family{}, lessons: map[int]string{}}
++	for _, s := range curriculum.Stages {
++		c.lessons[s.Order] = s.LessonMarkdown
++	}
++	all := map[string]*family{}
++	for i := range exercises.Families {
++		all[exercises.Families[i].ID] = &exercises.Families[i]
++	}
++	served := map[string]bool{}
++	for _, spec := range curriculum.Concepts {
++		if spec.Stage >= 1 && spec.Stage <= throughStage {
++			c.Concepts = append(c.Concepts, spec)
++			served[spec.ID] = true
++		}
++	}
++	if len(c.Concepts) == 0 {
++		return nil, fmt.Errorf("no concept in stages 1 to %d", throughStage)
++	}
++	for _, spec := range c.Concepts {
++		if strings.TrimSpace(c.lessons[spec.Stage]) == "" {
++			return nil, fmt.Errorf("%s: stage %d has no lesson", spec.ID, spec.Stage)
++		}
++		for _, pre := range spec.Prerequisites {
++			if !served[pre] {
++				return nil, fmt.Errorf("%s: prerequisite %s is outside stages 1 to %d", spec.ID, pre, throughStage)
++			}
++		}
++		if len(spec.FamilyIDs) == 0 || len(spec.FamilyIDs) > maxFamiliesPerConcept {
++			return nil, fmt.Errorf("%s: %d families; the practice route serves 1 to %d sections", spec.ID, len(spec.FamilyIDs), maxFamiliesPerConcept)
++		}
++		questions := map[string]string{}
++		for _, id := range spec.FamilyIDs {
++			f := all[id]
++			if f == nil || f.ConceptID != spec.ID || len(f.Cases) == 0 {
++				return nil, fmt.Errorf("%s: family %s is missing, empty or belongs to another concept", spec.ID, id)
++			}
++			for _, k := range f.Cases {
++				if strings.TrimSpace(k.Prompt) == "" || strings.TrimSpace(k.Answer) == "" || strings.TrimSpace(k.Explanation) == "" {
++					return nil, fmt.Errorf("%s: prompt, answer and explanation are required", k.ID)
++				}
++				if f.Mode == "choice" && choiceText(k, k.Answer) == "" {
++					return nil, fmt.Errorf("%s: answer %q is not one of its choices", k.ID, k.Answer)
++				}
++				q := questionText(k)
++				if other, dup := questions[q]; dup {
++					return nil, fmt.Errorf("%s and %s serve the same question in %s", other, k.ID, spec.ID)
++				}
++				questions[q] = k.ID
++			}
++			c.families[id] = f
++		}
++	}
++	return c, nil
++}
++
++func choiceText(k exerciseCase, id string) string {
++	for _, option := range k.Choices {
++		if option.ID == id {
++			return option.Text
++		}
++	}
++	return ""
++}
++
++// questionText is the text served to the learner and stored with each attempt and report.
++// Choices use the "A) text" blocks the existing interface already turns into buttons.
++func questionText(k exerciseCase) string {
++	var b strings.Builder
++	b.WriteString(strings.TrimSpace(k.Prompt))
++	if code := strings.TrimSpace(k.ContextCode); code != "" {
++		b.WriteString("\n\n```ts\n" + code + "\n```")
++	}
++	for _, option := range k.Choices {
++		b.WriteString("\n\n" + option.ID + ") " + strings.TrimSpace(option.Text))
++	}
++	return b.String()
++}
++
++// expectedText is the reference answer shown after grading. The engine hands it back to Grade.
++// For a choice it is the text of the correct alternative: the engine resolves the letter a learner
++// taps or types to the text of that alternative in the served question before it grades.
++func expectedText(f *family, k exerciseCase) string {
++	if f.Mode == "choice" {
++		return strings.TrimSpace(choiceText(k, k.Answer))
++	}
++	return k.Answer
++}
++
++func (c *content) familiesOf(spec conceptSpec) []*family {
++	list := make([]*family, 0, len(spec.FamilyIDs))
++	for _, id := range spec.FamilyIDs {
++		list = append(list, c.families[id])
++	}
++	return list
++}
++
++// lookup returns the family and case that serve a question of a concept. A report stores the
++// concept and the question, so this recovers the instance under review without new storage.
++func (c *content) lookup(conceptID, question string) (familyID, caseID string, ok bool) {
++	for _, spec := range c.Concepts {
++		if spec.ID != conceptID {
++			continue
++		}
++		for _, f := range c.familiesOf(spec) {
++			for _, k := range f.Cases {
++				if questionText(k) == question {
++					return f.ID, k.ID, true
++				}
++			}
++		}
++	}
++	return "", "", false
++}
++
++// exercise serves one concept. Each family is one section of the lesson (a knowledge point),
++// so the existing stepper keeps a learner on the same family after a wrong answer.
++type exercise struct {
++	families []*family
++	check    *checker
++	draw     atomic.Int64
++	jobs     map[string]gradeJob
++	hint     string
++}
++
++func newExercise(spec conceptSpec, families []*family, check *checker) (*exercise, error) {
++	g := &exercise{families: families, check: check, jobs: map[string]gradeJob{}, hint: "Selecione uma alternativa ou digite a letra dela."}
++	for _, f := range families {
++		if f.Mode != "choice" {
++			g.hint = "Digite somente a resposta solicitada, sem bloco Markdown."
++		}
++		for _, k := range f.Cases {
++			key := expectedText(f, k)
++			job := gradeJob{Case: k.ID, Family: f.ID, Mode: f.Mode, Expected: key, ContextCode: k.ContextCode, CodeForm: k.CodeForm}
++			// The engine gives Grade only the reference answer. Two cases may share it only when
++			// the grader would receive the same task for both. A choice is judged by its text alone.
++			if other, seen := g.jobs[key]; seen {
++				sameTask := other.Mode == job.Mode && (job.Mode == "choice" || other.Family == job.Family) &&
++					(job.Mode != "code" || other.ContextCode == job.ContextCode)
++				if !sameTask {
++					return nil, fmt.Errorf("%s: cases %s and %s share the reference answer %q with different tasks", spec.ID, other.Case, k.ID, key)
++				}
++				continue
++			}
++			g.jobs[key] = job
++		}
++	}
++	return g, nil
++}
++
++func (g *exercise) Generate(ctx generator.GeneratorContext) generator.Problem {
++	// Mathua calls Generate repeatedly with one context in a batch. The local counter walks the
++	// finite bank, so every case of the section is reached before one repeats.
++	n := uint64(ctx.Seed) + uint64(g.draw.Add(1))
++	var f *family
++	var k exerciseCase
++	if ctx.KPOrdinal >= 1 && ctx.KPOrdinal <= len(g.families) {
++		f = g.families[ctx.KPOrdinal-1]
++		k = f.Cases[n%uint64(len(f.Cases))]
++	} else {
++		total := 0
++		for _, each := range g.families {
++			total += len(each.Cases)
++		}
++		at := int(n % uint64(total))
++		for _, each := range g.families {
++			if at < len(each.Cases) {
++				f, k = each, each.Cases[at]
++				break
++			}
++			at -= len(each.Cases)
++		}
++	}
++	return generator.Problem{Question: questionText(k), Answer: expectedText(f, k), Explanation: k.Explanation}
++}
++
++func (g *exercise) Grade(expected, answer string) grader.Result {
++	job, ok := g.jobs[expected]
++	if !ok {
++		return grader.Result{Unavailable: true, Feedback: "Esta pergunta não pertence à versão atual do conteúdo. Sua resposta não foi contada como erro."}
++	}
++	job.Answer = answer
++	return g.check.grade(job)
++}
++
++func (g *exercise) AnswerFormat() generator.AnswerFormat {
++	return generator.AnswerFormat{InputMode: "text", Hint: g.hint}
++}
++
++// gradingTypes keeps the values the three original pilot concepts were registered with.
++var gradingTypes = map[string]string{"ts.value.numeric_literal": "numeric"}
++
++func (c *content) dag() (*concepts.DAG, error) {
++	list := make([]concepts.Concept, 0, len(c.Concepts))
++	for _, spec := range c.Concepts {
++		gradingType := gradingTypes[spec.ID]
++		if gradingType == "" {
++			gradingType = "expression"
++		}
++		// The prerequisite edges are the package's teaching choice, and the thresholds are the
++		// ones the pilot already used. This integration adds no new statistical threshold.
++		list = append(list, concepts.Concept{ID: spec.ID, Label: spec.Label, Domain: "typescript", GradingType: gradingType,
++			Prerequisites: spec.Prerequisites, MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}})
++	}
++	return concepts.Build(list)
++}
++
++func sectionLabel(spec conceptSpec, index int) string {
++	if len(spec.FamilyIDs) == 1 {
++		return spec.Label
++	}
++	return fmt.Sprintf("%s (parte %d de %d)", spec.Label, index+1, len(spec.FamilyIDs))
++}
++
++// writeLessons writes the files the existing lesson loader reads. The package has one lesson per
++// stage, so every concept of a stage shows that lesson, once per section.
++func (c *content) writeLessons(dir string) error {
++	if err := os.MkdirAll(filepath.Join(dir, "kp"), 0o755); err != nil {
++		return err
++	}
++	type entry struct {
++		ConceptID string `json:"concept_id"`
++		Source    string `json:"source"`
++	}
++	type point struct {
++		Label    string   `json:"label"`
++		Section  string   `json:"section"`
++		Subgoals []string `json:"subgoals"`
++	}
++	index := make([]entry, 0, len(c.Concepts))
++	for _, spec := range c.Concepts {
++		var md strings.Builder
++		md.WriteString("# " + spec.Label + "\n")
++		points := make([]point, 0, len(spec.FamilyIDs))
++		for i := range spec.FamilyIDs {
++			label := sectionLabel(spec, i)
++			md.WriteString("\n## " + label + "\n\n" + strings.TrimSpace(c.lessons[spec.Stage]) + "\n")
++			points = append(points, point{Label: label, Section: label, Subgoals: []string{}})
++		}
++		if err := os.WriteFile(filepath.Join(dir, spec.ID+".md"), []byte(md.String()), 0o644); err != nil {
++			return err
++		}
++		raw, err := json.Marshal(points)
++		if err != nil {
++			return err
++		}
++		if err := os.WriteFile(filepath.Join(dir, "kp", spec.ID+".json"), raw, 0o644); err != nil {
++			return err
++		}
++		index = append(index, entry{ConceptID: spec.ID, Source: spec.ID + ".md"})
++	}
++	raw, err := json.Marshal(index)
++	if err != nil {
++		return err
++	}
++	return os.WriteFile(filepath.Join(dir, "lessons.json"), raw, 0o644)
++}
++
++// verifyModelAnswers grades every served case with its own model answer in one grader process.
++// A missing grader, a broken context or a model answer its grader rejects stops the start.
++func (c *content) verifyModelAnswers(check *checker) error {
++	var jobs []gradeJob
++	for _, spec := range c.Concepts {
++		for _, f := range c.familiesOf(spec) {
++			for _, k := range f.Cases {
++				reference := expectedText(f, k)
++				jobs = append(jobs, gradeJob{Case: k.ID, Family: f.ID, Mode: f.Mode, Expected: reference,
++					ContextCode: k.ContextCode, CodeForm: k.CodeForm, Answer: reference})
++			}
++		}
++	}
++	results, err := check.gradeBatch(jobs)
++	if err != nil {
++		return fmt.Errorf("content self-check could not run: %w", err)
++	}
++	var failed []string
++	for i, result := range results {
++		if result.Unavailable || !result.Correct {
++			failed = append(failed, fmt.Sprintf("%s (%s)", jobs[i].Case, result.Feedback))
++		}
++	}
++	if len(failed) > 0 {
++		return fmt.Errorf("%d of %d model answers are not accepted by their grader: %s", len(failed), len(jobs), strings.Join(failed, "; "))
++	}
++	return nil
++}
 diff --git a/cmd/typescript-pilot/grade.cjs b/cmd/typescript-pilot/grade.cjs
 new file mode 100644
-index 00000000..2faecb00
+index 00000000..e020646f
 --- /dev/null
 +++ b/cmd/typescript-pilot/grade.cjs
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,181 @@
 +'use strict';
 +
 +// This is a narrow static grader. Learner code is never evaluated or emitted.
++// Each job names the family of the editorial package it belongs to. A family without a grader
++// here is an error, never a wrong answer: the caller reports it as "not graded".
 +const ts = require('typescript');
 +const fs = require('node:fs');
 +const path = require('node:path');
 +
 +const result = (correct, feedback) => ({correct, score: correct ? 1 : 0, feedback});
 +const parse = source => ts.createSourceFile('answer.ts', source, ts.ScriptTarget.ES2022, true);
-+
-+function declaration(sf) {
-+  const statement = sf.statements.length === 1 && sf.statements[0];
-+  if (!statement || !ts.isVariableStatement(statement) || statement.modifiers?.length) return null;
-+  const list = statement.declarationList;
-+  if (list.declarations.length !== 1) return null;
-+  return {list, item: list.declarations[0]};
-+}
 +
 +function typeErrors(source) {
 +  const filename = path.resolve(__dirname, '__answer__.ts');
@@ -189,30 +648,78 @@ index 00000000..2faecb00
 +  return ts.getPreEmitDiagnostics(program).map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
 +}
 +
-+function grade({kind, expected, answer}) {
-+  if (typeof expected !== 'string' || typeof answer !== 'string') throw new Error('Invalid grader input');
-+  if (!answer.trim()) return result(false, 'Digite a resposta solicitada.');
-+  if (answer.length > 4096) return result(false, 'A resposta excede o tamanho deste exercício.');
-+  if (kind === 'type') {
-+    if (expected !== 'number') throw new Error('Invalid reference type');
-+    return result(answer.trim() === 'number', answer.trim() === 'number'
-+      ? 'Correto. number nomeia o tipo numérico.'
-+      : 'Use number para nomear o tipo numérico. Um literal como 15000 representa um valor, não o nome do tipo.');
-+  }
++// The single expression of an answer such as `15000` or `"reembolso-01";`, or null.
++function onlyExpression(sf) {
++  const statement = sf.statements.length === 1 && sf.statements[0];
++  return statement && ts.isExpressionStatement(statement) ? statement.expression : null;
++}
++
++// The single `name = initializer` of an answer made of one variable statement, or null.
++function declaration(sf) {
++  const statement = sf.statements.length === 1 && sf.statements[0];
++  if (!statement || !ts.isVariableStatement(statement) || statement.modifiers?.length) return null;
++  const list = statement.declarationList;
++  if (list.declarations.length !== 1) return null;
++  return {list, item: list.declarations[0]};
++}
++
++// Single and double quotes write the same text. A template literal is a different notation.
++const isQuotedText = node => !!node && ts.isStringLiteral(node);
++const isBooleanLiteral = node => !!node && (node.kind === ts.SyntaxKind.TrueKeyword || node.kind === ts.SyntaxKind.FalseKeyword);
++
++function parsedAnswer(answer) {
 +  const sf = parse(answer);
-+  if (sf.parseDiagnostics.length) return result(false, 'A resposta contém um erro de sintaxe TypeScript.');
-+  if (kind === 'literal') {
-+    const stmt = sf.statements.length === 1 && sf.statements[0];
-+    const expr = stmt && ts.isExpressionStatement(stmt) && stmt.expression;
-+    if (!expr || !ts.isNumericLiteral(expr)) return result(false, 'Use somente um literal numérico, sem aspas e sem operações.');
-+    if (Number(expr.text) !== Number(expected)) return result(false, 'O literal representa um valor diferente do solicitado.');
-+    return result(true, 'Correto. O literal representa o valor solicitado.');
-+  }
-+  if (kind !== 'const') throw new Error('Unknown exercise kind');
-+  const reference = declaration(parse(expected));
-+  if (!reference || !ts.isIdentifier(reference.item.name) || !ts.isNumericLiteral(reference.item.initializer)) {
++  return sf.parseDiagnostics.length ? null : sf;
++}
++
++const SYNTAX = 'A resposta contém um erro de sintaxe TypeScript.';
++
++// F002: one numeric literal of the requested value. Separators are valid; text and sums are not.
++function numericLiteral({expected, answer}) {
++  const sf = parsedAnswer(answer);
++  if (!sf) return result(false, SYNTAX);
++  const expr = onlyExpression(sf);
++  if (!expr || !ts.isNumericLiteral(expr)) return result(false, 'Use somente um literal numérico, sem aspas e sem operações.');
++  if (Number(expr.text) !== Number(expected)) return result(false, 'O literal representa um valor diferente do solicitado.');
++  return result(true, 'Correto. O literal representa o valor solicitado.');
++}
++
++// F003: one text literal with the exact content, in single or double quotes.
++function stringLiteral({expected, answer}) {
++  const reference = onlyExpression(parse(expected));
++  if (!isQuotedText(reference)) throw new Error('Invalid reference text literal');
++  const sf = parsedAnswer(answer);
++  if (!sf) return result(false, SYNTAX);
++  const expr = onlyExpression(sf);
++  if (!isQuotedText(expr)) return result(false, 'Use somente um literal textual, entre aspas simples ou duplas.');
++  if (expr.text !== reference.text) return result(false, 'O texto entre aspas difere do conteúdo solicitado.');
++  return result(true, 'Correto. O literal representa o texto solicitado.');
++}
++
++// F004: the requested boolean literal, unquoted.
++function booleanLiteral({expected, answer}) {
++  if (expected !== 'true' && expected !== 'false') throw new Error('Invalid reference boolean literal');
++  const sf = parsedAnswer(answer);
++  if (!sf) return result(false, SYNTAX);
++  const expr = onlyExpression(sf);
++  if (!isBooleanLiteral(expr)) return result(false, 'Use somente um literal booleano, true ou false, sem aspas.');
++  if (expr.getText(sf) !== expected) return result(false, 'O literal booleano tem o valor oposto ao solicitado.');
++  return result(true, 'Correto. O literal booleano representa o valor solicitado.');
++}
++
++// F010 and F011: one const declaration with the requested name and literal value.
++// The type annotation is optional and, when present, must be the type of that value.
++function constDeclaration(job, kind) {
++  const isValue = kind === 'number' ? ts.isNumericLiteral : isQuotedText;
++  const sameValue = kind === 'number' ? (a, b) => Number(a.text) === Number(b.text) : (a, b) => a.text === b.text;
++  const keyword = kind === 'number' ? ts.SyntaxKind.NumberKeyword : ts.SyntaxKind.StringKeyword;
++  const literalName = kind === 'number' ? 'um literal numérico, sem aspas e sem operações' : 'um literal textual, entre aspas simples ou duplas';
++  const reference = declaration(parse(job.expected));
++  if (!reference || !ts.isIdentifier(reference.item.name) || !reference.item.initializer || !isValue(reference.item.initializer)) {
 +    throw new Error('Invalid reference declaration');
 +  }
++  const sf = parsedAnswer(job.answer);
++  if (!sf) return result(false, SYNTAX);
 +  const actual = declaration(sf);
 +  if (!actual) return result(false, 'Escreva somente uma declaração de constante, com um único nome.');
 +  if (!(actual.list.flags & ts.NodeFlags.Const)) return result(false, 'A tarefa pede const, que impede reatribuir esse nome após a inicialização. let permite reatribuição.');
@@ -220,103 +727,85 @@ index 00000000..2faecb00
 +    return result(false, `Use o nome solicitado: ${reference.item.name.text}.`);
 +  }
 +  const init = actual.item.initializer;
-+  if (!init || !ts.isNumericLiteral(init)) return result(false, 'Inicialize a constante com um literal numérico, sem aspas e sem operações.');
-+  if (Number(init.text) !== Number(reference.item.initializer.text)) return result(false, 'O valor inicial difere do solicitado.');
-+  if (actual.item.type && actual.item.type.kind !== ts.SyntaxKind.NumberKeyword) {
-+    return result(false, 'Neste exercício, omita a anotação ou use number, como indicado no enunciado.');
++  if (!init || !isValue(init)) return result(false, `Inicialize a constante com ${literalName}.`);
++  if (!sameValue(init, reference.item.initializer)) return result(false, 'O valor inicial difere do solicitado.');
++  if (actual.item.type && actual.item.type.kind !== keyword) {
++    return result(false, `Neste exercício, omita a anotação ou use ${kind}.`);
 +  }
-+  const errors = typeErrors(answer);
++  const errors = typeErrors(job.answer);
 +  if (errors.length) return result(false, `O compilador TypeScript rejeitou a declaração: ${errors[0]}`);
-+  return result(true, 'Correto. A constante tem o nome e o valor solicitados. A anotação number é opcional neste exercício.');
++  return result(true, `Correto. A constante tem o nome e o valor solicitados. A anotação ${kind} é opcional neste exercício.`);
++}
++
++const CODE = {
++  F002: numericLiteral,
++  F003: stringLiteral,
++  F004: booleanLiteral,
++  F010: job => constDeclaration(job, 'number'),
++  F011: job => constDeclaration(job, 'string'),
++};
++
++// A choice arrives as the text of one alternative: the engine resolves the letter a learner taps
++// or types against the served question before it grades. The verdict names no cause for a miss.
++function choice({expected, answer}) {
++  if (!expected.trim()) throw new Error('Invalid reference alternative');
++  return answer.trim() === expected.trim()
++    ? result(true, 'Correto.')
++    : result(false, 'Esta não é a alternativa correta.');
++}
++
++// A token is a name, a type or a symbol of the language. Case is part of it.
++function token({expected, answer}) {
++  const given = answer.trim();
++  if (given === expected) return result(true, 'Correto.');
++  if (given.toLowerCase() === expected.toLowerCase()) {
++    return result(false, `Maiúsculas e minúsculas fazem diferença: ${given} não é o mesmo que ${expected}.`);
++  }
++  return result(false, 'A resposta não é o nome ou o símbolo solicitado.');
++}
++
++function grade(job) {
++  const {family, mode, expected, answer} = job;
++  if (typeof expected !== 'string' || typeof answer !== 'string') throw new Error('Invalid grader input');
++  if (!answer.trim()) return result(false, 'Digite a resposta solicitada.');
++  if (answer.length > 4096) return result(false, 'A resposta excede o tamanho deste exercício.');
++  if (mode === 'choice') return choice(job);
++  if (mode === 'token') return token(job);
++  if (mode === 'code' && Object.hasOwn(CODE, family)) return CODE[family](job);
++  throw new Error(`No grader for family ${family} (${mode})`);
++}
++
++// One verdict per job. A job that cannot be judged yields {error}, apart from a wrong answer.
++function gradeAll(jobs) {
++  return jobs.map(job => {
++    try {
++      return grade(job);
++    } catch (error) {
++      return {error: error.message};
++    }
++  });
 +}
 +
 +if (require.main === module) {
 +  try {
-+    process.stdout.write(JSON.stringify(grade(JSON.parse(fs.readFileSync(0, 'utf8')))));
++    const input = JSON.parse(fs.readFileSync(0, 'utf8'));
++    const output = Array.isArray(input.batch) ? {results: gradeAll(input.batch)} : grade(input);
++    process.stdout.write(JSON.stringify(output));
 +  } catch (error) {
 +    process.stderr.write(error.message + '\n');
 +    process.exitCode = 1;
 +  }
 +}
 +
-+module.exports = {grade};
-diff --git a/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json b/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json
-new file mode 100644
-index 00000000..a153a3c7
---- /dev/null
-+++ b/cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json
-@@ -0,0 +1 @@
-+[{"label": "Declaração const com valor numérico", "section": "Declaração const com valor numérico", "subgoals": []}]
-diff --git a/cmd/typescript-pilot/lessons/kp/ts.type.number.json b/cmd/typescript-pilot/lessons/kp/ts.type.number.json
-new file mode 100644
-index 00000000..0f5bbde6
---- /dev/null
-+++ b/cmd/typescript-pilot/lessons/kp/ts.type.number.json
-@@ -0,0 +1 @@
-+[{"label": "Tipo number", "section": "Tipo number", "subgoals": []}]
-diff --git a/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json b/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json
-new file mode 100644
-index 00000000..5541d016
---- /dev/null
-+++ b/cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json
-@@ -0,0 +1 @@
-+[{"label": "Valor e literal numérico", "section": "Valor e literal numérico", "subgoals": []}]
-diff --git a/cmd/typescript-pilot/lessons/lessons.json b/cmd/typescript-pilot/lessons/lessons.json
-new file mode 100644
-index 00000000..a6d9d6f3
---- /dev/null
-+++ b/cmd/typescript-pilot/lessons/lessons.json
-@@ -0,0 +1,5 @@
-+[
-+  {"concept_id": "ts.value.numeric_literal", "source": "typescript.md"},
-+  {"concept_id": "ts.type.number", "source": "typescript.md"},
-+  {"concept_id": "ts.binding.const_number", "source": "typescript.md"}
-+]
-diff --git a/cmd/typescript-pilot/lessons/typescript.md b/cmd/typescript-pilot/lessons/typescript.md
-new file mode 100644
-index 00000000..766fd3e7
---- /dev/null
-+++ b/cmd/typescript-pilot/lessons/typescript.md
-@@ -0,0 +1,32 @@
-+# Fundamentos iniciais de TypeScript
-+
-+## Valor e literal numérico
-+
-+Um literal numérico é uma expressão que representa diretamente um valor numérico no código.
-+
-+Exemplo: para representar um reembolso de quinze mil unidades, escreva `15000`.
-+`15_000` representa o mesmo valor. O sublinhado é um separador para facilitar a leitura.
-+
-+Contraste: `"15000"` é um literal de texto. `10000 + 5000` é uma operação cujo resultado tem o mesmo valor, mas não é um único literal.
-+
-+No exercício, escreva somente o literal que representa o valor pedido.
-+
-+## Tipo number
-+
-+Na anotação de tipo, `number` nomeia o tipo numérico do TypeScript.
-+
-+Exemplo: em `const amount: number = 15000;`, `amount` é o nome declarado, `number` é o nome do tipo na anotação e `15000` é o literal que fornece o valor inicial.
-+
-+Contraste: preencher a anotação com `15000` não responde à pergunta sobre o nome do tipo numérico geral. `string` nomeia o tipo de texto.
-+
-+No exercício, complete somente o espaço da anotação. A resposta pedida é `number`.
-+
-+## Declaração const com valor numérico
-+
-+Uma declaração `const` cria um vínculo entre um nome e seu valor inicial. Esse nome não pode receber uma reatribuição após a inicialização.
-+
-+Exemplo: `const reviewLimit: number = 10000;` declara o limite de revisão com valor dez mil. Neste exercício, a anotação é opcional: `const reviewLimit = 10000;` também atende ao pedido.
-+
-+Contraste: `let reviewLimit = 10000;` permite reatribuição e não atende a uma tarefa que exige `const`.
-+
-+Use exatamente o nome e o valor pedidos. Escreva uma única declaração, inicializada com um literal numérico.
++module.exports = {grade, gradeAll};
 diff --git a/cmd/typescript-pilot/main.go b/cmd/typescript-pilot/main.go
 new file mode 100644
-index 00000000..1c669ed6
+index 00000000..f75ee4b0
 --- /dev/null
 +++ b/cmd/typescript-pilot/main.go
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,212 @@
 +// This pilot composes Mathua's existing engine and HTTP API with TypeScript exercises.
++// The exercises, lessons and prerequisite edges come from the editorial package; see content.go.
 +package main
 +
 +import (
@@ -326,18 +815,15 @@ index 00000000..1c669ed6
 +	"flag"
 +	"fmt"
 +	"log"
-+	"math/rand"
 +	"net/http"
 +	"os"
 +	"os/exec"
 +	"path"
 +	"path/filepath"
 +	"strings"
-+	"sync/atomic"
 +	"time"
 +
 +	"github.com/chuma-beep/mathua/internal/auth"
-+	"github.com/chuma-beep/mathua/internal/concepts"
 +	"github.com/chuma-beep/mathua/internal/engine"
 +	"github.com/chuma-beep/mathua/internal/generator"
 +	"github.com/chuma-beep/mathua/internal/grader"
@@ -346,6 +832,7 @@ index 00000000..1c669ed6
 +	"github.com/chuma-beep/mathua/internal/storage"
 +)
 +
++// The three concepts of the first pilot keep their IDs, so their stored progress stays valid.
 +const (
 +	literalID = "ts.value.numeric_literal"
 +	typeID    = "ts.type.number"
@@ -358,105 +845,111 @@ index 00000000..1c669ed6
 +	script string
 +}
 +
-+func (c *checker) grade(kind, expected, answer string) grader.Result {
-+	input, err := json.Marshal(map[string]string{"kind": kind, "expected": expected, "answer": answer})
-+	if err != nil {
-+		return grader.Result{Unavailable: true, Feedback: "Não foi possível preparar a correção."}
++// graded is one verdict from grade.cjs. Error is set when a job could not be judged at all.
++type graded struct {
++	Correct  bool    `json:"correct"`
++	Score    float64 `json:"score"`
++	Feedback string  `json:"feedback"`
++	Error    string  `json:"error"`
++}
++
++const graderUnavailable = "O corretor TypeScript está indisponível. Sua resposta não foi contada como erro."
++
++func (g graded) result() grader.Result {
++	if g.Error != "" {
++		return grader.Result{Unavailable: true, Feedback: g.Error}
 +	}
-+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
++	if g.Feedback == "" {
++		return grader.Result{Unavailable: true, Feedback: graderUnavailable}
++	}
++	return grader.Result{Correct: g.Correct, Score: g.Score, Feedback: g.Feedback}
++}
++
++func (c *checker) run(timeout time.Duration, input, output any) error {
++	raw, err := json.Marshal(input)
++	if err != nil {
++		return err
++	}
++	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 +	defer cancel()
 +	cmd := exec.CommandContext(ctx, c.node, "--max-old-space-size=256", c.script)
-+	cmd.Stdin = bytes.NewReader(input)
-+	output, err := cmd.Output()
-+	var result grader.Result
-+	if err != nil || json.Unmarshal(output, &result) != nil || result.Feedback == "" {
-+		return grader.Result{Unavailable: true, Feedback: "O corretor TypeScript está indisponível. Sua resposta não foi contada como erro."}
-+	}
-+	return result
-+}
-+
-+type exercise struct {
-+	kind  string
-+	check *checker
-+	draw  atomic.Int64
-+}
-+
-+func (g *exercise) Generate(ctx generator.GeneratorContext) generator.Problem {
-+	// Mathua calls Generate repeatedly with one context in a batch. The local
-+	// counter varies those draws. Reports replay the stored question and answer.
-+	rng := rand.New(rand.NewSource(ctx.Seed + g.draw.Add(1)))
-+	names := []string{"amount", "reviewLimit", "refundAmount", "limit"}
-+	name := names[rng.Intn(len(names))]
-+	value := 1000 + rng.Intn(19001)
-+	var p generator.Problem
-+	switch g.kind {
-+	case "literal":
-+		words := []string{"um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte"}
-+		n := rng.Intn(len(words))
-+		value = (n + 1) * 1000
-+		amount := words[n] + " mil"
-+		if n == 0 {
-+			amount = "mil"
-+		}
-+		p.Question = fmt.Sprintf("O valor de um reembolso é %s. Escreva somente um literal numérico TypeScript que represente esse valor.", amount)
-+		p.Answer = fmt.Sprint(value)
-+		p.Explanation = fmt.Sprintf("%d é um literal numérico: uma expressão que representa diretamente esse valor. Com aspas, seria um literal de texto.", value)
-+	case "type":
-+		p.Question = fmt.Sprintf("Complete somente a anotação de tipo: const %s: ___ = %d. Qual palavra TypeScript designa o tipo numérico?", name, value)
-+		p.Answer = "number"
-+		p.Explanation = fmt.Sprintf("number nomeia o tipo numérico. %d é um valor desse tipo. %s é o nome vinculado ao valor na declaração.", value, name)
-+	case "const":
-+		p.Question = fmt.Sprintf("Declare somente uma constante chamada %s, inicializada com o literal numérico %d. A anotação number é opcional.", name, value)
-+		p.Answer = fmt.Sprintf("const %s: number = %d;", name, value)
-+		p.Explanation = fmt.Sprintf("%s A declaração cria o vínculo entre o nome %s e o valor %d. const impede reatribuir esse nome. A anotação number pode ser omitida neste exercício.", p.Answer, name, value)
-+	}
-+	return p
-+}
-+
-+func (g *exercise) Grade(expected, answer string) grader.Result {
-+	return g.check.grade(g.kind, expected, answer)
-+}
-+
-+func (g *exercise) AnswerFormat() generator.AnswerFormat {
-+	return generator.AnswerFormat{InputMode: "text", Hint: "Digite somente a resposta solicitada, sem bloco Markdown."}
-+}
-+
-+func newPilot(repo storage.Repository, check *checker) (*http.ServeMux, *engine.Engine, error) {
-+	// These prerequisite edges are a teaching choice for this narrow pilot.
-+	// They do not claim that every TypeScript course needs this sequence.
-+	dag, err := concepts.Build([]concepts.Concept{
-+		{ID: literalID, Label: "Valor e literal numérico", Domain: "typescript", GradingType: "numeric",
-+			MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}},
-+		{ID: typeID, Label: "Tipo number", Domain: "typescript", GradingType: "expression",
-+			MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}},
-+		{ID: constID, Label: "Declaração const com valor numérico", Domain: "typescript", GradingType: "expression",
-+			Prerequisites: []string{literalID, typeID}, MasteryThreshold: concepts.MasteryThreshold{Streak: 3, AvgTimeSeconds: 60}},
-+	})
++	cmd.Stdin = bytes.NewReader(raw)
++	out, err := cmd.Output()
 +	if err != nil {
-+		return nil, nil, err
++		return err
++	}
++	return json.Unmarshal(out, output)
++}
++
++// grade judges one answer. Any failure to obtain a verdict is reported as unavailable, which the
++// engine keeps apart from a wrong answer: nothing is recorded and the learner can retry.
++func (c *checker) grade(job gradeJob) grader.Result {
++	var verdict graded
++	if err := c.run(10*time.Second, job, &verdict); err != nil || verdict.Error != "" {
++		return grader.Result{Unavailable: true, Feedback: graderUnavailable}
++	}
++	return verdict.result()
++}
++
++func (c *checker) gradeBatch(jobs []gradeJob) ([]grader.Result, error) {
++	var out struct {
++		Results []graded `json:"results"`
++	}
++	if err := c.run(60*time.Second, map[string]any{"batch": jobs}, &out); err != nil {
++		return nil, err
++	}
++	if len(out.Results) != len(jobs) {
++		return nil, fmt.Errorf("grader returned %d verdicts for %d jobs", len(out.Results), len(jobs))
++	}
++	results := make([]grader.Result, len(jobs))
++	for i, verdict := range out.Results {
++		results[i] = verdict.result()
++	}
++	return results, nil
++}
++
++// newPilot loads the content package from contentDir and writes the lesson files into lessonsDir.
++func newPilot(repo storage.Repository, check *checker, contentDir, lessonsDir string) (*http.ServeMux, *engine.Engine, *content, error) {
++	c, err := loadContent(contentDir, integratedThroughStage)
++	if err != nil {
++		return nil, nil, nil, err
++	}
++	dag, err := c.dag()
++	if err != nil {
++		return nil, nil, nil, err
 +	}
 +	reg := generator.NewRegistry()
-+	for _, item := range []struct{ id, kind string }{{literalID, "literal"}, {typeID, "type"}, {constID, "const"}} {
-+		if err := reg.Register(item.id, &exercise{kind: item.kind, check: check}); err != nil {
-+			return nil, nil, err
++	for _, spec := range c.Concepts {
++		item, err := newExercise(spec, c.familiesOf(spec), check)
++		if err != nil {
++			return nil, nil, nil, err
++		}
++		if err := reg.Register(spec.ID, item); err != nil {
++			return nil, nil, nil, err
 +		}
 +	}
-+	ll, err := lessons.Load(filepath.Join(filepath.Dir(check.script), "lessons"))
++	if err := c.verifyModelAnswers(check); err != nil {
++		return nil, nil, nil, err
++	}
++	if err := c.writeLessons(lessonsDir); err != nil {
++		return nil, nil, nil, err
++	}
++	ll, err := lessons.Load(lessonsDir)
 +	if err != nil {
-+		return nil, nil, err
++		return nil, nil, nil, err
 +	}
 +	eng := engine.New(repo, dag, reg, ll, nil)
 +	mux := http.NewServeMux()
 +	server.New(eng, repo, auth.New(repo)).Register(mux)
-+	return mux, eng, nil
++	return mux, eng, c, nil
 +}
 +
 +// Serve the existing Next.js export beside the API. Its client uses the same origin.
-+func studyFrontend(root string) http.Handler {
++func studyFrontend(root, firstConcept string) http.Handler {
 +	files := http.FileServer(http.Dir(root))
 +	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 +		if r.URL.Path == "/" {
-+			http.Redirect(w, r, "/learn?concept="+literalID, http.StatusFound)
++			http.Redirect(w, r, "/learn?concept="+firstConcept, http.StatusFound)
 +			return
 +		}
 +		clean := path.Clean(r.URL.Path)
@@ -476,6 +969,7 @@ index 00000000..1c669ed6
 +	node := flag.String("node", "node", "Node executable")
 +	script := flag.String("grader", "cmd/typescript-pilot/grade.cjs", "TypeScript grader path")
 +	web := flag.String("web", "web/next-app/out", "Existing Next.js static export directory")
++	contentFlag := flag.String("content", "", "Editorial content directory; default: "+contentDirName+" found above the working directory")
 +	flag.Parse()
 +	resolvedNode, err := exec.LookPath(*node)
 +	if err != nil {
@@ -485,18 +979,35 @@ index 00000000..1c669ed6
 +	if err != nil {
 +		log.Fatal(err)
 +	}
++	contentDir := *contentFlag
++	if contentDir == "" {
++		if contentDir, err = findContentDir("."); err != nil {
++			log.Fatal(err)
++		}
++	}
++	// The lesson files are derived from the content package on every start.
++	lessonsDir := *db + ".lessons"
++	if err := os.RemoveAll(lessonsDir); err != nil {
++		log.Fatal(err)
++	}
 +	repo, err := storage.NewSQLiteStore(*db)
 +	if err != nil {
 +		log.Fatal(err)
 +	}
 +	defer repo.Close()
 +	auth.SetSecretFile(*db + ".jwt")
-+	mux, _, err := newPilot(repo, &checker{node: resolvedNode, script: resolvedScript})
++	mux, _, c, err := newPilot(repo, &checker{node: resolvedNode, script: resolvedScript}, contentDir, lessonsDir)
 +	if err != nil {
 +		log.Fatal(err)
 +	}
++	cases := 0
++	for _, f := range c.families {
++		cases += len(f.Cases)
++	}
++	log.Printf("Content %s from %s: stages 1 to %d, %d concepts, %d families, %d cases, every model answer accepted by its grader",
++		c.Version, contentDir, integratedThroughStage, len(c.Concepts), len(c.families), cases)
 +	if info, err := os.Stat(filepath.Join(*web, "learn.html")); err == nil && !info.IsDir() {
-+		mux.Handle("/", studyFrontend(*web))
++		mux.Handle("/", studyFrontend(*web, c.Concepts[0].ID))
 +		log.Printf("Study interface: http://%s", *addr)
 +	} else {
 +		log.Print("Study interface not built. Run NEXT_PUBLIC_TS_PILOT=1 NEXT_PUBLIC_SAME_ORIGIN_API=1 npm run build in web/next-app.")
@@ -507,10 +1018,10 @@ index 00000000..1c669ed6
 +}
 diff --git a/cmd/typescript-pilot/main_test.go b/cmd/typescript-pilot/main_test.go
 new file mode 100644
-index 00000000..49341130
+index 00000000..bda47520
 --- /dev/null
 +++ b/cmd/typescript-pilot/main_test.go
-@@ -0,0 +1,434 @@
+@@ -0,0 +1,626 @@
 +package main
 +
 +import (
@@ -524,13 +1035,15 @@ index 00000000..49341130
 +	"os/exec"
 +	"path/filepath"
 +	"reflect"
-+	"regexp"
 +	"strings"
++	"sync"
 +	"testing"
 +	"time"
 +
 +	"github.com/chuma-beep/mathua/internal/auth"
 +	"github.com/chuma-beep/mathua/internal/engine"
++	"github.com/chuma-beep/mathua/internal/generator"
++	"github.com/chuma-beep/mathua/internal/lessons"
 +	"github.com/chuma-beep/mathua/internal/mastery"
 +	"github.com/chuma-beep/mathua/internal/repair"
 +	"github.com/chuma-beep/mathua/internal/storage"
@@ -549,8 +1062,37 @@ index 00000000..49341130
 +	return &checker{node: node, script: script}
 +}
 +
++var (
++	contentOnce sync.Once
++	contentPath string
++	contentData *content
++	contentErr  error
++)
++
++// testContent loads the editorial package the pilot serves, from the repository above this clone.
++func testContent(t *testing.T) (string, *content) {
++	t.Helper()
++	contentOnce.Do(func() {
++		if contentPath, contentErr = findContentDir("."); contentErr == nil {
++			contentData, contentErr = loadContent(contentPath, integratedThroughStage)
++		}
++	})
++	if contentErr != nil {
++		t.Fatal(contentErr)
++	}
++	return contentPath, contentData
++}
++
++// Each kind is one family of the content package and its answer mode.
++var criteriaKinds = map[string][2]string{
++	"literal": {"F002", "code"}, "text": {"F003", "code"}, "boolean": {"F004", "code"},
++	"type": {"F005", "token"}, "token": {"F012", "token"}, "choice": {"F001", "choice"},
++	"const": {"F010", "code"}, "const_text": {"F011", "code"},
++}
++
 +func TestTypeScriptCriteria(t *testing.T) {
 +	check := testChecker(t)
++	const expectedText = `const id: string = "reembolso-01";`
 +	const expected = "const amount: number = 15000;"
 +	cases := []struct {
 +		name, kind, reference, answer string
@@ -577,15 +1119,47 @@ index 00000000..49341130
 +		{"no_comment_disguise", "const", expected, "// " + expected + "\nlet amount = 15000;", false},
 +		{"compiler_diagnostic", "const", expected, "/// <reference path=\"missing.ts\" />\n" + expected, false},
 +		{"empty_answer", "const", expected, "", false},
++		{"text_double_quotes", "text", `"reembolso-01"`, `"reembolso-01"`, true},
++		{"text_single_quotes_are_equivalent", "text", `"reembolso-01"`, `'reembolso-01'`, true},
++		{"text_without_quotes", "text", `"reembolso-01"`, `reembolso`, false},
++		{"text_other_content", "text", `"reembolso-01"`, `"reembolso-02"`, false},
++		{"text_template_is_another_notation", "text", `"reembolso-01"`, "`reembolso-01`", false},
++		{"text_is_not_a_number", "text", `"reembolso-01"`, "15000", false},
++		{"boolean_false", "boolean", "false", "false", true},
++		{"boolean_true_with_semicolon", "boolean", "true", "true;", true},
++		{"boolean_in_quotes_is_text", "boolean", "false", `"false"`, false},
++		{"boolean_opposite_value", "boolean", "false", "true", false},
++		{"boolean_capitalized_is_a_name", "boolean", "true", "True", false},
++		{"type_string", "type", "string", "string", true},
++		{"type_name_case_matters", "type", "number", "Number", false},
++		{"token_colon_with_spaces", "token", ":", " : ", true},
++		{"token_equals_is_not_colon", "token", ":", "=", false},
++		{"choice_text_of_the_correct_alternative", "choice", "Uma notação que expressa diretamente um valor.", "Uma notação que expressa diretamente um valor.", true},
++		{"choice_text_of_another_alternative", "choice", "Uma notação que expressa diretamente um valor.", "Uma regra que proíbe todos os valores.", false},
++		{"choice_unresolved_letter", "choice", "Uma notação que expressa diretamente um valor.", "Z", false},
++		{"text_const_explicit", "const_text", expectedText, expectedText, true},
++		{"text_const_inferred_single_quotes_no_semicolon", "const_text", expectedText, "const id = 'reembolso-01'", true},
++		{"text_const_let_is_not_const", "const_text", expectedText, `let id = "reembolso-01";`, false},
++		{"text_const_number_initializer", "const_text", expectedText, "const id = 1;", false},
++		{"text_const_wrong_annotation", "const_text", expectedText, `const id: number = "reembolso-01";`, false},
++		{"text_const_wrong_name", "const_text", expectedText, `const code: string = "reembolso-01";`, false},
 +	}
 +	for _, tc := range cases {
 +		t.Run(tc.name, func(t *testing.T) {
-+			got := check.grade(tc.kind, tc.reference, tc.answer)
++			kind := criteriaKinds[tc.kind]
++			got := check.grade(gradeJob{Family: kind[0], Mode: kind[1], Expected: tc.reference, Answer: tc.answer})
 +			if got.Unavailable || got.Correct != tc.correct || got.Feedback == "" {
 +				t.Fatalf("grade = %+v, want correct=%t", got, tc.correct)
 +			}
 +		})
 +	}
++	// A family without a grader is a technical failure. It must never read as a wrong answer.
++	t.Run("family_without_grader_is_not_graded", func(t *testing.T) {
++		got := check.grade(gradeJob{Family: "F999", Mode: "code", Expected: "1", Answer: "1"})
++		if !got.Unavailable || got.Correct {
++			t.Fatalf("grade = %+v, want unavailable", got)
++		}
++	})
 +}
 +
 +type pilotEnv struct {
@@ -600,7 +1174,8 @@ index 00000000..49341130
 +	if err != nil {
 +		t.Fatal(err)
 +	}
-+	mux, eng, err := newPilot(store, check)
++	contentDir, _ := testContent(t)
++	mux, eng, _, err := newPilot(store, check, contentDir, t.TempDir())
 +	if err != nil {
 +		store.Close()
 +		t.Fatal(err)
@@ -669,30 +1244,24 @@ index 00000000..49341130
 +	return map[string]any{"concept_id": concept, "question": question, "answer": answer, "submission_id": id, "elapsed": 30}
 +}
 +
-+// Test answers are obtained from the prompt. The client never reads an anchor.
++// Test answers come from the content package, found by the served prompt. The client never reads
++// an anchor. The const answer drops the optional annotation, so it differs from the model answer.
 +func solve(t *testing.T, concept, question string) string {
 +	t.Helper()
-+	switch concept {
-+	case typeID:
-+		return "number"
-+	case literalID:
-+		amounts := map[string]int{"mil": 1000, "dois mil": 2000, "três mil": 3000, "quatro mil": 4000,
-+			"cinco mil": 5000, "seis mil": 6000, "sete mil": 7000, "oito mil": 8000, "nove mil": 9000,
-+			"dez mil": 10000, "onze mil": 11000, "doze mil": 12000, "treze mil": 13000, "catorze mil": 14000,
-+			"quinze mil": 15000, "dezesseis mil": 16000, "dezessete mil": 17000, "dezoito mil": 18000,
-+			"dezenove mil": 19000, "vinte mil": 20000}
-+		parts := strings.SplitN(question, ".", 2)
-+		amount := strings.TrimPrefix(parts[0], "O valor de um reembolso é ")
-+		if value, ok := amounts[amount]; ok {
-+			return fmt.Sprint(value)
-+		}
-+	case constID:
-+		match := regexp.MustCompile(`chamada ([A-Za-z]+), inicializada com o literal numérico ([0-9]+)`).FindStringSubmatch(question)
-+		if len(match) == 3 {
-+			return fmt.Sprintf("const %s = %s;", match[1], match[2])
++	_, c := testContent(t)
++	familyID, caseID, ok := c.lookup(concept, question)
++	if !ok {
++		t.Fatalf("cannot answer prompt: %s", question)
++	}
++	for _, k := range c.families[familyID].Cases {
++		if k.ID == caseID {
++			if concept == constID {
++				return strings.Replace(k.Answer, ": number", "", 1)
++			}
++			return k.Answer
 +		}
 +	}
-+	t.Fatalf("cannot answer prompt: %s", question)
++	t.Fatalf("case %s not found", caseID)
 +	return ""
 +}
 +
@@ -945,6 +1514,140 @@ index 00000000..49341130
 +		t.Fatalf("repair invented mastery: %+v, %v", progress, err)
 +	}
 +}
++
++func TestContentOfTheIntegratedStages(t *testing.T) {
++	dir, c := testContent(t)
++	cases, questions := 0, 0
++	for _, spec := range c.Concepts {
++		if len(spec.FamilyIDs) < 1 || len(spec.FamilyIDs) > maxFamiliesPerConcept {
++			t.Fatalf("%s has %d families", spec.ID, len(spec.FamilyIDs))
++		}
++		for _, f := range c.familiesOf(spec) {
++			for _, k := range f.Cases {
++				cases++
++				// A report stores the concept and the question. They must identify one instance.
++				if familyID, caseID, ok := c.lookup(spec.ID, questionText(k)); !ok || familyID != f.ID || caseID != k.ID {
++					t.Fatalf("%s: lookup returned %s %s %t", k.ID, familyID, caseID, ok)
++				}
++				questions++
++			}
++		}
++	}
++	if len(c.Concepts) != 13 || len(c.families) != 14 || cases != 84 {
++		t.Fatalf("stages 1 to %d: %d concepts, %d families, %d cases", integratedThroughStage, len(c.Concepts), len(c.families), cases)
++	}
++	// The three original concepts keep their IDs and the family the package assigns to them.
++	for id, want := range map[string]string{literalID: "F002", typeID: "F005", constID: "F010"} {
++		found := false
++		for _, spec := range c.Concepts {
++			if spec.ID == id {
++				found = len(spec.FamilyIDs) == 1 && spec.FamilyIDs[0] == want
++			}
++		}
++		if !found {
++			t.Fatalf("%s must be served by family %s alone", id, want)
++		}
++	}
++	// A stage beyond the integrated ones has no grader yet, so the self-check must refuse it.
++	next, err := loadContent(dir, integratedThroughStage+1)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := next.verifyModelAnswers(testChecker(t)); err == nil || !strings.Contains(err.Error(), "No grader for family") {
++		t.Fatalf("stage %d must be refused until its graders exist, got %v", integratedThroughStage+1, err)
++	}
++	t.Logf("%s: %d concepts, %d families, %d cases, %d questions identified", c.Version, len(c.Concepts), len(c.families), cases, questions)
++}
++
++func TestSectionsKeepOneFamilyAndLessonsLoad(t *testing.T) {
++	_, c := testContent(t)
++	check := testChecker(t)
++	var twoFamilies conceptSpec
++	for _, spec := range c.Concepts {
++		if spec.ID == "ts.binding.const_semantics" {
++			twoFamilies = spec
++		}
++	}
++	if len(twoFamilies.FamilyIDs) != 2 {
++		t.Fatalf("fixture concept has families %v", twoFamilies.FamilyIDs)
++	}
++	item, err := newExercise(twoFamilies, c.familiesOf(twoFamilies), check)
++	if err != nil {
++		t.Fatal(err)
++	}
++	// Section N serves family N only, and reaches all of its cases before any repeats.
++	for section, familyID := range twoFamilies.FamilyIDs {
++		seen := map[string]bool{}
++		for draw := 0; draw < len(c.families[familyID].Cases); draw++ {
++			p := item.Generate(generator.GeneratorContext{Seed: 41, KPOrdinal: section + 1})
++			gotFamily, caseID, ok := c.lookup(twoFamilies.ID, p.Question)
++			if !ok || gotFamily != familyID || seen[caseID] {
++				t.Fatalf("section %d served %s %s (repeat=%t)", section+1, gotFamily, caseID, seen[caseID])
++			}
++			seen[caseID] = true
++			if got := item.Grade(p.Answer, p.Answer); !got.Correct {
++				t.Fatalf("%s: reference answer rejected: %+v", caseID, got)
++			}
++		}
++	}
++	// A reference answer from another content version is a technical failure, not an error.
++	if got := item.Grade("alternativa que não existe nesta versão", "A"); !got.Unavailable {
++		t.Fatalf("unknown reference must be ungraded: %+v", got)
++	}
++	dir := t.TempDir()
++	if err := c.writeLessons(dir); err != nil {
++		t.Fatal(err)
++	}
++	loaded, err := lessons.Load(dir)
++	if err != nil {
++		t.Fatal(err)
++	}
++	for _, spec := range c.Concepts {
++		points := loaded.KPs(spec.ID)
++		if len(points) != len(spec.FamilyIDs) {
++			t.Fatalf("%s: %d sections for %d families", spec.ID, len(points), len(spec.FamilyIDs))
++		}
++		for _, point := range points {
++			body, ok := loaded.KPSectionBody(spec.ID, point.Section)
++			if !ok || !strings.Contains(body, strings.TrimSpace(c.lessons[spec.Stage])) {
++				t.Fatalf("%s: section %q does not carry the stage lesson", spec.ID, point.Section)
++			}
++		}
++	}
++}
++
++// The engine resolves the letter of an alternative against the served question. A new concept of
++// the package is answered that way, and a miss leaves the learner a variant of the same family.
++func TestChoiceIsAnsweredByLetterThroughTheAPI(t *testing.T) {
++	t.Setenv("MATHUA_DEV_UNLOCK", "")
++	_, c := testContent(t)
++	e := boot(t, filepath.Join(t.TempDir(), "choice.db"), testChecker(t))
++	t.Cleanup(func() { e.http.Close(); e.eng.Close(); e.store.Close() })
++	guest, _ := e.request(t, "POST", "/api/auth/guest", "", map[string]any{}, 200)
++	token := guest["token"].(string)
++	const concept = "ts.value.literal_notation"
++	first := e.question(t, token, concept)
++	letter := solve(t, concept, first)
++	wrong := "A"
++	if letter == "A" {
++		wrong = "B"
++	}
++	res, raw := e.request(t, "POST", "/api/study/answer", token, submission(concept, first, wrong, "choice-miss"), 200)
++	if res["correct"] != false || res["ungraded"] == true || res["explanation"] == "" {
++		t.Fatalf("wrong alternative: %s", raw)
++	}
++	next := e.question(t, token, concept, first)
++	firstFamily, firstCase, _ := c.lookup(concept, first)
++	nextFamily, nextCase, ok := c.lookup(concept, next)
++	if !ok || nextFamily != firstFamily || nextCase == firstCase {
++		t.Fatalf("variant after a miss: %s %s after %s %s", nextFamily, nextCase, firstFamily, firstCase)
++	}
++	res, raw = e.request(t, "POST", "/api/study/answer", token, submission(concept, next, strings.ToLower(solve(t, concept, next)), "choice-hit"), 200)
++	if res["correct"] != true || res["ungraded"] == true || strings.TrimSpace(res["expected_answer"].(string)) == "" {
++		t.Fatalf("lowercase letter of the correct alternative: %s", raw)
++	}
++	t.Logf("%s: missed %s with %s, then %s accepted by letter; reference shown: %s", firstFamily, firstCase, wrong, nextCase, res["expected_answer"])
++}
 diff --git a/cmd/typescript-pilot/package-lock.json b/cmd/typescript-pilot/package-lock.json
 new file mode 100644
 index 00000000..10f8e984
@@ -994,10 +1697,19 @@ index 00000000..78f08371
 +  }
 +}
 diff --git a/internal/server/server.go b/internal/server/server.go
-index f19517a5..c8b6f985 100644
+index f19517a5..f879bf14 100644
 --- a/internal/server/server.go
 +++ b/internal/server/server.go
-@@ -3370,6 +3370,7 @@ func (s *Server) handleStudyAnswer(w http.ResponseWriter, r *http.Request) {
+@@ -2153,6 +2153,8 @@ func (s *Server) handleLessonConcept(w http.ResponseWriter, r *http.Request) {
+ 	}
+ 	excluded := make(map[string]bool)
+ 	for _, ex := range r.URL.Query()["exclude"] {
++		// A question that spans several lines, such as one with a choice list, is excluded as a whole.
++		excluded[ex] = true
+ 		for _, part := range strings.Split(ex, "\n") {
+ 			if part != "" {
+ 				excluded[part] = true
+@@ -3370,6 +3372,7 @@ func (s *Server) handleStudyAnswer(w http.ResponseWriter, r *http.Request) {
  		"xp_source":       res.XPSource,
  		"expected_answer": res.ExpectedAnswer,
  		"halted":          res.Halted,
@@ -1118,13 +1830,13 @@ index 913a6102..6733c0ca 100644
      <footer
        // Two tones, not one. The desktop and mobile pictures are chosen by the
 diff --git a/web/next-app/components/LearnStepper.tsx b/web/next-app/components/LearnStepper.tsx
-index 2f6abae4..c7907ae2 100644
+index 2f6abae4..7244dd48 100644
 --- a/web/next-app/components/LearnStepper.tsx
 +++ b/web/next-app/components/LearnStepper.tsx
 @@ -1,5 +1,6 @@
  'use client'
  
-+import { TS_PILOT, pt } from '@/lib/pilot'
++import { TS_PILOT, pilotDiagnosis, pilotExclude, pilotFresh, pt } from '@/lib/pilot'
  import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  import Link from 'next/link'
  import dynamic from 'next/dynamic'
@@ -1139,7 +1851,50 @@ index 2f6abae4..c7907ae2 100644
      const interactiveInsideCard =
        active !== null &&
        active !== document.body &&
-@@ -471,7 +472,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -206,8 +207,31 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+     target?.scrollIntoView(options)
+   }, [lastEntryKey, lastEntryKind])
+ 
++  // Pilot only. The pilot serves a finite bank of cases per section, so a fetch must exclude what
++  // the learner was shown, not what was merely fetched: the page fetches three questions and a
++  // section closes after two answers, and excluding the fetched ones brought the answered ones back.
++  // These refs hold the questions shown in each section, oldest first, and the unshown buffer.
++  const shownRef = useRef<Map<number, string[]>>(new Map())
++  const countedRef = useRef<Set<string>>(new Set())
++  const bufferRef = useRef<PracticeQuestion[]>([])
++  useEffect(() => { bufferRef.current = buffer }, [buffer])
++  useEffect(() => {
++    if (!TS_PILOT) return
++    for (const e of entries) {
++      if (e.kind !== 'q') continue
++      const id = `${e.key}:${e.q.question}`
++      if (countedRef.current.has(id)) continue
++      countedRef.current.add(id)
++      const section = e.kpIndex + 1
++      const list = (shownRef.current.get(section) ?? []).filter(q => q !== e.q.question)
++      shownRef.current.set(section, [...list, e.q.question].slice(-20))
++    }
++  }, [entries])
++
+   const refill = useCallback(async (diff: number, exclude: string[], kpOrdinal: number, epoch: number): Promise<PracticeQuestion[]> => {
+-    const pr = await getLessonPractice(conceptId, 3, { seed: Date.now() % 100000, exclude, difficulty: diff, kp_ordinal: kpOrdinal })
++    const buffered = bufferRef.current.map(q => q.question)
++    const pr = await getLessonPractice(conceptId, 3, { seed: Date.now() % 100000, exclude: TS_PILOT ? pilotExclude(shownRef.current.get(kpOrdinal) ?? [], buffered) : exclude, difficulty: diff, kp_ordinal: kpOrdinal })
++    if (TS_PILOT) pr.questions = pilotFresh(pr.questions, buffered)
+     const fresh = pr.questions.filter(q => !exclude.includes(q.question))
+     const answerable = fresh.length > 0 ? fresh : pr.questions
+     const first = answerable[0]
+@@ -235,7 +259,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+         setIneligible(readyRes)
+         return
+       }
+-      const pr = await getLessonPractice(conceptId, 3, { seed: Date.now() % 100000, difficulty: 0.4, kp_ordinal: 1 })
++      const pr = await getLessonPractice(conceptId, 3, { seed: Date.now() % 100000, difficulty: 0.4, kp_ordinal: 1, exclude: TS_PILOT ? pilotExclude(shownRef.current.get(1) ?? [], []) : undefined })
++      if (TS_PILOT) pr.questions = pilotFresh(pr.questions, [])
+       seenRef.current = pr.questions.map(q => q.question)
+       setBuffer(pr.questions)
+       const first = pr.questions[0]
+@@ -471,7 +496,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
      try {
        const res = await submitStudyAnswer(conceptId, entry.answer.trim(), elapsed, entry.q.question)
        if (res.ungraded) {
@@ -1148,7 +1903,25 @@ index 2f6abae4..c7907ae2 100644
          return
        }
        setAnsweredCount(n => n + 1)
-@@ -576,7 +577,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -489,7 +514,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+             correct: true,
+             text: res.explanation ?? '',
+             expected: res.expected_answer ?? '',
+-            diagnosis: res.diagnosis,
++            diagnosis: pilotDiagnosis(res),
+             xp: res.xp ?? 0,
+             xpAdjustment: res.xp_adjustment ?? 0,
+             xpNote: res.xp_note,
+@@ -523,7 +548,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+             correct: false,
+             text: res.explanation || '',
+             expected: res.expected_answer ?? '',
+-            diagnosis: res.diagnosis,
++            diagnosis: pilotDiagnosis(res),
+             xp: 0,
+             xpAdjustment: res.xp_adjustment ?? 0,
+             xpNote: res.xp_note,
+@@ -576,7 +601,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (practiceEpochRef.current !== epoch) return
            if (fresh.length > 0) {
              seenRef.current = [...seenRef.current, fresh[0].question].slice(-20)
@@ -1157,7 +1930,7 @@ index 2f6abae4..c7907ae2 100644
              setBuffer(prev => [...prev, ...fresh.slice(1)].slice(0, 6))
              return
            }
-@@ -588,12 +589,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -588,12 +613,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        }
        const status = getErrorStatus(e)
        const message = status === 401
@@ -1174,7 +1947,7 @@ index 2f6abae4..c7907ae2 100644
        setEntry(key, { error: message })
      } finally {
        setEntry(key, { checking: false })
-@@ -627,10 +628,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -627,10 +652,10 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          />
          <div className="mt-4 flex flex-wrap gap-3">
            <Link href="/domains" className="border border-mathua-border px-4 py-2 font-mono text-[11px] text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue">
@@ -1187,7 +1960,7 @@ index 2f6abae4..c7907ae2 100644
            </Link>
          </div>
        </div>
-@@ -663,15 +664,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -663,15 +688,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
        .slice(0, 3).map(p => p.title).join(', ')
      if (unmetPrereqs.length === 0 && unstartedPrereqs.length > 0) {
        const unstarted = unstartedPrereqs.slice(0, 3).map(p => p.title).join(', ')
@@ -1207,7 +1980,7 @@ index 2f6abae4..c7907ae2 100644
    })()
    const totalAnswered = answeredCount
    const totalCorrect = correctCount
-@@ -686,8 +687,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -686,8 +711,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
    return (
      <div className="max-w-2xl mx-auto">
        <div className="sticky top-0 z-10 bg-mathua-bg backdrop-blur py-2 mb-4 flex items-center gap-2 font-mono text-[11px] text-mathua-muted border-b border-mathua-border">
@@ -1218,7 +1991,7 @@ index 2f6abae4..c7907ae2 100644
          {totalXP !== 0 && <span className={totalXP > 0 ? 'text-yellow-400' : 'text-mathua-red'}>· {totalXP > 0 ? '+' : ''}{totalXP} XP</span>}
          {band && (
            <span title="How you're doing on this concept, from your recent answers. Progress only, mastery is decided separately.">
-@@ -700,7 +701,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -700,7 +725,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <PrerequisitePanel
            prerequisites={prerequisites}
            returnStack={prereqStack}
@@ -1227,7 +2000,7 @@ index 2f6abae4..c7907ae2 100644
            intro={prereqIntro}
            onDismiss={() => setBannerDismissed(true)}
          />
-@@ -712,9 +713,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -712,9 +737,9 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
          <div className="border border-mathua-green-faint bg-mathua-surface p-5 mb-4">
            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
              <div>
@@ -1239,7 +2012,7 @@ index 2f6abae4..c7907ae2 100644
                </p>
              </div>
              <div className="flex flex-wrap items-center gap-2 shrink-0">
-@@ -723,12 +724,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -723,12 +748,12 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href={nextShelf.next.href}
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -1254,7 +2027,7 @@ index 2f6abae4..c7907ae2 100644
                  </span>
                )}
                {!nextLoading && nextSettled && !canContinue && (
-@@ -736,14 +737,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -736,14 +761,14 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    href="/learn"
                    className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-4 py-2 font-mono text-xs inline-flex items-center min-h-[40px]"
                  >
@@ -1271,7 +2044,7 @@ index 2f6abae4..c7907ae2 100644
                </Link>
              </div>
            </div>
-@@ -805,7 +806,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -805,7 +830,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  <div className="mt-5 flex flex-wrap items-center gap-3">
                    {!practiceStarted && (
                      <button type="button" onClick={startPracticing} disabled={startingPractice} className="border border-mathua-blue text-mathua-blue hover:bg-mathua-blue-faint px-6 py-2.5 font-mono text-xs min-h-[44px] disabled:opacity-50">
@@ -1280,7 +2053,7 @@ index 2f6abae4..c7907ae2 100644
                      </button>
                    )}
                    {isMastered && canContinue && nextShelf && (
-@@ -813,7 +814,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -813,7 +838,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                        href={nextShelf.next.href}
                        className="border border-mathua-border text-mathua-secondary hover:border-mathua-blue hover:text-mathua-blue px-6 py-2.5 font-mono text-xs min-h-[44px] inline-flex items-center"
                      >
@@ -1289,7 +2062,7 @@ index 2f6abae4..c7907ae2 100644
                      </Link>
                    )}
                  </div>
-@@ -835,15 +836,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -835,15 +860,15 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
            if (e.kind === 'halt') {
              return (
                <div key={e.key} className="border border-mathua-red-faint bg-mathua-surface p-5">
@@ -1308,7 +2081,7 @@ index 2f6abae4..c7907ae2 100644
                  </div>
                </div>
              )
-@@ -852,7 +853,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -852,7 +877,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
              const upcoming: LockedSuccessor[] = upcomingLocked(catalogEntries(), shelfProgress, conceptId)
              return (
                <div key={e.key} className="border border-mathua-green-faint bg-mathua-surface p-6">
@@ -1317,7 +2090,7 @@ index 2f6abae4..c7907ae2 100644
                  <XPTaskSummary
                    answerXP={totalAnswerXP}
                    adjustment={totalAdjustment}
-@@ -861,22 +862,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -861,22 +886,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    className="mt-4"
                  />
                  {e.note && <p role="status" className="mt-2 font-mono text-[11px] text-mathua-secondary">{e.note}</p>}
@@ -1346,7 +2119,7 @@ index 2f6abae4..c7907ae2 100644
                      </summary>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {nextShelf.alternatives.map((it, i) => (
-@@ -895,7 +896,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -895,7 +920,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                  {upcoming.length > 0 && (
                    <div className="mt-3 border border-mathua-border">
                      <p className="font-mono text-[11px] text-mathua-secondary px-4 py-2.5">
@@ -1355,7 +2128,7 @@ index 2f6abae4..c7907ae2 100644
                      </p>
                      <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                        {upcoming.map(u => (
-@@ -905,7 +906,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -905,7 +930,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                            className="border border-mathua-border p-3 hover:border-mathua-blue transition-colors block min-w-0"
                          >
                            <div className="font-mono text-xs text-mathua-primary truncate">{u.label}</div>
@@ -1364,7 +2137,7 @@ index 2f6abae4..c7907ae2 100644
                          </Link>
                        ))}
                      </div>
-@@ -923,7 +924,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -923,7 +948,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                <ChoiceOptions question={qe.q.question} value={qe.answer} onPick={v => setEntry(qe.key, { answer: v })} disabled={locked || blocked || qe.checking} />
                {!locked && !blocked && (
                  <form ref={qe.key === lastEntryKey ? answerFormRef : undefined} onSubmit={ev => { ev.preventDefault(); handleCheck(qe.key) }} className="clear-of-tabs mt-3 flex flex-col sm:flex-row gap-2">
@@ -1373,7 +2146,7 @@ index 2f6abae4..c7907ae2 100644
                    <MathAnswerInput
                      id={`learn-answer-${qe.key}`}
                      focusRef={qe.key === lastEntryKey ? answerFocusRef : undefined}
-@@ -935,20 +936,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -935,20 +960,22 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      disabled={qe.checking}
                      status={qe.feedback ? (qe.feedback.correct ? 'correct' : 'incorrect') : 'default'}
                      inputMode={format.inputMode}
@@ -1401,7 +2174,7 @@ index 2f6abae4..c7907ae2 100644
                      prerequisites={(qe.blockedPrerequisiteIds?.length ? qe.blockedPrerequisiteIds : prerequisites.flatMap(p => p.met ? [] : [p.conceptId])).map(id => ({
                        conceptId: id,
                        title: prerequisites.find(p => p.conceptId === id)?.title ?? concepts.find(c => c.id === id)?.label ?? id,
-@@ -957,7 +960,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -957,7 +984,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      }))}
                      returnStack={prereqStack}
                    />
@@ -1410,7 +2183,7 @@ index 2f6abae4..c7907ae2 100644
                  </div>
                )}
                <div className="mt-2 flex justify-end">
-@@ -967,6 +970,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -967,6 +994,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    kind="question"
                    question={qe.q.question}
                    source="practice"
@@ -1419,7 +2192,7 @@ index 2f6abae4..c7907ae2 100644
                    answerGiven={qe.answer}
                    gradingType={conceptGradingType}
                    answerHint={format.hint}
-@@ -976,8 +981,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -976,8 +1005,8 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                {locked && qe.feedback && (
                  <div className="mt-3">
                    <p className={`font-mono text-xs ${qe.feedback.correct ? 'text-green-400' : 'text-red-400'}`}>
@@ -1430,7 +2203,7 @@ index 2f6abae4..c7907ae2 100644
                    </p>
                    <XPAdjustmentNote
                      adjustment={qe.feedback.xpAdjustment}
-@@ -986,7 +991,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -986,7 +1015,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                      className="mt-2"
                    />
                    <p className="mt-1.5 font-mono text-xs text-mathua-primary">
@@ -1439,7 +2212,7 @@ index 2f6abae4..c7907ae2 100644
                    </p>
                    {/* The explanation is the solution for *this* instance, shown
                        on both verdicts: a correct answer still needs the
-@@ -1002,7 +1007,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
+@@ -1002,7 +1031,7 @@ export default function LearnStepper({ conceptId, returnStack = [] }: Props) {
                    {qe.feedback.text && (
                      <div className="mt-1.5">
                        <p className="font-mono text-[11px] uppercase tracking-wider text-mathua-muted">
@@ -1815,10 +2588,10 @@ index 5bd3fb8f..18ec286b 100644
  // Mobile compass overflow: destinations missing from the bottom tabs.
 diff --git a/web/next-app/lib/pilot.ts b/web/next-app/lib/pilot.ts
 new file mode 100644
-index 00000000..9db70bbd
+index 00000000..8d6e52d1
 --- /dev/null
 +++ b/web/next-app/lib/pilot.ts
-@@ -0,0 +1,153 @@
+@@ -0,0 +1,187 @@
 +// Switches for the TypeScript pilot served by cmd/typescript-pilot.
 +//
 +// Everything here is off unless the interface is built with NEXT_PUBLIC_TS_PILOT=1,
@@ -1838,6 +2611,40 @@ index 00000000..9db70bbd
 +/** The concept graph is the mathematics catalog; the pilot sends that link to the progress report. */
 +export function pilotHref(href: string): string {
 +  return TS_PILOT && (href === '/graph' || href.startsWith('/graph?')) ? '/reports' : href
++}
++
++/**
++ * The pilot's grader states in `feedback` what is wrong with this answer, for example that the
++ * task asks for `const`. The study page renders `diagnosis` and never `feedback`, so a wrong
++ * answer showed the model answer without the reason. Outside the pilot nothing changes.
++ */
++export function pilotDiagnosis(res: { correct: boolean; diagnosis?: string; feedback?: string }): string | undefined {
++  if (!TS_PILOT || res.correct || res.diagnosis) return res.diagnosis
++  return res.feedback || undefined
++}
++
++// Cases per section in the content package.
++const PILOT_BANK = 6
++
++/**
++ * What a pilot practice fetch excludes: the questions waiting in the buffer and the ones shown
++ * most recently, five in all. A section has six cases, so the server is left with the case shown
++ * longest ago: every case is reached before one repeats, and a missed case does not come back next.
++ */
++export function pilotExclude(shown: string[], buffered: string[]): string[] {
++  const keep = Math.max(0, PILOT_BANK - 1 - buffered.length)
++  const recent = keep > 0 ? shown.filter(q => !buffered.includes(q)).slice(-keep) : []
++  return [...buffered, ...recent]
++}
++
++/** With few cases left the server repeats one inside a batch. Keep each once, and none already buffered. */
++export function pilotFresh<T extends { question: string }>(questions: T[], buffered: string[]): T[] {
++  const taken = new Set(buffered)
++  return questions.filter(q => {
++    if (taken.has(q.question)) return false
++    taken.add(q.question)
++    return true
++  })
 +}
 +
 +const PT: Record<string, string> = {

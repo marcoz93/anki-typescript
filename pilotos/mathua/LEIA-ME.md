@@ -1,4 +1,8 @@
-# Teste mínimo do Mathua com TypeScript
+# Piloto do Mathua com TypeScript
+
+**Bloco 1 (27/11/2026, macOS):** o piloto serve os degraus D01 a D03 do pacote `conteudo/typescript-v1`: 13 conceitos, 14 famílias e 84 casos. Os três conceitos antigos mantêm os IDs. A entrega, com conteúdo, comandos, saídas e limites, está em [BLOCO-1-D01-D03.md](BLOCO-1-D01-D03.md). As seções abaixo descrevem as rodadas anteriores; onde elas citam três conceitos, enunciados sorteados ou a pasta `lessons/`, vale o registro do bloco 1.
+
+Para rodar, o executável precisa do diretório `conteudo/typescript-v1` deste repositório. Ele o encontra sozinho quando o clone do Mathua está em `pilotos/mathua/mathua/`. Em outro local, use a opção `-content`.
 
 **Resultado atual (27/11/2026, macOS):** a tela existente do Mathua está ajustada para estudar TypeScript. O campo de resposta não mostra mais o teclado de símbolos matemáticos. O percurso de estudo e o menu lateral estão em português. Os menus que levavam ao catálogo de matemática estão ocultos. A página de relatos mostra os relatos do visitante.
 

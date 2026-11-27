@@ -27,7 +27,7 @@
   "mudancas": {
     "arquivos_existentes": {
       "internal/server/server.go": {
-        "linhas_adicionadas": 1,
+        "linhas_adicionadas": 3,
         "linhas_removidas": 0
       },
       "web/next-app/app/learn/page.tsx": {
@@ -51,8 +51,8 @@
         "linhas_removidas": 0
       },
       "web/next-app/components/LearnStepper.tsx": {
-        "linhas_adicionadas": 53,
-        "linhas_removidas": 48
+        "linhas_adicionadas": 81,
+        "linhas_removidas": 52
       },
       "web/next-app/components/NextUpCard.tsx": {
         "linhas_adicionadas": 3,
@@ -85,12 +85,8 @@
     },
     "arquivos_novos": [
       "cmd/typescript-pilot/README.md",
+      "cmd/typescript-pilot/content.go",
       "cmd/typescript-pilot/grade.cjs",
-      "cmd/typescript-pilot/lessons/kp/ts.binding.const_number.json",
-      "cmd/typescript-pilot/lessons/kp/ts.type.number.json",
-      "cmd/typescript-pilot/lessons/kp/ts.value.numeric_literal.json",
-      "cmd/typescript-pilot/lessons/lessons.json",
-      "cmd/typescript-pilot/lessons/typescript.md",
       "cmd/typescript-pilot/main.go",
       "cmd/typescript-pilot/main_test.go",
       "cmd/typescript-pilot/package-lock.json",
@@ -98,10 +94,10 @@
       "web/next-app/lib/pilot.ts"
     ],
     "patch_aplicavel_ao_commit_base": true,
-    "patch_sha256": "c8fdb64907c33400244abcfb6cc0b5aae111ebf00db9791a5f2c4f0b9f6685d3",
+    "patch_sha256": "e93777ab18e65c6fd0f61d80af3d8735f64747372fc92450b1dda3746be3020c",
     "interface": "Página /learn existente, exportada por Next e servida pelo executável do piloto. Nenhuma página nova.",
-    "conteudo": "Três conceitos, uma família por conceito, com explicações em português.",
-    "patch_sha256_anterior": "c8d12f0d2263289580d581acdf0bc8c31827834141a97b7ff650c24adbcf4a83",
+    "conteudo": "Conteúdo lido de conteudo/typescript-v1 (versão typescript-escada-v1). Servidos os degraus D01 a D03: 13 conceitos, 14 famílias, 84 casos.",
+    "patch_sha256_anterior": "c8fdb64907c33400244abcfb6cc0b5aae111ebf00db9791a5f2c4f0b9f6685d3",
     "chave_de_compilacao": "NEXT_PUBLIC_TS_PILOT=1, lida por web/next-app/lib/pilot.ts. Sem a chave, a interface compila como a original.",
     "ajustes_da_tela": [
       "Campo de resposta sem a paleta de símbolos matemáticos.",
@@ -151,7 +147,7 @@
     }
   },
   "testes_macos": {
-    "observacao": "Execuções no Mac do usuário em 27/11/2026, com o patch atual. Registro completo em COMANDOS-E-SAIDAS-MAC.md.",
+    "observacao": "Execuções no Mac do usuário em 27/11/2026 com o patch da rodada de ajuste da tela (sha256 c8fdb64907c33400244abcfb6cc0b5aae111ebf00db9791a5f2c4f0b9f6685d3). Registro em COMANDOS-E-SAIDAS-MAC.md. Não repetidas com o patch atual; o bloco 1 tem evidências próprias em bloco_1_d01_d03.",
     "patch_sha256": "c8fdb64907c33400244abcfb6cc0b5aae111ebf00db9791a5f2c4f0b9f6685d3",
     "ambiente": {
       "sistema": "macOS 26.4.1",
@@ -233,6 +229,97 @@
       }
     }
   },
+  "bloco_1_d01_d03": {
+    "observacao": "Integração dos degraus D01 a D03 do pacote conteudo/typescript-v1. Execuções no Mac do usuário em 27/11/2026. Registro em BLOCO-1-D01-D03.md.",
+    "patch_sha256": "e93777ab18e65c6fd0f61d80af3d8735f64747372fc92450b1dda3746be3020c",
+    "repositorio_commit_do_conteudo": "2ec2f30c05b87eeb50e97860ff407a05d1625980",
+    "conteudo": {
+      "versao": "typescript-escada-v1",
+      "degraus": [
+        1,
+        2,
+        3
+      ],
+      "conceitos": 13,
+      "familias": 14,
+      "casos": 84,
+      "exercicios_json_sha256": "906b2c9333d253824396dd0bcc6f74515a8e40864eb2968f526bdef56858f1bb",
+      "curriculo_json_sha256": "6f38a98a4f169e71761c851cdd9ad1cd086c3d0dbe8707a8c5b272bd17997f23",
+      "ids_preservados": {
+        "ts.value.numeric_literal": "F002",
+        "ts.type.number": "F005",
+        "ts.binding.const_number": "F010"
+      }
+    },
+    "ambiente": {
+      "sistema": "macOS 26.4.1",
+      "machine": "arm64",
+      "go": "1.26.6",
+      "node_compilacao_da_interface_testado": "24.22.3",
+      "node_execucao_testado": "24.14.1",
+      "typescript": "5.9.3",
+      "chromium": "151.0.7922.34"
+    },
+    "evidencias/bloco-1-d01-d03/mathua-pilot.jsonl": {
+      "pass_folhas": 57,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidencias/bloco-1-d01-d03/mathua-native-http.jsonl": {
+      "pass_folhas": 26,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidencias/bloco-1-d01-d03/mathua-native-engine.jsonl": {
+      "pass_folhas": 154,
+      "fail": 0,
+      "skip": 0
+    },
+    "evidencias/bloco-1-d01-d03/mathua-server-completo.txt": {
+      "exit_code": 0,
+      "pacote": "internal/server inteiro"
+    },
+    "evidencias/bloco-1-d01-d03/vitest.log": {
+      "exit_code": 0,
+      "test_files_passed": 198,
+      "tests_passed": 1885,
+      "intermitente": "test/reportsPage.test.tsx falhou em 1 de 3 execuções da suíte completa e passou em 3 execuções isoladas; o patch não altera essa página"
+    },
+    "evidencias/bloco-1-d01-d03/lint.log": {
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 7
+    },
+    "evidencias/bloco-1-d01-d03/mathua-process-script.json": {
+      "passed": true,
+      "processes_started": 2,
+      "persisted_attempts": 1
+    },
+    "evidencias/bloco-1-d01-d03/mathua-browser-smoke.json": {
+      "passed": true,
+      "checks": 16,
+      "capturas": 8,
+      "conceitos_percorridos_pela_tela": 5,
+      "api_simulada": false
+    },
+    "defeitos_corrigidos": [
+      "Rota de prática não excluía pergunta de várias linhas (internal/server/server.go, 3 linhas).",
+      "Tela excluía perguntas buscadas em vez de mostradas, repetindo casos antes de esgotar os seis."
+    ],
+    "nao_verificado": [
+      "Linux",
+      "go test ./... com este patch",
+      "banco criado pela versão anterior do piloto",
+      "falha do corretor provocada pelo navegador",
+      "8 dos 13 conceitos pela tela",
+      "Safari, Chrome do usuário e celular"
+    ],
+    "pendente_para_os_proximos_blocos": [
+      "Corretor do formato value (D04 em diante)",
+      "Corretores de código com context_code",
+      "Cinco conceitos com quatro famílias; a rota de prática aceita seções 1 a 3"
+    ]
+  },
   "contrato_ungraded": {
     "http_bem_sucedido": {
       "true": "Corretor indisponível, resposta não avaliada.",
@@ -290,7 +377,7 @@
     "A suíte geral desta rodada terminou com falha em um teste de variedade. O mesmo teste falhou também no commit-base limpo. Não se declara aprovação integral da suíte.",
     "Teste da interface /learn em Chromium, com API e SQLite reais. Não valida outros navegadores nem dispositivos móveis. As alterações da tela desta rodada foram validadas só em macOS.",
     "O percurso de estudo e o menu lateral estão em português. As páginas /my-reports, /history, /reports, /domains, /profile e /settings mantêm o texto original em inglês. O menu Ranking e o botão do assistente continuam visíveis.",
-    "Três famílias, uma por conceito. Variação de parâmetros não é criação de uma nova família.",
+    "O piloto serve os degraus D01 a D03 do pacote: 14 famílias com seis casos cada. Trocar o caso é uma variante, não uma família nova. Os degraus D04 a D15 ainda não têm corretor.",
     "Geração automática de famílias a partir do feedback não foi iniciada. Conteúdo e corretor ainda exigem revisão humana.",
     "Reparo histórico foi exercitado em dados simulados. Não recalcula XP.",
     "Configuração original de domínio e política de diagnóstico não foram substituídas.",

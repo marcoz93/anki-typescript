@@ -1,0 +1,530 @@
+{
+  "passed": true,
+  "platform": "darwin arm64",
+  "node": "v24.14.1",
+  "browser": "151.0.7922.34",
+  "checks": [
+    {
+      "name": "home_opens_first_concept_with_its_lesson",
+      "passed": true,
+      "observed": {
+        "status": 200,
+        "concept": "ts.value.literal_notation"
+      }
+    },
+    {
+      "name": "navigation_fits_the_pilot",
+      "passed": true,
+      "observed": {
+        "hidden_absent": [
+          "/graph",
+          "/glossary",
+          "/docs",
+          "/docs/contributing",
+          "/how-it-works",
+          "/note",
+          "/announcements"
+        ],
+        "required_present": [
+          "/learn",
+          "/domains",
+          "/history",
+          "/reports",
+          "/my-reports"
+        ],
+        "sidebar": [
+          "λ Mathua",
+          "Estudar",
+          "Domínios",
+          "Ranking",
+          "Histórico",
+          "Relatório de progresso",
+          "Configurações",
+          "Meus relatos e avisos",
+          "G Guest",
+          "Trocar tema",
+          "Sair"
+        ]
+      }
+    },
+    {
+      "name": "ui_blocks_unmet_prerequisites",
+      "passed": true,
+      "observed": {
+        "concept": "ts.binding.const_number",
+        "answer_fields": 0
+      }
+    },
+    {
+      "name": "choice_miss_shows_instance_explanation_and_same_family_variant",
+      "passed": true,
+      "observed": {
+        "family": "F001",
+        "missed_case": "F001-V2",
+        "tapped": "A",
+        "reference_shown": "Uma notação que expressa diretamente um valor.",
+        "explanation_shown": "Um literal escreve diretamente um valor; um identificador referencia uma vinculação, e uma operação pode combinar valores.",
+        "variant_case": "F001-V3"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.literal_notation",
+      "passed": true,
+      "observed": {
+        "answers": 5,
+        "new_status": "MASTERED",
+        "distinct_cases": 5,
+        "cases": [
+          "F001-V3",
+          "F001-V4",
+          "F001-V5",
+          "F001-V0",
+          "F001-V1"
+        ],
+        "sample_answer": "C"
+      }
+    },
+    {
+      "name": "new_concept_mastery_unlocks_its_dependent",
+      "passed": true,
+      "observed": {
+        "mastered": "ts.value.literal_notation",
+        "eligible": "ts.value.string_literal"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.value.numeric_literal",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F002-V5",
+          "F002-V0",
+          "F002-V1",
+          "F002-V2",
+          "F002-V3",
+          "F002-V4"
+        ],
+        "sample_answer": "1_200"
+      }
+    },
+    {
+      "name": "mastery_through_browser_ts.type.number",
+      "passed": true,
+      "observed": {
+        "answers": 6,
+        "new_status": "MASTERED",
+        "distinct_cases": 6,
+        "cases": [
+          "F005-V4",
+          "F005-V5",
+          "F005-V0",
+          "F005-V1",
+          "F005-V2",
+          "F005-V3"
+        ],
+        "sample_answer": "number"
+      }
+    },
+    {
+      "name": "navigation_to_ts.binding.const_number",
+      "passed": true,
+      "observed": {
+        "label": "Novo: Declaração const numérica →",
+        "concept": "ts.binding.const_number"
+      }
+    },
+    {
+      "name": "code_miss_names_the_cause_then_variant_accepts_valid_alternative",
+      "passed": true,
+      "observed": {
+        "missed_case": "F010-V0",
+        "wrong_answer": "let amount: number = 15000;",
+        "cause_shown": "A tarefa pede const, que impede reatribuir esse nome após a inicialização. let permite reatribuição.",
+        "variant_case": "F010-V1",
+        "model_answer": "const total: number = 18000;",
+        "accepted_answer": "const total = 18000"
+      }
+    },
+    {
+      "name": "study_path_text_is_portuguese",
+      "passed": true,
+      "observed": {
+        "english_source_strings_checked": 21,
+        "screens": [
+          "lesson",
+          "locked concept",
+          "choice question",
+          "wrong answer",
+          "report dialog"
+        ]
+      }
+    },
+    {
+      "name": "report_keeps_question_reference_and_given_answer",
+      "passed": true,
+      "observed": {
+        "report_id": 1,
+        "status": "open",
+        "concept": "ts.binding.const_number",
+        "family": "F010",
+        "case": "F010-V1",
+        "expected": "const total: number = 18000;",
+        "answer_given": "const total = 18000"
+      }
+    },
+    {
+      "name": "learner_reads_own_report_on_my_reports_page",
+      "passed": true,
+      "observed": {
+        "reports_listed": 1,
+        "report_id": 1
+      }
+    },
+    {
+      "name": "each_section_keeps_its_family_after_a_miss",
+      "passed": true,
+      "observed": {
+        "concept": "ts.binding.const_semantics",
+        "sections": [
+          {
+            "family": "F009",
+            "cases": [
+              "F009-V1",
+              "F009-V2",
+              "F009-V3"
+            ]
+          },
+          {
+            "family": "F013",
+            "cases": [
+              "F013-V1",
+              "F013-V2",
+              "F013-V3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "reload_preserves_identity_and_prerequisite_progress",
+      "passed": true,
+      "observed": {
+        "eligible": true
+      }
+    },
+    {
+      "name": "server_restart_preserves_progress_and_reports",
+      "passed": true,
+      "observed": {
+        "processes_started": 2,
+        "eligible": true,
+        "reports": 1
+      }
+    }
+  ],
+  "screenshots": [
+    "01-aula.png",
+    "02-pre-requisitos.png",
+    "03-pergunta-de-alternativas.png",
+    "04-correcao-de-alternativa.png",
+    "05-correcao-de-codigo.png",
+    "06-relato.png",
+    "07-meus-relatos.png",
+    "08-secao-com-codigo-de-contexto.png"
+  ],
+  "practice_fetches": [
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F001-V3",
+        "F001-V4",
+        "F001-V5"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F001-V2",
+        "F001-V3",
+        "F001-V4"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F001-V5",
+        "F001-V0",
+        "F001-V1"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F001-V5",
+        "F001-V0",
+        "F001-V1"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F001-V2"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F001-V1"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F001-V2"
+      ]
+    },
+    {
+      "concept": "ts.value.literal_notation",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F001-V3"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F002-V5",
+        "F002-V0",
+        "F002-V1"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F002-V2",
+        "F002-V3",
+        "F002-V4"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 2,
+      "served": [
+        "F002-V1",
+        "F002-V2",
+        "F002-V3"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F002-V4"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 4,
+      "served": [
+        "F002-V3",
+        "F002-V4"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F002-V5"
+      ]
+    },
+    {
+      "concept": "ts.value.numeric_literal",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F002-V0"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F005-V4",
+        "F005-V5",
+        "F005-V0"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F005-V1",
+        "F005-V2",
+        "F005-V3"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 2,
+      "served": [
+        "F005-V0",
+        "F005-V1",
+        "F005-V2"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F005-V3"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 4,
+      "served": [
+        "F005-V2",
+        "F005-V3"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F005-V4"
+      ]
+    },
+    {
+      "concept": "ts.type.number",
+      "section": 1,
+      "excluded": 5,
+      "served": [
+        "F005-V5"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F010-V0",
+        "F010-V1",
+        "F010-V2"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F010-V5",
+        "F010-V3",
+        "F010-V4"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_semantics",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F009-V1",
+        "F009-V2",
+        "F009-V3"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_semantics",
+      "section": 1,
+      "excluded": 3,
+      "served": [
+        "F009-V4",
+        "F009-V5",
+        "F009-V0"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_semantics",
+      "section": 2,
+      "excluded": 3,
+      "served": [
+        "F013-V1",
+        "F013-V2",
+        "F013-V3"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_semantics",
+      "section": 2,
+      "excluded": 3,
+      "served": [
+        "F013-V4",
+        "F013-V5",
+        "F013-V0"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F010-V1",
+        "F010-V2",
+        "F010-V3"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F010-V2",
+        "F010-V3",
+        "F010-V4"
+      ]
+    },
+    {
+      "concept": "ts.binding.const_number",
+      "section": 1,
+      "excluded": 0,
+      "served": [
+        "F010-V1",
+        "F010-V2",
+        "F010-V3"
+      ]
+    }
+  ],
+  "page_errors": [],
+  "api_errors": []
+}

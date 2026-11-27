@@ -10,6 +10,8 @@ O [pacote de conteúdo](conteudo/typescript-v1/LEIA-ME.md) preserva os **15 degr
 
 ## Piloto disponível: Mathua
 
+**Bloco 1, integrado em 27/11/2026:** o piloto serve os degraus D01 a D03 do conteúdo em `conteudo/typescript-v1/`: 13 conceitos, 14 famílias e 84 casos, com alternativas, nomes de tipo e código. O registro com conteúdo, comandos, saídas e limites está em [pilotos/mathua/BLOCO-1-D01-D03.md](pilotos/mathua/BLOCO-1-D01-D03.md). Os degraus D04 a D15 ainda não estão no aplicativo.
+
 O piloto integra três conceitos ao motor existente do Mathua: literal numérico, tipo `number` e declaração `const` com valor numérico.
 
 **Estado validado em 27/11/2026, em macOS:** a tela existente do Mathua está ajustada para estudar TypeScript. O campo de resposta não mostra o teclado de símbolos matemáticos. O percurso de estudo e o menu lateral estão em português. Os menus do catálogo de matemática estão ocultos. O teste em Chromium passou com 14 verificações: ler a explicação, responder, receber a correção, receber uma variante após errar, avançar após os pré-requisitos, relatar uma pergunta, consultar o relato, recarregar a página e reiniciar o servidor sem perder o progresso. Os 29 cenários do piloto e os 1885 testes unitários da interface passaram.
