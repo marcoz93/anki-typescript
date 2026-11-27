@@ -2,17 +2,18 @@
 
 ## 1. Mapa Macro das decisões
 
-O objeto da mudança é a **geração de exercícios isomorfos para o piloto de TypeScript**. O erro é a ocasião para preparar uma variação. O Mathua continua responsável pela correção da tentativa, pela escolha da próxima pergunta, pelo progresso e pelo calendário. Gerar uma pergunta após um erro e garantir que ela seja a próxima exibida são compromissos distintos. O escopo aprovado cobre a geração.
+A mudança se limita às **revisões espaçadas de TypeScript**. O Mathua determina quando revisar e qual conceito está devido. Para esse conceito, o aluno quer reencontrar a pergunta original e também exercitar a mesma lógica em outro contexto. Reencontrar a original permite refazer a tentativa. Resolver uma variação permite verificar se o aprendizado se transfere. A preferência é aproveitar o motor existente e limitar a mudança ao conteúdo apresentado na revisão.
 
 | ID | Objeto focal | Pergunta sobre o produto | Estado |
 | --- | --- | --- | --- |
-| P | Finalidade | Para que criar variações? | **Decidida.** Permitir que o aluno reencontre um princípio em outro contexto e precise aplicar a lógica novamente. |
+| P | Finalidade | O que o aluno deve poder reencontrar na revisão? | **Decidida.** Voltar à pergunta original e rever o mesmo princípio em outros contextos que exijam aplicar a lógica novamente. |
 | Q1 | Equivalência | O que dois exercícios devem preservar? | **Decidida.** A estrutura de solução e, ao revisar um erro específico, a condição que torna esse erro visível. |
-| Q6 | Alvo de uma variação | O que deve orientar a geração quando a resposta admite mais de uma explicação? | **Aberta. Em deliberação.** |
+| Q8 | Reencontro com o original | Em qual revisão do mesmo conceito a pergunta errada deve reaparecer? | **Aberta. Em deliberação.** Há preferência pelo retorno do enunciado original. |
+| Q6 | Alvo de uma variação | O que deve orientar a geração quando a resposta admite mais de uma explicação? | Aberta |
 | Q3 | Novidade | Que mudança de contexto é suficiente para evitar a memorização do enunciado? | Aberta |
 | Q7 | Aceite do exercício | Que evidências permitem aceitar uma variação como equivalente, nova e corrigível? | Aberta |
 
-**Decisão de fronteira.** Q2 (retomada), Q4 (crédito do acerto para o progresso) e Q5 (ordem e momento da revisão) ficam sob as políticas existentes do Mathua e do piloto. Os identificadores preservam o histórico. A decisão de produto aqui é conservar esse comportamento. Os detalhes de funcionamento abaixo vêm do código inspecionado.
+**Decisão de fronteira.** Q2 (prática da aula e retomada imediata), Q4 (crédito do acerto para o progresso) e Q5 (data e ordem dos conceitos devidos) ficam sob as políticas existentes do Mathua e do piloto. Q8 trata de qual enunciado o aluno encontra quando o motor já escolheu o conceito. Os identificadores preservam o histórico. A decisão de produto aqui é conservar esse comportamento. Os detalhes de funcionamento abaixo vêm do código inspecionado.
 
 ### Como o piloto responde ao erro hoje
 
@@ -23,18 +24,20 @@ O objeto da mudança é a **geração de exercícios isomorfos para o piloto de 
 | Erro numa revisão espaçada | O motor marca o conceito como devido naquele momento. A próxima seleção ainda depende dos conceitos elegíveis e de suas prioridades. A revisão pede uma pergunta por conceito e pode servir outra família. Um erro de prática comum não antecipa por si só essa data. O motor inicializa a agenda quando o conceito atinge domínio pela primeira vez. [Atualização do calendário](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L4176-L4251) · [Seleção da revisão](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L969-L1005) |
 | Falha técnica na correção | Uma tentativa marcada como `ungraded` fica fora da contagem de erros. Esse resultado tampouco fundamenta gerar um exercício dirigido a um erro do aluno. [Contrato de correção](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md#explicação-variante-e-falha-técnica) |
 
-O ensaio de navegador já registrou o percurso F042-V0 incorreta → F042-V1 correta. As duas instâncias pertenciam ao banco antes da sessão. O acréscimo pretendido está na origem do conteúdo que pode alimentar esse fluxo. [Ensaio de integração](../pilotos/mathua/BLOCO-4-D09-D15.md)
+**O enunciado original pode voltar hoje?** Sim, por seleção do banco. A tentativa registra o conceito, o texto exibido, a resposta enviada, o gabarito e o resultado. Ao servir uma revisão, o motor escolhe um conceito devido e chama o gerador com uma nova semente. O gerador do piloto considera os casos das famílias desse conceito. A seleção não reserva para uma revisão futura o enunciado que o aluno errou. Garantir esse retorno exigiria uma regra de escolha do exercício dentro da revisão. O registro da tentativa já oferece uma referência ao original. [Registro da tentativa](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L1623-L1636) · [Seleção por conceito](https://github.com/chuma-beep/mathua/blob/2bd4a4e0e160653e274521f6de3df2e61e29c7f7/internal/engine/engine.go#L969-L1005) · [Escolha do caso no piloto](https://github.com/marcoz93/anki-typescript/blob/26c784b98965bae668e45959e87f4f52c4ae3e97/pilotos/mathua/mathua-typescript-pilot.patch#L510-L535)
 
-## 2. Única decisão em deliberação · Q6
+O ensaio de navegador F042-V0 incorreta → F042-V1 correta documenta a prática da aula. A evidência sobre a revisão espaçada acima vem da leitura do caminho de revisão no código. [Ensaio de integração](../pilotos/mathua/BLOCO-4-D09-D15.md)
 
-**Se a resposta está errada, mas admite várias explicações, qual deve ser o alvo da variação?** Esta é uma questão Macro sobre o exercício que o aluno poderá receber. Q1 define o que preservar quando a dificuldade é identificável. Por exemplo, escrever `>=` onde se pede `>` é evidência direta sobre a escolha do operador. Já responder apenas `true` ao interpretar uma expressão falsa não explica como o aluno chegou à resposta.
+## 2. Única decisão em deliberação · Q8
 
-| Alternativa para uma tentativa ambígua | Critério e consequência | Questão suscitada |
+**Quando o conceito voltar após um erro, o aluno precisa reencontrar a pergunta original já na primeira revisão desse conceito?** A questão é Macro e trata do enunciado apresentado em uma revisão futura. P fornece a finalidade e Q5 delimita a ocasião. O motor continua a determinar as datas e a ordem dos conceitos. Para comparar as opções, considere um único erro e um aluno que continua revisando.
+
+| Alternativa | Critério e consequência | Questão suscitada |
 | --- | --- | --- |
-| **A · Recriar o caso concreto em outro cenário.** Preservar também as relações presentes na pergunta errada. | Se os valores originais eram iguais, a variação volta a confrontar valores iguais. Reexamina o ponto em que houve dificuldade sem atribuir uma causa. O conjunto de cenários admissíveis é mais estreito. | Em Q3, que mudança no enunciado ainda torna esse mesmo caso suficientemente novo? |
-| **B · Variar dentro do objetivo da família.** Preservar a ação pedida e o critério geral enquanto a causa for desconhecida. | Para a tarefa de interpretar `>`, a nova pergunta pode usar valores diferentes entre si. Oferece mais diversidade e cobre o princípio geral. Um acerto desse tipo pode deixar o caso de igualdade em aberto. | Em Q7, que evidência autoriza descrever a variante como prática geral daquela tarefa? |
+| **A · Original na primeira revisão do conceito.** O aluno reencontra a situação exata que errou. As variantes entram em revisões posteriores. | O retorno é previsível. Refazer o mesmo enunciado permite observar a correção da tentativa original. A aplicação em outro contexto será observada mais tarde. | Como reconhecer, no aceite, que o aluno viu o mesmo exercício que havia errado? |
+| **B · Original em uma revisão posterior do conceito.** Uma variante pode aparecer primeiro e a original ainda deve reaparecer. | Permite testar a lógica em outro contexto mais cedo. O compromisso de reencontro continua pendente até a exibição da original. | Como verificar que a original voltou ao longo das revisões? |
 
-A alternativa B trata apenas de respostas ambíguas. Se a tentativa revela uma distinção específica, vale o critério já decidido em Q1. O contrato editorial existente já pede que o feedback só atribua uma causa quando a resposta a sustenta. [Contrato dos exercícios](../conteudo/typescript-v1/CONTRATO-DE-CORRECAO.md#explicação-variante-e-falha-técnica)
+A política atual de escolher entre os casos disponíveis oferece a **possibilidade** de retorno. Tanto A quanto B acrescentariam uma **garantia** sobre o enunciado. A preferência por pouca mudança no motor é um critério de escolha. A definição de como realizar essa garantia fica para depois desta decisão.
 
 ### Decisão registrada · Q1
 
@@ -87,6 +90,7 @@ A tabela é a lista de arestas que fundamenta a DSM. Em cada linha, a **decisão
 | Dependente | Antecedente | Vigência | Informação necessária e razão |
 | --- | --- | --- | --- |
 | Q1 | P | Sempre | A finalidade de testar o mesmo aprendizado determina para que se precisa comparar duas tarefas. |
+| Q8 | P | Sempre | A finalidade inclui retomar o exercício e testar a mesma lógica em outro contexto. É preciso determinar quando a retomada exige o original. |
 | Q6 | Q1 | Ativa por Q1.C | O critério confirmado identifica a dificuldade que uma variação dirigida precisa preservar. Falta delimitar o alvo quando só há evidência de resposta incorreta. |
 | Q3 | Q1 | Sempre | Para julgar novidade, é preciso separar as relações que devem permanecer das mudanças admissíveis de cenário. |
 | Q3 | Q6 | Para tentativas ambíguas | O alvo escolhido define se o novo cenário pode alterar as relações concretas presentes na tentativa original. |
@@ -105,17 +109,18 @@ A tabela é a lista de arestas que fundamenta a DSM. Em cada linha, a **decisão
 
 ## 5. DSM e ordem de resolução
 
-A DSM projeta as decisões sobre geração. As três políticas herdadas (Q2, Q4 e Q5) aparecem na fronteira da seção 1 e não criam precedências entre decisões de conteúdo. Leia a linha como consumidora e a coluna como fornecedora da informação. `●` marca uma dependência direta, `C` a condição já ativada por Q1.C e `?` a dependência que só se aplica a uma tentativa de causa ambígua.
+A DSM cobre o conteúdo da revisão. As políticas herdadas Q2, Q4 e Q5 delimitam a análise e não têm escolhas de produto pendentes. A linha recebe informação da coluna. `●` marca uma dependência direta, `C` a condição já ativada por Q1.C e `?` a dependência específica de uma tentativa ambígua.
 
-| Recebe de → | P | Q1 | Q6 | Q3 | Q7 |
-| --- | --- | --- | --- | --- | --- |
-| P  | — | · | · | · | · |
-| Q1 | ● | — | · | · | · |
-| Q6 | · | C | — | · | · |
-| Q3 | · | ● | ? | — | · |
-| Q7 | · | ● | · | ● | — |
+| Recebe de → | P | Q1 | Q8 | Q6 | Q3 | Q7 |
+| --- | --- | --- | --- | --- | --- | --- |
+| P  | — | · | · | · | · | · |
+| Q1 | ● | — | · | · | · | · |
+| Q8 | ● | · | — | · | · | · |
+| Q6 | · | C | · | — | · | · |
+| Q3 | · | ● | · | ? | — | · |
+| Q7 | · | ● | · | · | ● | — |
 
-P e Q1 estão decididas. Para cobrir tentativas ambíguas, a ordem restante é Q6 → Q3 → Q7. No ramo de erro identificável, Q3 já pode ser resolvida independentemente de Q6. Q6 é a única questão aberta à deliberação nesta rodada. Não há ciclo de precedências no recorte atual.
+P e Q1 estão decididas. Para cobrir tentativas ambíguas, as camadas restantes são {Q8, Q6} → Q3 → Q7. Para um erro identificável, Q3 também está disponível agora. Q8 e Q6 são independentes. A pergunta em deliberação é Q8 porque explicita a garantia de retorno que o comportamento atual deixa em aberto. O grafo continua acíclico.
 
 ## 6. Estado empírico e rastreabilidade
 
@@ -133,7 +138,7 @@ Dois precedentes do Anki esclarecem a fronteira. Randomized Basic conserva um ca
 
 ## 7. Continuidade da análise
 
-Após a resposta a Q6, registre a formulação acordada, sua justificativa e um exemplo de variação admissível para uma resposta ambígua. Atualize a vigência das arestas, a DSM e a fronteira de decisões prontas. Uma formulação diferente das alternativas apresentadas pode exigir a revisão do mapa.
+Após a resposta a Q8, registre o compromisso de retorno do enunciado original e o que o aluno deverá observar quando o mesmo conceito voltar para revisão. Atualize a vigência das arestas, a DSM e a fronteira de decisões prontas. Uma formulação diferente das alternativas apresentadas pode exigir a revisão do mapa.
 
 Ao abrir uma questão, registram-se seu objeto, nível, pergunta, opções admissíveis, restrições, critérios e estado. Para cada opção, acrescentam-se as consequências, as questões suscitadas e a evidência disponível. Para cada antecedente, registra-se a informação recebida. As demais questões seguem identificadas no mapa. Uma deliberação Meso só ganha conteúdo quando houver um compromisso Macro a explicar. Uma deliberação Micro requer um contrato lógico a realizar ou uma restrição concreta demonstrada. Isso vale também para a redação do prompt e a atribuição de responsabilidades a um agente.
 
